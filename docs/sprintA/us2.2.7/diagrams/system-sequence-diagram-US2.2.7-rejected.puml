@@ -1,0 +1,35 @@
+@startuml 2.2.7
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Port Authority Officer" as portOfficer
+participant "System" as system
+
+title System Sequence Diagram - US2.2.7
+
+== Review pending Vessel Visit Notification (Rejected)==
+activate portOfficer
+
+portOfficer -> system : Request for specific vessel visit notification
+activate system
+
+system -> portOfficer : Show all the information related to the vessel visit notification
+deactivate system
+portOfficer -> system : Provide decision about the notification (Rejected)
+
+activate system
+system -> portOfficer : Request reason for rejection
+deactivate system
+portOfficer -> system : Provide the reason
+
+activate system
+
+system -> system : Update vessel visit\n notification
+
+system -> portOfficer : Confirm vessel visit notification update
+deactivate system
+
+
+
+@enduml
