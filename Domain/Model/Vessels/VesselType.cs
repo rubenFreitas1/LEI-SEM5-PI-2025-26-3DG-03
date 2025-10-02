@@ -5,7 +5,7 @@ namespace ShippingManagement.Domain.Vessels
 {
     public class VesselType
     {
-        public long Id{ get; private set;}
+        public long Id { get; private set; }
 
         public string? Name { get; private set; }
 
@@ -19,7 +19,7 @@ namespace ShippingManagement.Domain.Vessels
 
         public int MaxTiers { get; private set; }
 
-        private VesselType(){}
+        private VesselType() { }
 
         public VesselType(string name, string description, int capacity, int maxRows, int maxBays, int maxTiers)
         {
