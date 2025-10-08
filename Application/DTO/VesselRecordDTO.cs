@@ -74,5 +74,5 @@ public class VesselRecordDTO
         vesselRecord.ChangeOperator(vesselRecordDTO.Operator!);
         return vesselRecord;
     }
-    
+
 }
