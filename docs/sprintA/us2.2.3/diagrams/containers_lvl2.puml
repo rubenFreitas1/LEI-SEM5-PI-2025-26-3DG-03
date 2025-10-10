@@ -1,0 +1,14 @@
+@startuml DockContainers
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "Port Authority Officer", "System user managing docks")
+
+System_Boundary(system, "Dock Management System") {
+Container(api, "Dock API", ".NET 8 (ASP.NET Core Web API)", "Provides endpoints to manage docks (create, update, delete, list)")
+ContainerDb(db, "ShippingManagement Database", "SQLite", "Stores dock information (name, location, capacity, etc.)")
+}
+
+Rel(user, api, "Sends HTTP requests via Swagger or Postman", "HTTPS/JSON")
+Rel(api, db, "Reads from and writes to", "EF Core/SQL")
+
+@enduml

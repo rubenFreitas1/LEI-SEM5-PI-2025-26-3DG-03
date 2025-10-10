@@ -1,0 +1,109 @@
+@startuml DockCode
+
+
+class DockController { 
+	+GetAllDocks()
+	+GetDockByName()
+	+GetDockById()
+	+GetDockByLocation()
+    +GetDocksByVesselTypes()
+	+PutDock()
+	+PostDock()
+}
+
+class DockService {
+	+GetAllDocks()
+	+GetDockByName()
+	+GetDockByID()
+	+GetDockByLocation()
+    +GetDocksByVesselTypes()
+	+AddDock()
+	+UpdateDock()
+}
+
+class DockDTO{
+    -Name: string
+    -Location: string
+    -Length: int
+    -Depth: int
+    -MaxDraft: int
+    +ToDTO()
+    +ToDomain()
+    +UpdateToDomain()
+}
+
+
+interface IDockRepository{
+    +GetDockAsync()
+    +GetDockByNameAsync() 
+    +GetDockByIdAsync()
+    +GetDockByLocationAsync()
+    +GetDocksByVesselTypesAsync()
+    +AddDock()
+    +UpdateDock()
+}
+
+class DockRepository{
+    +GetDockAsync()
+    +GetDockByNameAsync() 
+    +GetDockByIdAsync()
+    +GetDockByLocationAsync()
+    +GetDocksByVesselTypesAsync()
+    +AddDock()
+    +UpdateDock()
+}
+
+
+class Dock{
+    -Id: long
+    -Name: string
+    -Location: string
+    -Length: int
+    -Depth: int
+    -MaxDraft: int
+    +ChangeName()
+    +ChangeLocation()
+    +ChangeLength()
+    +ChangeDepth()
+    +ChangeMaxDraft()
+}
+
+class DockMapper{
+    +ToDomain()
+    +ToDataModel()
+    +UpdateDataModel()
+}
+
+interface IDockFactory{
+    +NewDock()
+}
+
+class DockDataModel{
+    -Id: long
+    -Name: string
+    -Location: string
+    -Length: int
+    -Depth: int
+    -MaxDraft: int
+}
+
+class DockFactory{
+    +NewDock()
+}
+
+
+DockController --> DockService: uses 
+DockService --> IDockRepository: uses
+DockService --> DockDTO: uses
+
+DockRepository --> DockMapper: uses
+DockMapper --> DockDataModel : uses
+DockMapper --> IDockFactory : uses
+DockFactory --> Dock: creates
+
+
+DockFactory ..|> IDockFactory : implements
+
+DockRepository ..|> IDockRepository : implements
+
+@enduml

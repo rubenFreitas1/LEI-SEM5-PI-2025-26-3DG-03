@@ -1,0 +1,16 @@
+@startuml DockComponents
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(api, "Dock API (.NET 8)") {
+    Component(web_api, "Web API Layer", "ASP.NET Core Controllers", "Handles HTTP requests and responses")
+    Component(application, "Application Layer", "C# Services and DTOs", "Implements use cases and coordinates domain logic")
+    Component(domain, "Domain Layer", "C# Domain Models, Factories, IRepositories", "Contains business rules and core entities")
+    Component(data_model, "Data Model Layer", "EF Core Repositories and Mappers", "Implements data persistence using SQLite")
+}
+
+Rel(web_api, application, "Invokes services")
+Rel(application, domain, "Uses domain logic and entities")
+Rel(application, data_model, "Accesses repositories for persistence")
+Rel(data_model, domain, "Implements repository interfaces")
+
+@enduml

@@ -1,0 +1,9 @@
+@startuml DockContext
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(user, "Port Authority Officer", "System user responsible for managing docks")
+System(system, "Dock Management System", "Manages dock operations and related data")
+
+Rel(user, system, "Uses")
+
+@enduml
