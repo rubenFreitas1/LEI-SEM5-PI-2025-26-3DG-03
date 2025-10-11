@@ -1,7 +1,6 @@
 namespace Domain.IRepository;
 
 using Domain.Model;
-using ShippingManagement.Domain.Vessels;
 
 public interface IVesselTypeRepository : IGenericRepository<VesselType>
 {

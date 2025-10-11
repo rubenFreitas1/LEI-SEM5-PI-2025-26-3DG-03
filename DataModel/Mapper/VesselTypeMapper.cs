@@ -2,7 +2,7 @@ namespace DataModel.Mapper;
 
 using DataModel.Model;
 using Domain.Factory;
-using ShippingManagement.Domain.Vessels;
+using Domain.Model;
 
 public class VesselTypeMapper
 {

@@ -6,7 +6,7 @@ using DataModel.Model;
 using Domain.IRepository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using ShippingManagement.Domain.Vessels;
+using Domain.Model;
 
 public class VesselTypeRepository : GenericRepository<VesselType>, IVesselTypeRepository
 {

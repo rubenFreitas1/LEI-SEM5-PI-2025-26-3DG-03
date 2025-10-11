@@ -1,8 +1,8 @@
 using System;
 using System.Diagnostics.Contracts;
 
-namespace ShippingManagement.Domain.Vessels
-{
+namespace Domain.Model;
+
     public class VesselType
     {
         public long Id { get; set; }
@@ -123,4 +123,4 @@ namespace ShippingManagement.Domain.Vessels
         }
 
     }
-}
+

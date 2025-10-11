@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using ShippingManagement.Domain.Vessels;
+using Domain.Model;
 
 namespace DataModel.Model;
 

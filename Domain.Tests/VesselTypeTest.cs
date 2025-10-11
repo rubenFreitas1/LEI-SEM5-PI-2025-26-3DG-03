@@ -1,6 +1,6 @@
 using System;
 using Xunit;
-using ShippingManagement.Domain.Vessels;
+using Domain.Model;
 using System.Runtime.InteropServices;
 
 namespace Domain.Tests

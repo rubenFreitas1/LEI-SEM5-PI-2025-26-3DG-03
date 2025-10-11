@@ -1,6 +1,6 @@
 using System;
-
-
+using Domain.Model;
+ 
 namespace ShippingManagement.Domain.Vessels
 {
     public class VesselRecord
