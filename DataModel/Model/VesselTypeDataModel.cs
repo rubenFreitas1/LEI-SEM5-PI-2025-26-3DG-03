@@ -11,14 +11,19 @@ public class VesselTypeDataModel
     [Required]
     public string? Name { get; set; }
 
+    [Required]
     public string? Description { get; set; }
 
+    [Required]
     public int Capacity { get; set; }
 
+    [Required]
     public int MaxRows { get; set; }
 
+    [Required]
     public int MaxBays { get; set; }
 
+    [Required]
     public int MaxTiers { get; set; }
 
     public VesselTypeDataModel() { }

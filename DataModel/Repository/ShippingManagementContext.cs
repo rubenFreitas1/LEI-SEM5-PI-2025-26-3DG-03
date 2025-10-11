@@ -21,6 +21,9 @@ public class ShippingManagementContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<VesselTypeDataModel>()
+            .HasIndex(v => v.Name)
+            .IsUnique();
 
         // necessÃ¡rio se Domain.Model.Colaborator fosse usado para persistÃªncia, e se pretendesse que os atributos/propriedades fossem privadas
 

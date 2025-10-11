@@ -63,27 +63,15 @@ public class VesselTypeController : ControllerBase
     [HttpPut("Update/{name}")]
     public async Task<IActionResult> PutVesselType(string name, VesselTypeDTO vesselTypeDTO)
     {
-        try
+        if (name != vesselTypeDTO.Name)
         {
-            if (name != vesselTypeDTO.Name)
-            {
-                return BadRequest("Invalid vessel type data.");
-            }
-            bool wasUpdated = await _vesselTypeService.UpdateVesselType(name, vesselTypeDTO, _errorMessages);
-            if (!wasUpdated && _errorMessages.Any())
-            {
-                return BadRequest(_errorMessages);
-            }
+            return BadRequest("Invalid vessel type data.");
         }
-        catch (ArgumentOutOfRangeException ex)
+        bool wasUpdated = await _vesselTypeService.UpdateVesselType(name, vesselTypeDTO, _errorMessages);
+        if (!wasUpdated && _errorMessages.Any())
         {
-            return BadRequest(new { error = ex.Message });
+            return BadRequest(_errorMessages);
         }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = ex.Message });
-        }
-
         return Ok();
     }
 
@@ -98,6 +86,8 @@ public class VesselTypeController : ControllerBase
         VesselTypeDTO? createdVesselType = await _vesselTypeService.AddVesselType(vesselTypeDTO, _errorMessages);
         if (createdVesselType == null && _errorMessages.Any())
         {
+            if (_errorMessages.Any(e => e.Contains("Vessel Type Already Exists!", StringComparison.OrdinalIgnoreCase)))
+                return Conflict(_errorMessages);
             return BadRequest(_errorMessages);
         }
 

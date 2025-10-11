@@ -85,17 +85,26 @@ public class VesselTypeService
     public async Task<bool> UpdateVesselType(string name, VesselTypeDTO vesselTypeDTO, List<string> errorMessages)
     {
         VesselType? vesselType = await _vesselTypeRepository.GetVesselTypeByNameAsync(name);
-        if (vesselType != null)
+        try
         {
-            VesselTypeDTO.UpdateToDomain(vesselType, vesselTypeDTO);
-            await _vesselTypeRepository.Update(vesselType, errorMessages);
-            return true;
-        }
-        else
+            
+            if (vesselType != null)
+            {
+                VesselTypeDTO.UpdateToDomain(vesselType, vesselTypeDTO);
+                await _vesselTypeRepository.Update(vesselType, errorMessages);
+                return true;
+            }
+            else
+            {
+                errorMessages.Add("Vessel Type not found");
+                return false;
+            }
+        }catch(Exception ex)
         {
-            errorMessages.Add("Vessel Type not found");
+            errorMessages.Add("Error in updating Vessel Type: " + ex.Message);
             return false;
         }
+        
     }
 
 
