@@ -130,5 +130,44 @@ namespace Application.Services
             var updated = await _qualificationRepository.UpdateQualificationAsync(existing, errorMessages);
             return errorMessages.Count == 0 && updated != null;
         }
+
+        public async Task<bool> UpdateQualificationNameAndDescription(long id, QualificationUpdateDTO dto, List<string> errorMessages)
+        {
+            if (dto == null)
+            {
+                errorMessages.Add("Qualification update data is required.");
+                return false;
+            }
+
+            var existing = await _qualificationRepository.GetQualificationByIdAsync(id);
+            if (existing == null)
+            {
+                errorMessages.Add("Qualification not found.");
+                return false;
+            }
+
+            // Only check for name uniqueness if name is being changed
+            if (!string.IsNullOrWhiteSpace(dto.Name) && !dto.Name!.Equals(existing.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                if (await _qualificationRepository.QualificationNameExistsAsync(dto.Name!))
+                {
+                    errorMessages.Add($"Another qualification with name '{dto.Name}' already exists.");
+                    return false;
+                }
+            }
+
+            try
+            {
+                QualificationUpdateDTO.UpdateToDomain(existing, dto);
+            }
+            catch (ArgumentException ex)
+            {
+                errorMessages.Add(ex.Message);
+                return false;
+            }
+
+            var updated = await _qualificationRepository.UpdateQualificationAsync(existing, errorMessages);
+            return errorMessages.Count == 0 && updated != null;
+        }
     }
 }
