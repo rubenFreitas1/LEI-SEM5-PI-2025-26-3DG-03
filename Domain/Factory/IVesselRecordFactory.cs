@@ -1,7 +1,6 @@
 namespace Domain.Factory;
 
 using Domain.Model;
-using ShippingManagement.Domain.Vessels;
 
 public interface IVesselRecordFactory
 {
