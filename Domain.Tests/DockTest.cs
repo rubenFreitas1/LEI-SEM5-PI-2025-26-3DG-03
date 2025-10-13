@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 using Domain.Model;
-using ShippingManagement.Domain.Vessels;
 
 namespace Domain.Tests
 {

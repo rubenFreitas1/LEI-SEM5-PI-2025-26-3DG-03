@@ -1,7 +1,6 @@
 namespace Application.DTO;
 
 using Domain.Model;
-using ShippingManagement.Domain.Vessels;
 
 public class VesselTypeDTO
 {

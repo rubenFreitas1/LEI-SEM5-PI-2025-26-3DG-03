@@ -1,7 +1,6 @@
 using DataModel.Model;
 using DataModel.Repository;
 using Domain.Model;
-using ShippingManagement.Domain.Vessels;
 using ShippingManagement.Domain.Qualifications;
 
 namespace WebApi.IntegrationTests.Helpers;
