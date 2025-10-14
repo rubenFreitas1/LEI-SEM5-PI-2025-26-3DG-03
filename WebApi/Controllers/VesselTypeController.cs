@@ -60,14 +60,11 @@ public class VesselTypeController : ControllerBase
         return Ok(vesselTypes);
     }
 
-    [HttpPut("Update/{name}")]
-    public async Task<IActionResult> PutVesselType(string name, VesselTypeDTO vesselTypeDTO)
+    [HttpPut("Update/{id}")]
+    public async Task<IActionResult> PutVesselType(long id, VesselTypeDTO vesselTypeDTO)
     {
-        if (name != vesselTypeDTO.Name)
-        {
-            return BadRequest("Invalid vessel type data.");
-        }
-        bool wasUpdated = await _vesselTypeService.UpdateVesselType(name, vesselTypeDTO, _errorMessages);
+        
+        bool wasUpdated = await _vesselTypeService.UpdateVesselType(id, vesselTypeDTO, _errorMessages);
         if (!wasUpdated && _errorMessages.Any())
         {
             return BadRequest(_errorMessages);

@@ -72,10 +72,10 @@ public class DockController : ControllerBase
         return Ok(docks);
     }
 
-    [HttpPut("Update/{name}")]
-    public async Task<IActionResult> PutDock(string name, DockDTO dockDTO)
+    [HttpPut("Update/{id}")]
+    public async Task<IActionResult> PutDock(long id, DockDTO dockDTO)
     {
-        bool wasUpdated = await _dockService.UpdateDock(name, dockDTO, _errorMessages);
+        bool wasUpdated = await _dockService.UpdateDock(id, dockDTO, _errorMessages);
         if (!wasUpdated && _errorMessages.Any())
         {
             return BadRequest(_errorMessages);
@@ -94,8 +94,8 @@ public class DockController : ControllerBase
         DockDTO? createdDock = await _dockService.AddDock(dockDTO, _errorMessages);
         if (createdDock == null && _errorMessages.Any())
         {
-            if (_errorMessages.Contains("A dock with the same name already exists.") ||
-                _errorMessages.Contains("A dock with the same location already exists."))
+            if (_errorMessages.Contains($"A dock with the name '{dockDTO.Name}' already exists.") ||
+                _errorMessages.Contains($"A dock with the location '{dockDTO.Location}' already exists."))
             {
                 return Conflict(_errorMessages);
             }

@@ -134,28 +134,34 @@ namespace WebApi.IntegrationTests.Tests
             Assert.Equal(HttpStatusCode.BadRequest, postResponse.StatusCode);
         }
 
-        [Fact]
-        public async Task PutVesselType_UpdatesSuccessfully()
+        [Theory]
+        [InlineData("UpdateName", "UpdatedDesc", 500, 50, 25, 15)]
+        [InlineData("AnotherUpdate", "AnotherDesc", 600, 60, 30, 18)]
+        public async Task PutVesselType_UpdatesSuccessfully(string name, string description, int capacity, int maxRows, int maxBays, int maxTiers)
         {
-            var dto = new VesselTypeDTO
-            {
-                Name = "UpdateType",
-                Description = "Desc",
-                Capacity = 100,
-                MaxRows = 10,
-                MaxBays = 5,
-                MaxTiers = 3
-            };
-            await _client.PostAsJsonAsync("/api/VesselType", dto);
+            var response = await _client.GetAsync("/api/VesselType/ByName/Teste1");
+            var vesselType = await response.Content.ReadFromJsonAsync<VesselTypeDTO>();
+            Assert.NotNull(vesselType);
+            Assert.Equal("Teste1", vesselType.Name);
 
-            dto.Description = "UpdatedDesc";
-            var putResponse = await _client.PutAsJsonAsync($"/api/VesselType/Update/{dto.Name}", dto);
+            vesselType.Name = name;
+            vesselType.Description = description;
+            vesselType.Capacity = capacity;
+            vesselType.MaxRows = maxRows;
+            vesselType.MaxBays = maxBays;
+            vesselType.MaxTiers = maxTiers;
+
+            var putResponse = await _client.PutAsJsonAsync($"/api/VesselType/Update/{vesselType.Id}", vesselType);
             Assert.Equal(HttpStatusCode.OK, putResponse.StatusCode);
 
-            var getResponse = await _client.GetAsync($"/api/VesselType/ByName/{dto.Name}");
+            var getResponse = await _client.GetAsync($"/api/VesselType/ByName/{vesselType.Name}");
             var returned = await getResponse.Content.ReadFromJsonAsync<VesselTypeDTO>();
             Assert.NotNull(returned);
-            Assert.Equal("UpdatedDesc", returned.Description);
+            Assert.Equal(description, returned.Description);
+            Assert.Equal(capacity, returned.Capacity);
+            Assert.Equal(maxRows, returned.MaxRows);
+            Assert.Equal(maxBays, returned.MaxBays);
+            Assert.Equal(maxTiers, returned.MaxTiers);
         }
 
 
@@ -167,16 +173,18 @@ namespace WebApi.IntegrationTests.Tests
         [InlineData("Teste2", "Desc", 400, -30, -15, -9)]
         public async Task PutVesselType_UpdateNegativeNumbers_ReturnsBadRequest(string name, string description, int capacity, int maxRows, int maxBays, int maxTiers)
         {
-            var dto = new VesselTypeDTO
-            {
-                Name = name,
-                Description = description,
-                Capacity = capacity,
-                MaxRows = maxRows,
-                MaxBays = maxBays,
-                MaxTiers = maxTiers
-            };
-            var putResponse = await _client.PutAsJsonAsync($"/api/VesselType/Update/{name}", dto);
+            var response = await _client.GetAsync("/api/VesselType/ByName/Teste1");
+            var vesselType = await response.Content.ReadFromJsonAsync<VesselTypeDTO>();
+            Assert.NotNull(vesselType);
+            Assert.Equal("Teste1", vesselType.Name);
+
+            vesselType.Name = name;
+            vesselType.Description = description;
+            vesselType.Capacity = capacity;
+            vesselType.MaxRows = maxRows;
+            vesselType.MaxBays = maxBays;
+            vesselType.MaxTiers = maxTiers;
+            var putResponse = await _client.PutAsJsonAsync($"/api/VesselType/Update/{vesselType.Id}", vesselType);
             Assert.Equal(HttpStatusCode.BadRequest, putResponse.StatusCode);
         }
 
@@ -186,16 +194,18 @@ namespace WebApi.IntegrationTests.Tests
         [InlineData("Teste2", "", 100, 10, 5, 0)]
         public async Task PutVesselType_NullDescription_ReturnsBadRequest(string name, string? description, int capacity, int maxRows, int maxBays, int maxTiers)
         {
-            var dto = new VesselTypeDTO
-            {
-                Name = name,
-                Description = description,
-                Capacity = capacity,
-                MaxRows = maxRows,
-                MaxBays = maxBays,
-                MaxTiers = maxTiers
-            };
-            var putResponse = await _client.PutAsJsonAsync($"/api/VesselType/Update/{dto.Name}", dto);
+            var response = await _client.GetAsync("/api/VesselType/ByName/Teste1");
+            var vesselType = await response.Content.ReadFromJsonAsync<VesselTypeDTO>();
+            Assert.NotNull(vesselType);
+            Assert.Equal("Teste1", vesselType.Name);
+
+            vesselType.Name = name;
+            vesselType.Description = description;
+            vesselType.Capacity = capacity;
+            vesselType.MaxRows = maxRows;
+            vesselType.MaxBays = maxBays;
+            vesselType.MaxTiers = maxTiers;
+            var putResponse = await _client.PutAsJsonAsync($"/api/VesselType/Update/{vesselType.Id}", vesselType);
             Assert.Equal(HttpStatusCode.BadRequest, putResponse.StatusCode);
         }
 
@@ -205,6 +215,25 @@ namespace WebApi.IntegrationTests.Tests
         {
             var response = await _client.GetAsync("/api/VesselType/ByID/99999");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetVesselTypeById_Found()
+        {
+            var response = await _client.GetAsync("/api/VesselType");
+            response.EnsureSuccessStatusCode();
+            var vesselTypes = await response.Content.ReadFromJsonAsync<List<VesselTypeDTO>>();
+            Assert.NotNull(vesselTypes);
+            Assert.NotEmpty(vesselTypes);
+
+            foreach (var vt in vesselTypes)
+            {
+                var getByIdResponse = await _client.GetAsync($"/api/VesselType/ByID/{vt.Id}");
+                Assert.Equal(HttpStatusCode.OK, getByIdResponse.StatusCode);
+                var returned = await getByIdResponse.Content.ReadFromJsonAsync<VesselTypeDTO>();
+                Assert.NotNull(returned);
+                Assert.Equal(vt.Name, returned.Name);
+            }       
         }
 
 

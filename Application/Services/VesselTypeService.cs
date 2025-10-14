@@ -82,9 +82,9 @@ public class VesselTypeService
         return vDTO;
     }
 
-    public async Task<bool> UpdateVesselType(string name, VesselTypeDTO vesselTypeDTO, List<string> errorMessages)
+    public async Task<bool> UpdateVesselType(long id, VesselTypeDTO vesselTypeDTO, List<string> errorMessages)
     {
-        VesselType? vesselType = await _vesselTypeRepository.GetVesselTypeByNameAsync(name);
+        VesselType? vesselType = await _vesselTypeRepository.GetVesselTypeByIdAsync(id);
         try
         {
 

@@ -5,6 +5,7 @@ using Domain.Model;
 
 public class DockDTO
 {
+    public long Id { get; set; }
     public string? Name { get; set; }
     public string? Location { get; set; }
 
@@ -14,15 +15,16 @@ public class DockDTO
 
     public int MaxDraft { get; set; }
 
-    public List<VesselType>? VesselTypesAllowed { get; set; }
+    public List<string>? VesselTypesAllowed { get; set; }
 
     public DateTime LastModifiedAt { get; set; }
 
 
     public DockDTO() { }
 
-    public DockDTO(string name, string location, int length, int depth, int maxDraft, List<VesselType> vesselTypesAllowed)
+    public DockDTO(long id, string name, string location, int length, int depth, int maxDraft, List<string> vesselTypesAllowed)
     {
+        Id = id;
         Name = name;
         Location = location;
         Length = length;
@@ -35,7 +37,7 @@ public class DockDTO
     {
         try
         {
-            DockDTO dockDTO = new DockDTO(dock.Name!, dock.Location!, dock.Length, dock.Depth, dock.MaxDraft, dock.VesselTypesAllowed!);
+            DockDTO dockDTO = new DockDTO(dock.Id, dock.Name!, dock.Location!, dock.Length, dock.Depth, dock.MaxDraft, dock.VesselTypesAllowed!.Select(v => v.Name).ToList()!);
             return dockDTO;
         }
         catch (ArgumentOutOfRangeException ex)
@@ -55,39 +57,4 @@ public class DockDTO
         return dockDTOs;
     }
 
-    static public Dock ToDomain(DockDTO dockDTO)
-    {
-        if (dockDTO.Name is null)
-            throw new InvalidOperationException("Dock.Name cannot be null");
-
-        if (dockDTO.Location is null)
-            throw new InvalidOperationException("Dock.Location cannot be null");
-
-        if (dockDTO.Length <= 0)
-            throw new ArgumentOutOfRangeException(nameof(dockDTO.Length), "Length must be greater than zero");
-
-        if (dockDTO.Depth <= 0)
-            throw new ArgumentOutOfRangeException(nameof(dockDTO.Depth), "Depth must be greater than zero");
-
-        if (dockDTO.MaxDraft <= 0)
-            throw new ArgumentOutOfRangeException(nameof(dockDTO.MaxDraft), "MaxDraft must be greater than zero");
-
-        if (dockDTO.VesselTypesAllowed == null || !dockDTO.VesselTypesAllowed.Any())
-            throw new InvalidOperationException("Dock.VesselTypesAllowed cannot be null or empty");
-
-        Dock dock = new Dock(dockDTO.Name, dockDTO.Location, dockDTO.Length, dockDTO.Depth, dockDTO.MaxDraft, dockDTO.VesselTypesAllowed);
-        return dock;
-    }
-
-
-    static public Dock UpdateToDomain(Dock dock, DockDTO dockDTO)
-    {
-        dock.ChangeName(dockDTO.Name!);
-        dock.ChangeLocation(dockDTO.Location!);
-        dock.ChangeLength(dockDTO.Length);
-        dock.ChangeDepth(dockDTO.Depth);
-        dock.ChangeMaxDraft(dockDTO.MaxDraft);
-        dock.ChangeVesselTypesAllowed(dockDTO.VesselTypesAllowed!);
-        return dock;
-    }
 }

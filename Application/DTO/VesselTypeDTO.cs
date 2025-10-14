@@ -5,6 +5,7 @@ using ShippingManagement.Domain.Vessels;
 
 public class VesselTypeDTO
 {
+    public long Id { get; set; }
     public string? Name { get; set; }
     public string? Description { get; set; }
     public int Capacity { get; set; }
@@ -14,8 +15,9 @@ public class VesselTypeDTO
 
     public VesselTypeDTO() { }
 
-    public VesselTypeDTO(string name, string description, int capacity, int maxRows, int maxBays, int maxTiers)
+    public VesselTypeDTO(long id,string name, string description, int capacity, int maxRows, int maxBays, int maxTiers)
     {
+        Id = id;
         Name = name;
         Description = description;
         Capacity = capacity;
@@ -28,7 +30,7 @@ public class VesselTypeDTO
     {
         try
         {
-            VesselTypeDTO vesselTypeDTO = new VesselTypeDTO(vesselType.Name!, vesselType.Description!, vesselType.Capacity, vesselType.MaxRows, vesselType.MaxBays, vesselType.MaxTiers);
+            VesselTypeDTO vesselTypeDTO = new VesselTypeDTO(vesselType.Id, vesselType.Name!, vesselType.Description!, vesselType.Capacity, vesselType.MaxRows, vesselType.MaxBays, vesselType.MaxTiers);
             return vesselTypeDTO;
         }
         catch (ArgumentOutOfRangeException ex)

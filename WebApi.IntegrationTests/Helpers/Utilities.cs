@@ -12,6 +12,7 @@ public static class Utilities
     {
         db.VesselTypes.AddRange(GetSeedingVesselTypesDataModel());
         db.Qualifications.AddRange(GetSeedingQualificationsDataModel());
+        db.Docks.AddRange(GetSeedingDocksDataModel(db.VesselTypes.ToList()));
         db.SaveChanges();
     }
 
@@ -19,6 +20,7 @@ public static class Utilities
     {
         db.VesselTypes.RemoveRange(db.VesselTypes);
         db.Qualifications.RemoveRange(db.Qualifications);
+        db.Docks.RemoveRange(db.Docks);
         InitializeDbForTests(db);
     }
 
@@ -38,6 +40,32 @@ public static class Utilities
         {
             new QualificationDataModel(new Qualification("QUAL1", "First Qualification", "Description for first qualification test")),
             new QualificationDataModel(new Qualification("QUAL2", "Second Qualification", "Description for second qualification test"))
+        };
+    }
+
+
+    public static List<DockDataModel> GetSeedingDocksDataModel(List<VesselTypeDataModel> vesselTypes)
+    {
+        return new List<DockDataModel>()
+        {
+            new DockDataModel
+            {
+                Name = "Dock A",
+                Location = "Port 1",
+                Length = 500,
+                Depth = 30,
+                MaxDraft = 15,
+                VesselTypesAllowed = new List<VesselTypeDataModel> { vesselTypes[0], vesselTypes[1] }
+            },
+            new DockDataModel
+            {
+                Name = "Dock B",
+                Location = "Port 2",
+                Length = 300,
+                Depth = 20,
+                MaxDraft = 10,
+                VesselTypesAllowed = new List<VesselTypeDataModel> { vesselTypes[1], vesselTypes[2] }
+            }
         };
     }
 }
