@@ -13,4 +13,6 @@ public interface IShippingManagementContext
     DbSet<VesselRecordDataModel> VesselRecords { get; set; }
 
     DbSet<QualificationDataModel> Qualifications { get; set; }
+
+    DbSet<StaffDataModel> Staffs { get; set; }
 }

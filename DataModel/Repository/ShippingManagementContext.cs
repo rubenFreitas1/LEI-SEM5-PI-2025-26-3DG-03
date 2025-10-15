@@ -21,13 +21,15 @@ public class ShippingManagementContext : DbContext
     public virtual DbSet<DockDataModel> Docks { get; set; } = null!;
 
     public virtual DbSet<VesselRecordDataModel> VesselRecords { get; set; } = null!;
+    public virtual DbSet<StaffDataModel> Staffs { get; set; } = null!;
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new VesselTypeConfiguration());
         modelBuilder.ApplyConfiguration(new DockConfiguration());
-
+        modelBuilder.ApplyConfiguration(new StaffConfiguration());
+        
         // necessário se Domain.Model.Colaborator fosse usado para persistência, e se pretendesse que os atributos/propriedades fossem privadas
 
         // var property = typeof(Colaborator).GetProperty("Name", BindingFlags.NonPublic | BindingFlags.Instance);

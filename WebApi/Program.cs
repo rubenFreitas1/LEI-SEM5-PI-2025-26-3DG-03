@@ -47,6 +47,10 @@ builder.Services.AddTransient<IDockFactory, DockFactory>();
 builder.Services.AddTransient<DockMapper>();
 builder.Services.AddTransient<DockService>();
 
+builder.Services.AddTransient<IStaffRepository, StaffRepository>();
+builder.Services.AddTransient<IStaffFactory, StaffFactory>();
+builder.Services.AddTransient<StaffMapper>();
+builder.Services.AddTransient<StaffService>();
 
 var app = builder.Build();
 

@@ -32,6 +32,11 @@ namespace Application.DTO
             return new Qualification(dto.Code!, dto.Name!, dto.Description!);
         }
 
+        public static IEnumerable<Qualification> ToDomain(IEnumerable<QualificationDTO> dto)
+        {
+            return dto.Select(dto => ToDomain(dto));
+        }
+
         public static void UpdateToDomain(Qualification q, QualificationDTO dto)
         {
 
