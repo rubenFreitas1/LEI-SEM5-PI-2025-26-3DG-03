@@ -17,7 +17,7 @@ public class StaffDataModel
     public IEnumerable<QualificationDataModel>? Qualification { get; set; }
 
     public StaffDataModel() { }
-    
+
     public StaffDataModel(Staff staff)
     {
         Id = staff.Id;

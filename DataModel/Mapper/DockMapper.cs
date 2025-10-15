@@ -42,7 +42,7 @@ public class DockMapper
         return dockDM;
     }
 
-    public async Task UpdateDataModelAsync(DockDataModel dockDM, Dock dock,DbContext  context)
+    public async Task UpdateDataModelAsync(DockDataModel dockDM, Dock dock, DbContext context)
     {
         dockDM.Name = dock.Name;
         dockDM.Location = dock.Location;

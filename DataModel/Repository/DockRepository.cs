@@ -139,31 +139,31 @@ public class DockRepository : GenericRepository<Dock>, IDockRepository
 
 
     public async Task<Dock?> Update(Dock dock, List<string> errorMessages)
-{
-    try
     {
-        DockDataModel? dockDM = await _context.Set<DockDataModel>()
-            .Include(d => d.VesselTypesAllowed)
-            .SingleOrDefaultAsync(d => d.Id == dock.Id);
-
-        if (dockDM == null)
+        try
         {
-            errorMessages.Add($"Dock with ID {dock.Id} not found.");
+            DockDataModel? dockDM = await _context.Set<DockDataModel>()
+                .Include(d => d.VesselTypesAllowed)
+                .SingleOrDefaultAsync(d => d.Id == dock.Id);
+
+            if (dockDM == null)
+            {
+                errorMessages.Add($"Dock with ID {dock.Id} not found.");
+                return null;
+            }
+
+            await _dockMapper.UpdateDataModelAsync(dockDM, dock, _context);
+
+            await _context.SaveChangesAsync();
+
+            return _dockMapper.ToDomain(dockDM);
+        }
+        catch (Exception ex)
+        {
+            errorMessages.Add($"An error occurred while updating the dock: {ex.Message}");
             return null;
         }
-
-        await _dockMapper.UpdateDataModelAsync(dockDM, dock, _context);
-
-        await _context.SaveChangesAsync();
-
-        return _dockMapper.ToDomain(dockDM);
     }
-    catch (Exception ex)
-    {
-        errorMessages.Add($"An error occurred while updating the dock: {ex.Message}");
-        return null;
-    }
-}
 
 
     public async Task<bool> DockExists(long id)

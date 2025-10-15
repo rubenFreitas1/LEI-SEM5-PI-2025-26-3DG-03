@@ -182,7 +182,7 @@ namespace WebApi.IntegrationTests.Tests
         [Theory]
         [InlineData("Dock A", "Port 2", 600, 35, 18, new[] { "Teste1", "Teste2" })]
         [InlineData("Dock B", "Port 1", 700, 40, 20, new[] { "Teste1" })]
-        public async Task PutDock_DuplicateLocation_ReturnsBadRequest(string name, string location, int length, int depth, int maxDraft, string[] vesselTypeNames)
+        public async Task PutDock_DuplicateLocation_ReturnsBadRequest(string name, string location, string[] vesselTypeNames)
         {
             var response = await _client.GetAsync($"/api/Dock/ByName/{name}");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

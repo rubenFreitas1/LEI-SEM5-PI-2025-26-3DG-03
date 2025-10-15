@@ -41,10 +41,10 @@ public class StaffDTO
 
         if (dto.Name is null)
             throw new InvalidOperationException("Name cannot be null.");
-        
+
         if (dto.Email is null)
             throw new InvalidOperationException("Email cannot be null.");
-        
+
         if (dto.Phone is null)
             throw new InvalidOperationException("Phone number cannot be null.");
 

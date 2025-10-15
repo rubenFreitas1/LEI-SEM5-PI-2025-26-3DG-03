@@ -124,7 +124,8 @@ public class DockService
         {
             errorMessages.Add("One or more vessel types are invalid.");
             return null;
-        }else if (vesselTypes.Count == 0)
+        }
+        else if (vesselTypes.Count == 0)
         {
             errorMessages.Add("At least one valid vessel type must be provided.");
             return null;

@@ -63,7 +63,7 @@ public class VesselTypeController : ControllerBase
     [HttpPut("Update/{id}")]
     public async Task<IActionResult> PutVesselType(long id, VesselTypeDTO vesselTypeDTO)
     {
-        
+
         bool wasUpdated = await _vesselTypeService.UpdateVesselType(id, vesselTypeDTO, _errorMessages);
         if (!wasUpdated && _errorMessages.Any())
         {

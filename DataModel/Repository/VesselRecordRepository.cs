@@ -111,7 +111,7 @@ public class VesselRecordRepository : GenericRepository<VesselRecord>, IVesselRe
         try
         {
             VesselRecordDataModel vesselRecordDM = _vrMapper.ToDataModel(vesselRecord);
-            var vesselType = await _context.Set<VesselTypeDataModel>().Where(vt=> vt.Id == vesselRecord.VesselType!.Id).FirstOrDefaultAsync();
+            var vesselType = await _context.Set<VesselTypeDataModel>().Where(vt => vt.Id == vesselRecord.VesselType!.Id).FirstOrDefaultAsync();
             vesselRecordDM.VesselType = vesselType;
             EntityEntry<VesselRecordDataModel> vesselRecordDM_EE = _context.Set<VesselRecordDataModel>().Add(vesselRecordDM);
             await _context.SaveChangesAsync();
@@ -160,9 +160,8 @@ public class VesselRecordRepository : GenericRepository<VesselRecord>, IVesselRe
         return await _context.Set<VesselRecordDataModel>().AnyAsync(v => v.Id == id);
     }
 }
-    
 
-        
-    
 
-    
+
+
+

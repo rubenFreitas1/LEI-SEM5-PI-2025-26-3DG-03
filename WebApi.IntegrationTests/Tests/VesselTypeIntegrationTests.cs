@@ -233,7 +233,7 @@ namespace WebApi.IntegrationTests.Tests
                 var returned = await getByIdResponse.Content.ReadFromJsonAsync<VesselTypeDTO>();
                 Assert.NotNull(returned);
                 Assert.Equal(vt.Name, returned.Name);
-            }       
+            }
         }
 
 

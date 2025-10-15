@@ -14,7 +14,7 @@ public class VesselTypeDTO
 
     public VesselTypeDTO() { }
 
-    public VesselTypeDTO(long id,string name, string description, int capacity, int maxRows, int maxBays, int maxTiers)
+    public VesselTypeDTO(long id, string name, string description, int capacity, int maxRows, int maxBays, int maxTiers)
     {
         Id = id;
         Name = name;
