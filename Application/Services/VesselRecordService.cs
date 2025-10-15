@@ -75,12 +75,7 @@ public class VesselRecordService
 
     public async Task<VesselRecordDTO?> AddVesselRecord(VesselRecordDTO vesselRecordDTO, List<string> errorMessages)
     {
-        VesselRecord? vesselRecord = await _vesselRecordRepository.GetVesselRecordByVesselNameAsync(vesselRecordDTO.VesselName!);
-        if (vesselRecord != null)
-        {
-            errorMessages.Add($"A vessel Record with the name '{vesselRecordDTO.VesselName}' already exists.");
-            return null;
-        }
+        VesselRecord? vesselRecord;
         VesselRecord? vesselRecordByIMO = await _vesselRecordRepository.GetVesselRecordByImoNumberAsync(vesselRecordDTO.IMONumber!);
         if (vesselRecordByIMO != null)
         {

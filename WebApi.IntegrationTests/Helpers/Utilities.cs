@@ -1,3 +1,4 @@
+using System.Data.Common;
 using DataModel.Model;
 using DataModel.Repository;
 using Domain.Model;
@@ -17,6 +18,9 @@ public static class Utilities
         var vesselTypes = db.VesselTypes.ToList();
         db.Docks.AddRange(GetSeedingDocksDataModel(vesselTypes));
         db.SaveChanges();
+
+        db.VesselRecords.AddRange(GetSeedingVesselRecordsDataModel(vesselTypes));
+        db.SaveChanges();
     }
 
     public static void ReinitializeDbForTests(ShippingManagementContext db)
@@ -34,6 +38,34 @@ public static class Utilities
             new VesselTypeDataModel(new VesselType("Teste1", "DescriptionTeste1", 100, 5,5,5)),
             new VesselTypeDataModel(new VesselType("Teste2", "DescriptionTeste2", 200, 10,10,10)),
             new VesselTypeDataModel(new VesselType("Teste3", "DescriptionTeste3", 300, 15,15,15))
+        };
+    }
+
+    public static List<VesselRecordDataModel> GetSeedingVesselRecordsDataModel(List<VesselTypeDataModel> vesselTypes)
+    {
+        return new List<VesselRecordDataModel>()
+        {
+            
+            new VesselRecordDataModel
+            {
+                IMONumber = "1234567",
+                VesselName = "Vessel One",
+                VesselType = vesselTypes[0],
+                Operator = "Operator A"
+            },
+            new VesselRecordDataModel{
+                IMONumber = "2345678",
+                VesselName = "Vessel Two",
+                VesselType = vesselTypes[1],
+                Operator = "Operator B"
+            },
+            new VesselRecordDataModel
+            {
+                IMONumber = "3456789",
+                VesselName = "Vessel Three",
+                VesselType = vesselTypes[2],
+                Operator = "Operator C"
+            }
         };
     }
 

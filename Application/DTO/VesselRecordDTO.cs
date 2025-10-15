@@ -5,6 +5,7 @@ using Domain.Model;
 public class VesselRecordDTO
 {
 
+    public long Id { get; set; }
     public string? IMONumber { get; set; }
 
     public string? VesselName { get; set; }
