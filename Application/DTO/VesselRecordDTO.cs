@@ -29,6 +29,7 @@ public class VesselRecordDTO
         try
         {
             VesselRecordDTO vesselRecordDTO = new VesselRecordDTO(vesselRecord.IMONumber!, vesselRecord.VesselName!, vesselRecord.VesselType!.Name!, vesselRecord.Operator!);
+            vesselRecordDTO.Id = vesselRecord.Id;
             return vesselRecordDTO;
         }
         catch (ArgumentOutOfRangeException ex)

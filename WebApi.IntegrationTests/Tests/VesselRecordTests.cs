@@ -48,11 +48,11 @@ namespace WebApi.IntegrationTests.Tests
         }
 
         [Theory]
-        [InlineData("1234567")]
-        [InlineData("2345678")]
+        [InlineData("9811000")]
+        [InlineData("9241061")]
         public async Task GetVesselRecordByImoNumber_Existent_ReturnsVesselRecord(string imoNumber)
         {
-            var response = await _client.GetAsync($"/api/VesselRecord/imo/{imoNumber}");
+            var response = await _client.GetAsync($"/api/VesselRecord/ByIMONumber/{imoNumber}");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
@@ -61,7 +61,7 @@ namespace WebApi.IntegrationTests.Tests
         [InlineData("bbb")]
         public async Task GetVesselRecordByName_NonExistent_ReturnsNotFound(string vesselName)
         {
-            var response = await _client.GetAsync($"/api/VesselRecord/name/{vesselName}");
+            var response = await _client.GetAsync($"/api/VesselRecord/ByVesselName/{vesselName}");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
@@ -70,17 +70,17 @@ namespace WebApi.IntegrationTests.Tests
         [InlineData("Vessel Two")]
         public async Task GetVesselRecordByName_Existent_ReturnsVesselRecord(string vesselName)
         {
-            var response = await _client.GetAsync($"/api/VesselRecord/name/{vesselName}");
+            var response = await _client.GetAsync($"/api/VesselRecord/ByVesselName/{vesselName}");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Theory]
         [InlineData("op1")]
         [InlineData("op2")]
-        public async Task GetVesselRecordsByOperator_NonExistent_ReturnsEmptyList(string operatorName)
+        public async Task GetVesselRecordsByOperator_NonExistent_ReturnsNotFound(string operatorName)
         {
-            var response = await _client.GetAsync($"/api/VesselRecord/operator/{operatorName}");
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var response = await _client.GetAsync($"/api/VesselRecord/ByOperator/{operatorName}");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Theory]
@@ -88,7 +88,7 @@ namespace WebApi.IntegrationTests.Tests
         [InlineData("Operator B")]
         public async Task GetVesselRecordsByOperator_Existent_ReturnsVesselRecords(string operatorName)
         {
-            var response = await _client.GetAsync($"/api/VesselRecord/operator/{operatorName}");
+            var response = await _client.GetAsync($"/api/VesselRecord/ByOperator/{operatorName}");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
@@ -110,7 +110,7 @@ namespace WebApi.IntegrationTests.Tests
 
             foreach (var record in records)
             {
-                var getByIdResponse = await _client.GetAsync($"/api/VesselRecord/{record.Id}");
+                var getByIdResponse = await _client.GetAsync($"/api/VesselRecord/ByID/{record.Id}");
                 Assert.Equal(HttpStatusCode.OK, getByIdResponse.StatusCode);
                 var recordById = await getByIdResponse.Content.ReadFromJsonAsync<VesselRecordDTO>();
                 Assert.NotNull(recordById);
@@ -120,11 +120,11 @@ namespace WebApi.IntegrationTests.Tests
         }
 
         [Theory]
-        [InlineData("1234567", "New Vessel Name", "Vessel Type 1", "New Operator")]
-        [InlineData("2345678", "Another Vessel Name", "Vessel Type 2", "Another Operator")]
+        [InlineData("9811000", "New Vessel Name", "Teste1", "New Operator")]
+        [InlineData("9241061", "Another Vessel Name", "Teste2", "Another Operator")]
         public async Task PutVesselRecord_UpdatesSuccessfully(string imoNumber, string newVesselName, string newVesselTypeName, string newOperator)
         {
-            var response = await _client.GetAsync($"/api/VesselRecord/imo/{imoNumber}");
+            var response = await _client.GetAsync($"/api/VesselRecord/ByIMONumber/{imoNumber}");
             response.EnsureSuccessStatusCode();
             var vesselRecord = await response.Content.ReadFromJsonAsync<VesselRecordDTO>();
             Assert.NotNull(vesselRecord);
@@ -133,10 +133,10 @@ namespace WebApi.IntegrationTests.Tests
             vesselRecord.VesselTypeName = newVesselTypeName;
             vesselRecord.Operator = newOperator;
 
-            var putResponse = await _client.PutAsJsonAsync($"/api/VesselRecord/{vesselRecord.Id}", vesselRecord);
+            var putResponse = await _client.PutAsJsonAsync($"/api/VesselRecord/Update/{imoNumber}", vesselRecord);
             Assert.Equal(HttpStatusCode.OK, putResponse.StatusCode);
 
-            var getUpdatedResponse = await _client.GetAsync($"/api/VesselRecord/{vesselRecord.Id}");
+            var getUpdatedResponse = await _client.GetAsync($"/api/VesselRecord/ByID/{vesselRecord.Id}");
             if (getUpdatedResponse.StatusCode != HttpStatusCode.OK)
             {
                 var errorContent = await getUpdatedResponse.Content.ReadAsStringAsync();
@@ -151,13 +151,13 @@ namespace WebApi.IntegrationTests.Tests
 
 
         [Theory]
-        [InlineData("123456", "Valid Name", "Vessel Type 1", "Valid Operator")] // IMO number too short
-        [InlineData("12345678", "Valid Name", "Vessel Type 1", "Valid Operator")] // IMO number too long
-        [InlineData("12345A7", "Valid Name", "Vessel Type 1", "Valid Operator")] // IMO number with non-digit
-        [InlineData("1234567", "", "Vessel Type 1", "Valid Operator")] // Empty vessel name
+        [InlineData("123456", "Valid Name", "Teste1", "Valid Operator")] // IMO number too short
+        [InlineData("12345678", "Valid Name", "Teste1", "Valid Operator")] // IMO number too long
+        [InlineData("12345A7", "Valid Name", "Teste1", "Valid Operator")] // IMO number with non-digit
+        [InlineData("1234567", "", "Teste1", "Valid Operator")] // Empty vessel name
         [InlineData("1234567", "Valid Name", "", "Valid Operator")] // Empty vessel type
-        [InlineData("1234567", "Valid Name", "Vessel Type 1", "")] // Empty operator
-        [InlineData("1234560", "Valid Name", "Vessel Type 1", "Valid Operator")] // Invalid IMO number (check digit)
+        [InlineData("1234567", "Valid Name", "Teste1", "")] // Empty operator
+        [InlineData("1234560", "Valid Name", "Teste1", "Valid Operator")] // Invalid IMO number (check digit)
         public async Task PutVesselRecord_InvalidData_ReturnsBadRequest(string imoNumber, string vesselName, string vesselTypeName, string operatorName)
         {
             var response = await _client.GetAsync($"/api/VesselRecord/imo/{imoNumber}");
@@ -178,30 +178,25 @@ namespace WebApi.IntegrationTests.Tests
             vesselRecord.VesselTypeName = vesselTypeName;
             vesselRecord.Operator = operatorName;
 
-            var putResponse = await _client.PutAsJsonAsync($"/api/VesselRecord/{vesselRecord.Id}", vesselRecord);
+            var putResponse = await _client.PutAsJsonAsync($"/api/VesselRecord/Update/{imoNumber}", vesselRecord);
             Assert.Equal(HttpStatusCode.BadRequest, putResponse.StatusCode);
         }
 
 
         [Theory]
-        [InlineData("1234567", "Vessel One", "Vessel Type 1", "Operator A")]
-        [InlineData("2345678", "Vessel Two", "Vessel Type 2", "Operator B")]
-        public async Task PutVesselRecord_DuplicateImoNumber_ReturnsBadRequest(string imoNumber, string vesselName, string vesselTypeName, string operatorName)
+        [InlineData("9811000", "9241061")] // Try to change first vessel's IMO to second vessel's IMO
+        [InlineData("9241061", "9744001")] // Try to change second vessel's IMO to third vessel's IMO
+        public async Task PutVesselRecord_ChangeImoNumber_ReturnsBadRequest(string originalImo, string newImo)
         {
-            var response = await _client.GetAsync($"/api/VesselRecord/imo/{imoNumber}");
+            var response = await _client.GetAsync($"/api/VesselRecord/ByIMONumber/{originalImo}");
             response.EnsureSuccessStatusCode();
             var vesselRecord = await response.Content.ReadFromJsonAsync<VesselRecordDTO>();
             Assert.NotNull(vesselRecord);
 
-            var newVesselRecord = new VesselRecordDTO
-            {
-                IMONumber = imoNumber,
-                VesselName = "New Vessel",
-                VesselTypeName = "Vessel Type 1",
-                Operator = "New Operator"
-            };
+            // Try to change the IMO number, which should not be allowed
+            vesselRecord.IMONumber = newImo;
 
-            var putResponse = await _client.PutAsJsonAsync($"/api/VesselRecord/{vesselRecord.Id}", newVesselRecord);
+            var putResponse = await _client.PutAsJsonAsync($"/api/VesselRecord/Update/{originalImo}", vesselRecord);
             Assert.Equal(HttpStatusCode.BadRequest, putResponse.StatusCode);
         }
 
@@ -210,9 +205,9 @@ namespace WebApi.IntegrationTests.Tests
         {
             var newVesselRecord = new VesselRecordDTO
             {
-                IMONumber = "3456789",
+                IMONumber = "9876543",
                 VesselName = "New Vessel",
-                VesselTypeName = "Vessel Type 1",
+                VesselTypeName = "Teste1",
                 Operator = "New Operator"
             };
 
@@ -232,10 +227,10 @@ namespace WebApi.IntegrationTests.Tests
         [InlineData("123456", "Valid Name", "Vessel Type 1", "Valid Operator")] // IMO number too short
         [InlineData("12345678", "Valid Name", "Vessel Type 1", "Valid Operator")] // IMO number too long
         [InlineData("12345A7", "Valid Name", "Vessel Type 1", "Valid Operator")] // IMO number with non-digit
-        [InlineData("1234567", "", "Vessel Type 1", "Valid Operator")] // Empty vessel name
-        [InlineData("1234567", "Valid Name", "", "Valid Operator")] // Empty vessel type
-        [InlineData("1234567", "Valid Name", "Vessel Type 1", "")] // Empty operator
-        [InlineData("1234560", "Valid Name", "Vessel Type 1", "Valid Operator")] // Invalid IMO number (check digit)
+        [InlineData("9074729", "", "Vessel Type 1", "Valid Operator")] // Empty vessel name
+        [InlineData("9074729", "Valid Name", "", "Valid Operator")] // Empty vessel type
+        [InlineData("9074729", "Valid Name", "Vessel Type 1", "")] // Empty operator
+        [InlineData("9074729", "Valid Name", "Vessel Type 1", "Valid Operator")] // Invalid IMO number (check digit)
         public async Task PostVesselRecord_InvalidData_ReturnsBadRequest(string imoNumber, string vesselName, string vesselTypeName, string operatorName)
         {
             var newVesselRecord = new VesselRecordDTO
@@ -255,7 +250,7 @@ namespace WebApi.IntegrationTests.Tests
         {
             var newVesselRecord = new VesselRecordDTO
             {
-                IMONumber = "4567890",
+                IMONumber = "8814275",
                 VesselName = "New Vessel",
                 VesselTypeName = "NonExistentType",
                 Operator = "New Operator"
@@ -267,8 +262,8 @@ namespace WebApi.IntegrationTests.Tests
 
 
         [Theory]
-        [InlineData("1234567", "New Vessel Name", "Vessel Type 1", "New Operator")]
-        [InlineData("2345678", "Another Vessel Name", "Vessel Type 2", "Another Operator")]
+        [InlineData("9700005", "New Vessel Name", "Teste1", "New Operator")]
+        [InlineData("9501112", "Another Vessel Name", "Teste2", "Another Operator")]
         public async Task PostVesselRecord_ThenGetByImoNumber_ReturnsCreatedAndOk(string imoNumber, string vesselName, string vesselTypeName, string operatorName)
         {
             var newVesselRecord = new VesselRecordDTO
@@ -282,7 +277,7 @@ namespace WebApi.IntegrationTests.Tests
             var postResponse = await _client.PostAsJsonAsync("/api/VesselRecord", newVesselRecord);
             Assert.Equal(HttpStatusCode.Created, postResponse.StatusCode);
 
-            var getResponse = await _client.GetAsync($"/api/VesselRecord/imo/{imoNumber}");
+            var getResponse = await _client.GetAsync($"/api/VesselRecord/ByIMONumber/{imoNumber}");
             Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
 
             var fetchedRecord = await getResponse.Content.ReadFromJsonAsync<VesselRecordDTO>();
@@ -295,8 +290,8 @@ namespace WebApi.IntegrationTests.Tests
         }
 
         [Theory]
-        [InlineData("1234567", "New Vessel Name", "Vessel Type 1", "New Operator")]
-        [InlineData("2345678", "Another Vessel Name", "Vessel Type 2", "Another Operator")]
+        [InlineData("9811000", "New Vessel Name", "Teste1", "New Operator")]
+        [InlineData("9241061", "Another Vessel Name", "Teste2", "Another Operator")]
         public async Task PostVesselRecord_DuplicateImoNumber_ReturnsBadRequest(string imoNumber, string vesselName, string vesselTypeName, string operatorName)
         {
             var newVesselRecord = new VesselRecordDTO
@@ -308,7 +303,7 @@ namespace WebApi.IntegrationTests.Tests
             };
 
             var postResponse = await _client.PostAsJsonAsync("/api/VesselRecord", newVesselRecord);
-            Assert.Equal(HttpStatusCode.Created, postResponse.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, postResponse.StatusCode);
         }
     }
 }

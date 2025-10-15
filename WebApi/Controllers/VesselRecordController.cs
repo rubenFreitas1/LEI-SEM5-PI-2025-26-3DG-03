@@ -39,7 +39,7 @@ public class VesselRecordController : ControllerBase
     }
 
     [HttpGet("ByID/{id}")]
-    public async Task<ActionResult<VesselRecordDTO>> GetVesselRecordById(int id)
+    public async Task<ActionResult<VesselRecordDTO>> GetVesselRecordById(long id)
     {
         VesselRecordDTO? vesselRecordDTO = await _vesselRecordService.GetVesselRecordById(id);
         if (vesselRecordDTO == null)

@@ -15,8 +15,8 @@ namespace Domain.Tests
         }
 
         [Theory]
-        [InlineData("1234567", "VesselOne", "OperatorA")]
-        [InlineData("7654321", "VesselTwo", "OperatorB")]
+        [InlineData("9241061", "VesselOne", "OperatorA")]
+        [InlineData("9744001", "VesselTwo", "OperatorB")]
 
         public void Constructor_ValidParameters_ShouldCreateVesselRecord(string imoNumber, string vesselName, string operatorName)
         {

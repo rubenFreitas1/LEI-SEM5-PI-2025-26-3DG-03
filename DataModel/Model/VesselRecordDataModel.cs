@@ -20,6 +20,8 @@ public class VesselRecordDataModel
     [Required]
     public string? Operator { get; set; }
 
+    public DateTime LastModifiedAt { get; set; }
+
     public VesselRecordDataModel() { }
 
     public VesselRecordDataModel(VesselRecord vesselRecord)
@@ -29,6 +31,7 @@ public class VesselRecordDataModel
         VesselName = vesselRecord.VesselName;
         VesselType = new VesselTypeDataModel(vesselRecord.VesselType!);
         Operator = vesselRecord.Operator;
+        LastModifiedAt = vesselRecord.LastModifiedAt;
     }
 
 }

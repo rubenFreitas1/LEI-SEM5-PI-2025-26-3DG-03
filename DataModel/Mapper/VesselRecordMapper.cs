@@ -24,6 +24,7 @@ public class VesselRecordMapper
 
         VesselRecord vesselRecordDomain = _vesselRecordFactory.NewVesselRecord(vesselRecordDM.IMONumber!, vesselRecordDM.VesselName!, vesselType!, vesselRecordDM.Operator!);
         vesselRecordDomain.Id = vesselRecordDM.Id;
+        vesselRecordDomain.LastModifiedAt = vesselRecordDM.LastModifiedAt;
         return vesselRecordDomain;
     }
 
@@ -42,6 +43,7 @@ public class VesselRecordMapper
     public VesselRecordDataModel ToDataModel(VesselRecord vesselRecord)
     {
         VesselRecordDataModel vesselRecordDataModel = new VesselRecordDataModel(vesselRecord);
+        vesselRecordDataModel.LastModifiedAt = vesselRecord.LastModifiedAt;
         return vesselRecordDataModel;
     }
 
@@ -54,6 +56,7 @@ public class VesselRecordMapper
             vesselRecordDM.VesselType = existingVesselType;
         }
         vesselRecordDM.Operator = vesselRecord.Operator;
+        vesselRecordDM.LastModifiedAt = vesselRecord.LastModifiedAt;
     }
 }
 

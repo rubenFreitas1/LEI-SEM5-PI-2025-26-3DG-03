@@ -16,6 +16,8 @@ public class VesselRecord
 
     public string? Operator { get; private set; }
 
+    public DateTime LastModifiedAt { get; set; }
+
 
     private VesselRecord() { }
 
@@ -49,6 +51,7 @@ public class VesselRecord
         VesselName = vesselName;
         VesselType = vesselType;
         Operator = operatorName;
+        LastModifiedAt = DateTime.UtcNow;
     }
     
     public bool CheckImoNumber(string imoNumber)
@@ -76,6 +79,7 @@ public class VesselRecord
         }
 
         VesselName = newVesselName;
+        LastModifiedAt = DateTime.UtcNow;
     }
 
     public void ChangeVesselType(VesselType newVesselType)
@@ -86,6 +90,7 @@ public class VesselRecord
         }
 
         VesselType = newVesselType;
+        LastModifiedAt = DateTime.UtcNow;
     }
 
     public void ChangeOperator(string newOperator)
@@ -96,6 +101,7 @@ public class VesselRecord
         }
 
         Operator = newOperator;
+        LastModifiedAt = DateTime.UtcNow;
     }
 
 
