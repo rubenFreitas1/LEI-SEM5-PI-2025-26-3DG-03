@@ -11,5 +11,5 @@ using Application.Services;
 
 public class RepresentativeController : ControllerBase
 {
-    
+
 }

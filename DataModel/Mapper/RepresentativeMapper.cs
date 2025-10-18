@@ -55,7 +55,7 @@ public class RepresentativeMapper
         representativeDM.Email = representative.Email;
         representativeDM.PhoneNumber = representative.PhoneNumber;
         representativeDM.LastModifiedAt = representative.LastModifiedAt;
-        
+
 
         //tirar isto quando meter o await do organization
         await Task.CompletedTask;
