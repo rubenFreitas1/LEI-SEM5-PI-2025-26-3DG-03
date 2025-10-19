@@ -87,7 +87,8 @@ public class RepresentativeService
     public async Task<RepresentativeDTO?> GetRepresentativeByOrganizationName(string organizationName)
     {
         ShippingAgentOrganization? organization = await _shippingAgentOrganizationRepository.GetShippingAgentOrganizationByLegalNameAsync(organizationName);
-        if (organization == null){
+        if (organization == null)
+        {
             return null;
         }
         Representative? representative = await _representativeRepository.GetRepresentativeByOrganizationAsync(organization);

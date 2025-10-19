@@ -21,7 +21,7 @@ public class ShippingAgentOrganizationWithRepresentativeDTO
 
     public ShippingAgentOrganizationWithRepresentativeDTO(
         string code, string legalName, string alternativeName, string address, string taxNumber,
-        string representativeName, string representativeCitizenId, string representativeNationality, 
+        string representativeName, string representativeCitizenId, string representativeNationality,
         string representativeEmail, string representativePhoneNumber)
     {
         Code = code;

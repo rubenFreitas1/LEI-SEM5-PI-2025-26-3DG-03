@@ -203,7 +203,7 @@ public class RepresentativeRepository : GenericRepository<Representative>, IRepr
             var representativeDataModel = await _context.Set<RepresentativeDataModel>()
             .Include(r => r.Organization)
             .SingleOrDefaultAsync(r => r.Id == representative.Id);
-            
+
             if (representativeDataModel == null)
             {
                 errorMessages.Add("Representative not found.");

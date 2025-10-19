@@ -126,7 +126,7 @@ public class RepresentativeController : ControllerBase
         RepresentativeDTO? createdRepresentative = await _representativeService.AddRepresentative(representativeDTO, _errorMessages);
         if (createdRepresentative == null && _errorMessages.Any())
         {
-            if (_errorMessages.Any(e => e.Contains("already exists", StringComparison.OrdinalIgnoreCase) ))
+            if (_errorMessages.Any(e => e.Contains("already exists", StringComparison.OrdinalIgnoreCase)))
             {
                 return Conflict(_errorMessages);
             }
@@ -135,5 +135,5 @@ public class RepresentativeController : ControllerBase
         return CreatedAtAction(nameof(GetRepresentativeById), new { id = createdRepresentative!.Id }, createdRepresentative);
     }
 
-    
+
 }

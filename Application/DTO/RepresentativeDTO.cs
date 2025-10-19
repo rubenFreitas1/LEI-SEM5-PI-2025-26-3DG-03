@@ -34,7 +34,7 @@ public class RepresentativeDTO
     {
         try
         {
-            RepresentativeDTO representativeDTO = new RepresentativeDTO(representative.Organization!.LegalName! ,representative.Name!, representative.CitizenId!, representative.Nationality!, representative.Email!, representative.PhoneNumber!);
+            RepresentativeDTO representativeDTO = new RepresentativeDTO(representative.Organization!.LegalName!, representative.Name!, representative.CitizenId!, representative.Nationality!, representative.Email!, representative.PhoneNumber!);
             representativeDTO.Id = representative.Id;
             return representativeDTO;
         }

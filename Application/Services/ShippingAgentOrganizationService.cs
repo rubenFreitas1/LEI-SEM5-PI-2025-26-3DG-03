@@ -14,7 +14,7 @@ public class ShippingAgentOrganizationService
     private readonly ShippingManagementContext _context;
 
     public ShippingAgentOrganizationService(
-        IShippingAgentOrganizationRepository shippingAgentOrganizationRepository, 
+        IShippingAgentOrganizationRepository shippingAgentOrganizationRepository,
         RepresentativeService representativeService,
         ShippingManagementContext context)
     {
@@ -95,7 +95,7 @@ public class ShippingAgentOrganizationService
         }
         return null;
     }
-    
+
     public async Task<ShippingAgentOrganizationWithRepresentativeDTO?> AddShippingAgentOrganizationWithRepresentative(
         ShippingAgentOrganizationWithRepresentativeDTO compositeDTO, List<string> errorMessages)
     {
@@ -134,10 +134,10 @@ public class ShippingAgentOrganizationService
 
             ShippingAgentOrganization shippingAgentOrganization = ShippingAgentOrganizationDTO.ToDomain(organizationDTO);
             ShippingAgentOrganization savedOrganization = await _shippingAgentOrganizationRepository.AddShippingAgentOrganization(shippingAgentOrganization);
-           
+
             representativeDTO.OrganizationName = savedOrganization.LegalName;
             RepresentativeDTO? savedRepresentativeDTO = await _representativeService.AddRepresentative(representativeDTO, errorMessages);
-            
+
             if (savedRepresentativeDTO == null)
             {
                 errorMessages.Add("Failed to create representative for the organization. Organization was created successfully.");
