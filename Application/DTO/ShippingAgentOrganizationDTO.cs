@@ -34,7 +34,7 @@ public class ShippingAgentOrganizationDTO
     {
         try
         {
-            ShippingAgentOrganizationDTO organizationDTO = new ShippingAgentOrganizationDTO(organization.Id, organization.Code!, organization.LegalName!, organization.AlternativeName!, organization.Address!, organization.TaxNumeber!);
+            ShippingAgentOrganizationDTO organizationDTO = new ShippingAgentOrganizationDTO(organization.Id, organization.Code!, organization.LegalName!, organization.AlternativeName!, organization.Address!, organization.TaxNumber!);
             organizationDTO.LastModifiedAt = organization.LastModifiedAt;
             return organizationDTO;
         }

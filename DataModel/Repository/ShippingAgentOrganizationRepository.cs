@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Domain.Model;
 
-/*
+
 public class ShippingAgentOrganizationRepository : GenericRepository<ShippingAgentOrganization>, IShippingAgentOrganizationRepository
 {
     ShippingAgentOrganizationMapper _saMapper;
@@ -23,7 +23,7 @@ public class ShippingAgentOrganizationRepository : GenericRepository<ShippingAge
         try
         {
             IEnumerable<ShippingAgentOrganizationDataModel> saDataModels = await _context.Set<ShippingAgentOrganizationDataModel>()
-                    .ToListAsync();
+            .ToListAsync();
             IEnumerable<ShippingAgentOrganization> shippingAgents = _saMapper.ToDomain(saDataModels);
             return shippingAgents;
         }
@@ -71,23 +71,84 @@ public class ShippingAgentOrganizationRepository : GenericRepository<ShippingAge
         }
     }
 
-    public async Task<IEnumerable<ShippingAgentOrganization?>> GetShippingAgentOrganizationByLegalNameAsync(string legalName)
+    public async Task<ShippingAgentOrganization?> GetShippingAgentOrganizationByLegalNameAsync(string legalName)
     {
         try
         {
-            IEnumerable<ShippingAgentOrganizationDataModel>? saDMs = await _context.Set<ShippingAgentOrganizationDataModel>()
-            .Where(sa => sa.LegalName == legalName)
-            .ToListAsync();
-            IEnumerable<ShippingAgentOrganization> shippingAgents = _saMapper.ToDomain(saDMs);
-            return shippingAgents;
+            ShippingAgentOrganizationDataModel? saDM = await _context.Set<ShippingAgentOrganizationDataModel>()
+            .SingleOrDefaultAsync(sa => sa.LegalName == legalName);
+            if (saDM != null)
+            {
+                ShippingAgentOrganization sa = _saMapper.ToDomain(saDM);
+                return sa;
+            }
+            return null;
         }
         catch
         {
-            throw;
+            return null; throw;
         }
     }
 
-    public async Task<ShippingAgentOrganization> AddShippingAgentOrganizationAsync(ShippingAgentOrganization sa)
+    public async Task<ShippingAgentOrganization?> GetShippingAgentOrganizationByAlternativeNameAsync(string altarnativeName)
+    {
+        try
+        {
+            ShippingAgentOrganizationDataModel? saDM = await _context.Set<ShippingAgentOrganizationDataModel>()
+            .SingleOrDefaultAsync(sa => sa.AlternativeName == altarnativeName);
+            if (saDM != null)
+            {
+                ShippingAgentOrganization sa = _saMapper.ToDomain(saDM);
+                return sa;
+            }
+            return null;
+        }
+        catch
+        {
+            return null; throw;
+        }
+    }
+
+    public async Task<ShippingAgentOrganization?> GetShippingAgentOrganizationByTaxNumberAsync(string taxNumber)
+    {
+        try
+        {
+            ShippingAgentOrganizationDataModel? saDM = await _context.Set<ShippingAgentOrganizationDataModel>()
+            .SingleOrDefaultAsync(sa => sa.TaxNumber == taxNumber);
+            if (saDM != null)
+            {
+                ShippingAgentOrganization sa = _saMapper.ToDomain(saDM);
+                return sa;
+            }
+            return null;
+        }
+        catch
+        {
+            return null; throw;
+        }
+    }
+
+    public async Task<ShippingAgentOrganization?> GetShippingAgentOrganizationByAddressAsync(string address)
+    {
+        try
+        {
+            ShippingAgentOrganizationDataModel? saDM = await _context.Set<ShippingAgentOrganizationDataModel>()
+            .SingleOrDefaultAsync(sa => sa.Address == address);
+            if (saDM != null)
+            {
+                ShippingAgentOrganization sa = _saMapper.ToDomain(saDM);
+                return sa;
+            }
+            return null;
+        }
+        catch
+        {
+            return null; throw;
+        }
+    }
+
+
+    public async Task<ShippingAgentOrganization> AddShippingAgentOrganization(ShippingAgentOrganization sa)
     {
         try
         {
@@ -116,7 +177,7 @@ public class ShippingAgentOrganizationRepository : GenericRepository<ShippingAge
                 errorMessages.Add("Shipping Agent Organization not found.");
                 return null;
             }
-            _saMapper.UpdateDataModelFromDomain(shippingAgentDataModel, sa);
+            _saMapper.UpdateDataModelAsync(shippingAgentDataModel, sa, _context);
             await _context.SaveChangesAsync();
             return _saMapper.ToDomain(shippingAgentDataModel);
         }
@@ -132,8 +193,8 @@ public class ShippingAgentOrganizationRepository : GenericRepository<ShippingAge
         }
     }
 
-    public async Task<bool> ShippingAgentExists(long id)
+    public async Task<bool> ShippingAgentOrganizationExists(long id)
     {
         return await _context.Set<ShippingAgentOrganizationDataModel>().AnyAsync(sa => sa.Id == id);
     }
-}*/
+}

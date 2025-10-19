@@ -14,6 +14,12 @@ public interface IRepresentativeRepository : IGenericRepository<Representative>
 
     Task<Representative?> GetRepresentativeByPhoneNumberAsync(string phoneNumber);
 
+    Task<Representative?> GetRepresentativeByNameAsync(string name);
+
+    Task<Representative?> GetRepresentativeByNationalityAsync(string nationality);
+
+    Task<Representative?> GetRepresentativeByOrganizationAsync(ShippingAgentOrganization organization);
+
     Task<Representative> AddRepresentative(Representative representative);
 
     Task<Representative?> Update(Representative representative, List<string> errorMessages);

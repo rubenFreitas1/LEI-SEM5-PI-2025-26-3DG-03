@@ -6,6 +6,8 @@ public class RepresentativeDTO
 {
     public long Id { get; set; }
 
+    public string? OrganizationName { get; set; }
+
     public string? Name { get; set; }
 
     public string? CitizenId { get; set; }
@@ -18,8 +20,9 @@ public class RepresentativeDTO
 
     public RepresentativeDTO() { }
 
-    public RepresentativeDTO(string name, string citizenId, string nationality, string email, string phoneNumber)
+    public RepresentativeDTO(string organizationName, string name, string citizenId, string nationality, string email, string phoneNumber)
     {
+        OrganizationName = organizationName;
         Name = name;
         CitizenId = citizenId;
         Nationality = nationality;
@@ -31,7 +34,7 @@ public class RepresentativeDTO
     {
         try
         {
-            RepresentativeDTO representativeDTO = new RepresentativeDTO(representative.Name!, representative.CitizenId!, representative.Nationality!, representative.Email!, representative.PhoneNumber!);
+            RepresentativeDTO representativeDTO = new RepresentativeDTO(representative.Organization!.LegalName! ,representative.Name!, representative.CitizenId!, representative.Nationality!, representative.Email!, representative.PhoneNumber!);
             representativeDTO.Id = representative.Id;
             return representativeDTO;
         }

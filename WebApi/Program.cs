@@ -62,6 +62,16 @@ builder.Services.AddTransient<IStorageAreaFactory, StorageAreaFactory>();
 builder.Services.AddTransient<StorageAreaMapper>();
 builder.Services.AddTransient<StorageAreaService>();
 
+builder.Services.AddTransient<IShippingAgentOrganizationRepository, ShippingAgentOrganizationRepository>();
+builder.Services.AddTransient<IShippingAgentOrganizationFactory, ShippingAgentOrganizationFactory>();
+builder.Services.AddTransient<ShippingAgentOrganizationMapper>();
+builder.Services.AddTransient<ShippingAgentOrganizationService>();
+
+builder.Services.AddTransient<IRepresentativeRepository, RepresentativeRepository>();
+builder.Services.AddTransient<IRepresentativeFactory, RepresentativeFactory>();
+builder.Services.AddTransient<RepresentativeMapper>();
+builder.Services.AddTransient<RepresentativeService>();
+
 var app = builder.Build();
 
 Utilities.InitializeDbForApp(app);

@@ -4,5 +4,5 @@ using Domain.Model;
 
 public interface IRepresentativeFactory
 {
-    Representative NewRepresentative(string name, string citizenId, string nationality, string email, string phoneNumber);
+    Representative NewRepresentative(ShippingAgentOrganization organization, string name, string citizenId, string nationality, string email, string phoneNumber);
 }

@@ -10,14 +10,22 @@ public class RepresentativeMapper
 {
     private IRepresentativeFactory _representativeFactory;
 
-    public RepresentativeMapper(IRepresentativeFactory representativeFactory)
+    private ShippingAgentOrganizationMapper _organizationMapper;
+    public RepresentativeMapper(IRepresentativeFactory representativeFactory, ShippingAgentOrganizationMapper organizationMapper)
     {
         _representativeFactory = representativeFactory;
+        _organizationMapper = organizationMapper;
     }
 
     public Representative ToDomain(RepresentativeDataModel representativeDM)
     {
+        ShippingAgentOrganization? shippingAgentOrganization = null;
+        if (representativeDM.Organization != null)
+        {
+            shippingAgentOrganization = _organizationMapper.ToDomain(representativeDM.Organization);
+        }
         Representative representativeDomain = _representativeFactory.NewRepresentative(
+            shippingAgentOrganization!,
             representativeDM.Name!,
             representativeDM.CitizenId!,
             representativeDM.Nationality!,
@@ -49,6 +57,11 @@ public class RepresentativeMapper
 
     public async Task UpdateDataModelAsync(RepresentativeDataModel representativeDM, Representative representative, DbContext context)
     {
+        var existingOrganization = await context.Set<ShippingAgentOrganizationDataModel>().FindAsync(representative.Organization!.Id);
+        if (existingOrganization != null)
+        {
+            representativeDM.Organization = existingOrganization;
+        }
         representativeDM.Name = representative.Name;
         representativeDM.CitizenId = representative.CitizenId;
         representativeDM.Nationality = representative.Nationality;
@@ -56,8 +69,5 @@ public class RepresentativeMapper
         representativeDM.PhoneNumber = representative.PhoneNumber;
         representativeDM.LastModifiedAt = representative.LastModifiedAt;
 
-
-        //tirar isto quando meter o await do organization
-        await Task.CompletedTask;
     }
 }

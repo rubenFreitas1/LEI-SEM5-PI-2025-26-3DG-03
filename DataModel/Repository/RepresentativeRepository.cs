@@ -21,7 +21,8 @@ public class RepresentativeRepository : GenericRepository<Representative>, IRepr
         try
         {
             IEnumerable<RepresentativeDataModel> representativeDataModels = await _context.Set<RepresentativeDataModel>()
-                .ToListAsync();
+            .Include(r => r.Organization)
+            .ToListAsync();
             IEnumerable<Representative> representatives = _repMapper.ToDomain(representativeDataModels);
             return representatives;
         }
@@ -36,6 +37,7 @@ public class RepresentativeRepository : GenericRepository<Representative>, IRepr
         try
         {
             RepresentativeDataModel? representativeDM = await _context.Set<RepresentativeDataModel>()
+            .Include(r => r.Organization)
             .SingleOrDefaultAsync(r => r.CitizenId == citizenId);
             if (representativeDM != null)
             {
@@ -56,7 +58,69 @@ public class RepresentativeRepository : GenericRepository<Representative>, IRepr
         try
         {
             RepresentativeDataModel? representativeDM = await _context.Set<RepresentativeDataModel>()
+            .Include(r => r.Organization)
             .SingleOrDefaultAsync(r => r.Email == email);
+            if (representativeDM != null)
+            {
+                Representative representative = _repMapper.ToDomain(representativeDM);
+                return representative;
+            }
+            return null;
+        }
+        catch
+        {
+            return null; throw;
+        }
+
+    }
+
+    public async Task<Representative?> GetRepresentativeByNationalityAsync(string nationality)
+    {
+        try
+        {
+            RepresentativeDataModel? representativeDM = await _context.Set<RepresentativeDataModel>()
+            .Include(r => r.Organization)
+            .SingleOrDefaultAsync(r => r.Nationality == nationality);
+            if (representativeDM != null)
+            {
+                Representative representative = _repMapper.ToDomain(representativeDM);
+                return representative;
+            }
+            return null;
+        }
+        catch
+        {
+            return null; throw;
+        }
+    }
+
+    public async Task<Representative?> GetRepresentativeByOrganizationAsync(ShippingAgentOrganization organization)
+    {
+        try
+        {
+            RepresentativeDataModel? representativeDM = await _context.Set<RepresentativeDataModel>()
+            .Include(r => r.Organization)
+            .SingleOrDefaultAsync(r => r.Organization!.Id == organization.Id);
+            if (representativeDM != null)
+            {
+                Representative representative = _repMapper.ToDomain(representativeDM);
+                return representative;
+            }
+            return null;
+        }
+        catch
+        {
+            return null; throw;
+        }
+    }
+
+    public async Task<Representative?> GetRepresentativeByNameAsync(string name)
+    {
+        try
+        {
+            RepresentativeDataModel? representativeDM = await _context.Set<RepresentativeDataModel>()
+            .Include(r => r.Organization)
+            .SingleOrDefaultAsync(r => r.Name == name);
             if (representativeDM != null)
             {
                 Representative representative = _repMapper.ToDomain(representativeDM);
@@ -76,6 +140,7 @@ public class RepresentativeRepository : GenericRepository<Representative>, IRepr
         try
         {
             RepresentativeDataModel? representativeDM = await _context.Set<RepresentativeDataModel>()
+            .Include(r => r.Organization)
             .SingleOrDefaultAsync(r => r.PhoneNumber == phoneNumber);
             if (representativeDM != null)
             {
@@ -96,6 +161,7 @@ public class RepresentativeRepository : GenericRepository<Representative>, IRepr
         try
         {
             RepresentativeDataModel? representativeDM = await _context.Set<RepresentativeDataModel>()
+            .Include(r => r.Organization)
             .SingleOrDefaultAsync(r => r.Id == id);
             if (representativeDM != null)
             {
@@ -116,10 +182,13 @@ public class RepresentativeRepository : GenericRepository<Representative>, IRepr
         try
         {
             RepresentativeDataModel representativeDM = _repMapper.ToDataModel(representative);
-            EntityEntry<RepresentativeDataModel> addedRepresentative = await _context.Set<RepresentativeDataModel>().AddAsync(representativeDM);
+            var shippingAgent = await _context.Set<ShippingAgentOrganizationDataModel>().Where(o => o.Id == representative.Organization!.Id).FirstOrDefaultAsync();
+            representativeDM.Organization = shippingAgent;
+            EntityEntry<RepresentativeDataModel> representativeDM_EE = _context.Set<RepresentativeDataModel>().Add(representativeDM);
             await _context.SaveChangesAsync();
-            Representative addedRepDomain = _repMapper.ToDomain(addedRepresentative.Entity);
-            return addedRepDomain;
+            RepresentativeDataModel representativeDataModelSaved = representativeDM_EE.Entity;
+            Representative representativeSaved = _repMapper.ToDomain(representativeDataModelSaved);
+            return representativeSaved;
         }
         catch
         {
@@ -132,7 +201,9 @@ public class RepresentativeRepository : GenericRepository<Representative>, IRepr
         try
         {
             var representativeDataModel = await _context.Set<RepresentativeDataModel>()
-                .SingleOrDefaultAsync(r => r.Id == representative.Id);
+            .Include(r => r.Organization)
+            .SingleOrDefaultAsync(r => r.Id == representative.Id);
+            
             if (representativeDataModel == null)
             {
                 errorMessages.Add("Representative not found.");

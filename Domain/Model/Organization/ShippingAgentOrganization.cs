@@ -16,7 +16,7 @@ public class ShippingAgentOrganization
 
     public string? Address { get; private set; }
 
-    public string? TaxNumeber { get; private set; }
+    public string? TaxNumber { get; private set; }
 
     public DateTime LastModifiedAt { get; set; }
 
@@ -54,7 +54,7 @@ public class ShippingAgentOrganization
         LegalName = legalName;
         AlternativeName = alternativeName;
         Address = address;
-        TaxNumeber = taxNumber;
+        TaxNumber = taxNumber;
         LastModifiedAt = DateTime.UtcNow;
     }
 
@@ -98,7 +98,7 @@ public class ShippingAgentOrganization
             throw new ArgumentException("Tax number cannot be null or empty.", nameof(newTaxNumber));
         }
 
-        TaxNumeber = newTaxNumber;
+        TaxNumber = newTaxNumber;
         LastModifiedAt = DateTime.UtcNow;
     }
     

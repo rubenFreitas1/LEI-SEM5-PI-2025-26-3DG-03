@@ -9,6 +9,9 @@ public class RepresentativeDataModel
     public long Id { get; set; }
 
     [Required]
+    public ShippingAgentOrganizationDataModel? Organization { get; set; }
+
+    [Required]
     public string? Name { get; set; }
 
     [Required]
@@ -30,6 +33,7 @@ public class RepresentativeDataModel
     public RepresentativeDataModel(Representative representative)
     {
         Id = representative.Id;
+        Organization = new ShippingAgentOrganizationDataModel(representative.Organization!);
         Name = representative.Name;
         CitizenId = representative.CitizenId;
         Nationality = representative.Nationality;

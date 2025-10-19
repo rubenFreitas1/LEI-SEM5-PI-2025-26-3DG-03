@@ -4,8 +4,8 @@ using Domain.Model;
 
 public class RepresentativeFactory : IRepresentativeFactory
 {
-    public Representative NewRepresentative(string name, string citizenId, string nationality, string email, string phoneNumber)
+    public Representative NewRepresentative(ShippingAgentOrganization organization, string name, string citizenId, string nationality, string email, string phoneNumber)
     {
-        return new Representative(name, citizenId, nationality, email, phoneNumber);
+        return new Representative(organization, name, citizenId, nationality, email, phoneNumber);
     }
 }
