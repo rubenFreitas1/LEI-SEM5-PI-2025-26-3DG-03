@@ -1,6 +1,7 @@
 namespace Application.DTO;
 
 using Domain.Model;
+using System.Text.Json.Serialization;
 
 public class StorageAreaDTO
 {
@@ -9,6 +10,7 @@ public class StorageAreaDTO
 
     public string Location { get; set; } = string.Empty;
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public StorageAreaType StorageAreaType { get; set; }
 
     public int MaxCapacity { get; set; }

@@ -22,14 +22,16 @@ public class StorageAreaDock
 
         StorageArea = storageArea;
         Dock = dock;
+        StorageAreaId = storageArea.Id;
+        DockId = dock.Id;
         Distance = distance;
     }
 
     public void ValidateDistance(double distance)
     {
-        if (distance < 0)
+        if (distance <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(distance), "Distance cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(distance), "Distance cannot be negative neihter zero.");
         }
     }
 

@@ -21,6 +21,9 @@ public static class Utilities
 
         db.VesselRecords.AddRange(GetSeedingVesselRecordsDataModel(vesselTypes));
         db.SaveChanges();
+
+        db.StorageAreas.AddRange(GetSeedingStorageAreasDataModel(db.Docks.ToList()));
+        db.SaveChanges();
     }
 
     public static void ReinitializeDbForTests(ShippingManagementContext db)
@@ -28,6 +31,8 @@ public static class Utilities
         db.VesselTypes.RemoveRange(db.VesselTypes);
         db.Qualifications.RemoveRange(db.Qualifications);
         db.Docks.RemoveRange(db.Docks);
+        db.VesselRecords.RemoveRange(db.VesselRecords);
+        db.StorageAreas.RemoveRange(db.StorageAreas);
         InitializeDbForTests(db);
     }
 
@@ -102,5 +107,45 @@ public static class Utilities
                 VesselTypesAllowed = new List<VesselTypeDataModel> { vesselTypes[1], vesselTypes[2] }
             }
         };
+    }
+
+    public static List<StorageAreaDataModel> GetSeedingStorageAreasDataModel(List<DockDataModel> docks)
+    {
+        DockDataModel? find(string name) => docks.FirstOrDefault(d => string.Equals(d.Name, name, StringComparison.OrdinalIgnoreCase));
+
+        var storageAreas = new List<StorageAreaDataModel>();
+
+        var wh1 = new StorageAreaDataModel
+        {
+            Code = "WH001",
+            Location = "North",
+            Type = "Warehouse",
+            MaxCapacity = 1000,
+            CurrentCapacity = 200,
+            LastModifiedAt = DateTime.UtcNow,
+            StorageAreaDocks = new List<StorageAreaDockDataModel>()
+        };
+        var dockA = find("Dock A");
+        var dockB = find("Dock B");
+        if (dockA != null) wh1.StorageAreaDocks.Add(new StorageAreaDockDataModel { Dock = dockA, Distance = 10 });
+        if (dockB != null) wh1.StorageAreaDocks.Add(new StorageAreaDockDataModel { Dock = dockB, Distance = 40 });
+
+        var wh2 = new StorageAreaDataModel
+        {
+            Code = "WH002",
+            Location = "South",
+            Type = "Warehouse",
+            MaxCapacity = 2000,
+            CurrentCapacity = 500,
+            LastModifiedAt = DateTime.UtcNow,
+            StorageAreaDocks = new List<StorageAreaDockDataModel>()
+        };
+        if (dockA != null) wh2.StorageAreaDocks.Add(new StorageAreaDockDataModel { Dock = dockA, Distance = 20 });
+        if (dockB != null) wh2.StorageAreaDocks.Add(new StorageAreaDockDataModel { Dock = dockB, Distance = 30 });
+
+        storageAreas.Add(wh1);
+        storageAreas.Add(wh2);
+
+        return storageAreas;
     }
 }

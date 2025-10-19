@@ -27,7 +27,6 @@ public static class Utilities
             }
             if (!db.StorageAreas.Any())
             {
-                // build storage areas with distances to existing docks
                 var docks = db.Docks.ToList();
                 db.StorageAreas.AddRange(GetSeedingStorageAreasDataModel(docks));
                 db.SaveChanges();
@@ -88,7 +87,6 @@ public static class Utilities
             LastModifiedAt = DateTime.UtcNow,
             StorageAreaDocks = new List<StorageAreaDockDataModel>()
         };
-        // example distances
         var dockA = find("Dock A");
         var dockB = find("Dock B");
         if (dockA != null) wh1.StorageAreaDocks.Add(new StorageAreaDockDataModel { Dock = dockA, Distance = 10 });
