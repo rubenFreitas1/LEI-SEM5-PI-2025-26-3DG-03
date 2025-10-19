@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 using Application.Services;
 using DataModel.Repository;
@@ -12,7 +13,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(opts =>
+    {
+        opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 builder.Services.AddDbContext<ShippingManagementContext>(opt =>
     opt.UseInMemoryDatabase("ShippingManagementDatabase")
@@ -51,6 +56,11 @@ builder.Services.AddTransient<IStaffRepository, StaffRepository>();
 builder.Services.AddTransient<IStaffFactory, StaffFactory>();
 builder.Services.AddTransient<StaffMapper>();
 builder.Services.AddTransient<StaffService>();
+
+builder.Services.AddTransient<IStorageAreaRepository, StorageAreaRepository>();
+builder.Services.AddTransient<IStorageAreaFactory, StorageAreaFactory>();
+builder.Services.AddTransient<StorageAreaMapper>();
+builder.Services.AddTransient<StorageAreaService>();
 
 var app = builder.Build();
 

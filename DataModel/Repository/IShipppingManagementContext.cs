@@ -15,4 +15,7 @@ public interface IShippingManagementContext
     DbSet<QualificationDataModel> Qualifications { get; set; }
 
     DbSet<StaffDataModel> Staffs { get; set; }
+
+    DbSet<StorageAreaDataModel> StorageAreas { get; set; }
+    DbSet<StorageAreaDockDataModel> StorageAreaDocks { get; set; }
 }

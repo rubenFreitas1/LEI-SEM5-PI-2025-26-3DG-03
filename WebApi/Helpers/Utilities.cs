@@ -25,6 +25,13 @@ public static class Utilities
                 db.Docks.AddRange(GetSeedingDocksDataModel(vesselTypes));
                 db.SaveChanges();
             }
+            if (!db.StorageAreas.Any())
+            {
+                // build storage areas with distances to existing docks
+                var docks = db.Docks.ToList();
+                db.StorageAreas.AddRange(GetSeedingStorageAreasDataModel(docks));
+                db.SaveChanges();
+            }
         }
     }
 
@@ -63,5 +70,46 @@ public static class Utilities
                 LastModifiedAt = DateTime.UtcNow
             },
         };
+    }
+
+    public static List<StorageAreaDataModel> GetSeedingStorageAreasDataModel(List<DockDataModel> docks)
+    {
+        DockDataModel? find(string name) => docks.FirstOrDefault(d => string.Equals(d.Name, name, StringComparison.OrdinalIgnoreCase));
+
+        var storageAreas = new List<StorageAreaDataModel>();
+
+        var wh1 = new StorageAreaDataModel
+        {
+            Code = "WH001",
+            Location = "Warehouse 1",
+            Type = "Warehouse",
+            MaxCapacity = 1000,
+            CurrentCapacity = 200,
+            LastModifiedAt = DateTime.UtcNow,
+            StorageAreaDocks = new List<StorageAreaDockDataModel>()
+        };
+        // example distances
+        var dockA = find("Dock A");
+        var dockB = find("Dock B");
+        if (dockA != null) wh1.StorageAreaDocks.Add(new StorageAreaDockDataModel { Dock = dockA, Distance = 10 });
+        if (dockB != null) wh1.StorageAreaDocks.Add(new StorageAreaDockDataModel { Dock = dockB, Distance = 40 });
+
+        var wh2 = new StorageAreaDataModel
+        {
+            Code = "WH002",
+            Location = "Warehouse 2",
+            Type = "Warehouse",
+            MaxCapacity = 2000,
+            CurrentCapacity = 500,
+            LastModifiedAt = DateTime.UtcNow,
+            StorageAreaDocks = new List<StorageAreaDockDataModel>()
+        };
+        if (dockA != null) wh2.StorageAreaDocks.Add(new StorageAreaDockDataModel { Dock = dockA, Distance = 20 });
+        if (dockB != null) wh2.StorageAreaDocks.Add(new StorageAreaDockDataModel { Dock = dockB, Distance = 30 });
+
+        storageAreas.Add(wh1);
+        storageAreas.Add(wh2);
+
+        return storageAreas;
     }
 }

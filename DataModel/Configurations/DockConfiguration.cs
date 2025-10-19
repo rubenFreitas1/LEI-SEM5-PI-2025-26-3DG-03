@@ -14,8 +14,7 @@ public class DockConfiguration : IEntityTypeConfiguration<DockDataModel>
     {
         builder.HasKey(d => d.Id);
 
-        // Removido índice único de Name para teste de integração
-        // builder.HasIndex(d => d.Name).IsUnique();
+         builder.HasIndex(d => d.Name).IsUnique();
 
         builder.HasIndex(d => d.Location)
             .IsUnique();

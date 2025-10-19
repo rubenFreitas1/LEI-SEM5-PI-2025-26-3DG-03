@@ -65,20 +65,20 @@ public class StorageAreaService
         StorageArea? storageArea = await _storageAreaRepository.GetStorageAreaByCodeAsync(storageAreaDTO.Code);
         if (storageArea != null)
         {
-            errorMessages.Add($"Storage area with code {storageAreaDTO.Code} already exists.");
+            errorMessages.Add("Storage area with this code already exists.");
             return null;
         }
         
         StorageArea? existingStorageAreaByLocation = await _storageAreaRepository.GetStorageAreaByLocationAsync(storageAreaDTO.Location);
         if (existingStorageAreaByLocation != null)
         {
-            errorMessages.Add($"Storage area with location {storageAreaDTO.Location} already exists.");
+            errorMessages.Add("Storage area with this location already exists.");
             return null;
         }
 
-        if (!Enum.IsDefined(typeof(StorageAreaType), storageAreaDTO.StorageaAreaType))
+        if (!Enum.IsDefined(typeof(StorageAreaType), storageAreaDTO.StorageAreaType))
         {
-            errorMessages.Add($"Invalid storage area type: {storageAreaDTO.StorageaAreaType}.");
+            errorMessages.Add($"Invalid storage area type: {storageAreaDTO.StorageAreaType}.");
             return null;
         }
         try
@@ -86,7 +86,7 @@ public class StorageAreaService
             storageArea = _storageAreaFactory.NewStorageArea(
                 storageAreaDTO.Code,
                 storageAreaDTO.Location,
-                storageAreaDTO.StorageaAreaType,
+                storageAreaDTO.StorageAreaType,
                 storageAreaDTO.MaxCapacity,
                 storageAreaDTO.CurrentCapacity
             );
@@ -132,7 +132,7 @@ public class StorageAreaService
             errorMessages.Add($"Storage area with location {storageAreaDTO.Location} already exists.");
             return false;
         }
-        if(storageAreaDTO.StorageaAreaType != storageArea.Type){
+        if(storageAreaDTO.StorageAreaType != storageArea.Type){
             errorMessages.Add("Its not possible to update the storage area type.");
             return false;
         }

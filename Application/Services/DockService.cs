@@ -105,6 +105,11 @@ public class DockService
             errorMessages.Add($"A dock with the location '{dockDTO.Location}' already exists.");
             return null;
         }
+        if (dockDTO.VesselTypesAllowed == null || !dockDTO.VesselTypesAllowed.Any())
+        {
+            errorMessages.Add("At least one valid vessel type must be provided.");
+            return null;
+        }
         var vesselTypes = new List<VesselType>();
         foreach (var vesselTypeName in dockDTO.VesselTypesAllowed!)
         {

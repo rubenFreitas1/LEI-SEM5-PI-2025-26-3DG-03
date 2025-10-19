@@ -9,7 +9,7 @@ public class StorageAreaDTO
 
     public string Location { get;  set; } = string.Empty;
 
-    public StorageAreaType StorageaAreaType { get;  set; }
+    public StorageAreaType StorageAreaType { get;  set; }
 
     public int MaxCapacity { get;  set; }
 
@@ -26,7 +26,7 @@ public class StorageAreaDTO
         Id = id;
         Code = code;
         Location = location;
-        StorageaAreaType = type;
+        StorageAreaType = type;
         MaxCapacity = maxCapacity;
         CurrentCapacity = currentCapacity;
         StorageAreaDocks = storageAreaDocks;
