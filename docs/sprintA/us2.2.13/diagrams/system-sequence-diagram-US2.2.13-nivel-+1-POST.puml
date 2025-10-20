@@ -1,0 +1,75 @@
+@startuml 2.2.13
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Logistics Officer" as logisticsOfficer
+participant "Qualification Controller" as qualificationController
+participant "Qualification Service" as qualificationService
+participant "QualificationDTO" as qualificationDTO
+participant "Qualification Repository" as qualificationRepository
+participant "Qualification Mapper" as qualificationMapper
+participant "Qualification" as qualification
+participant "Qualification Data Model" as qualificationDataModel
+participant "Shipping Management Context" as shippingManagementContext
+participant "Shipping Management Database" as database
+
+title System Sequence Diagram - US2.2.13 (Create Qualification)
+
+activate logisticsOfficer   
+logisticsOfficer -> qualificationController: POST /api/qualifications (qualificationDto)
+activate qualificationController
+
+qualificationController -> qualificationService: AddQualification(qualificationDto)
+activate qualificationService
+qualificationService -> qualificationDTO: ToDomain(qualificationDto)
+activate qualificationDTO
+qualificationDTO -> qualification: new Qualification(code, name, description)
+activate qualification
+qualification --> qualificationDTO: qualification
+deactivate qualification
+qualificationDTO --> qualificationService: qualification
+deactivate qualificationDTO
+qualificationService -> qualificationRepository: AddQualificationAsync(qualification)
+activate qualificationRepository
+qualificationRepository -> qualificationMapper: ToDataModel(qualification)
+activate qualificationMapper
+qualificationMapper -> qualificationDataModel: new QualificationDataModel(qualification)
+activate qualificationDataModel
+qualificationDataModel --> qualificationMapper: qualificationDataModel
+deactivate qualificationDataModel
+qualificationMapper --> qualificationRepository: qualificationDataModel
+deactivate qualificationMapper
+qualificationRepository -> shippingManagementContext: Set<QualificationDataModel>().Add(qualificationDataModel)
+activate shippingManagementContext
+shippingManagementContext --> qualificationRepository: EntityEntry<QualificationDataModel>
+deactivate shippingManagementContext
+qualificationRepository -> shippingManagementContext: SaveChangesAsync()
+activate shippingManagementContext
+shippingManagementContext -> database: INSERT INTO Qualifications
+activate database
+database --> shippingManagementContext: Success
+deactivate database
+shippingManagementContext --> qualificationRepository: int (affected rows)
+deactivate shippingManagementContext
+qualificationRepository -> qualificationMapper: ToDomain(entityEntry.Entity)
+activate qualificationMapper
+qualificationMapper -> qualification: ToDomain via Factory
+activate qualification
+qualification --> qualificationMapper: qualification
+deactivate qualification
+qualificationMapper --> qualificationRepository: qualification
+deactivate qualificationMapper
+qualificationRepository --> qualificationService: qualification
+deactivate qualificationRepository
+qualificationService -> qualificationDTO: ToDTO(qualification)
+activate qualificationDTO
+qualificationDTO --> qualificationService: QualificationDTO
+deactivate qualificationDTO
+qualificationService --> qualificationController: QualificationDTO
+deactivate qualificationService
+qualificationController --> logisticsOfficer: 201 Created (QualificationDTO)
+deactivate qualificationController
+deactivate logisticsOfficer
+
+@enduml

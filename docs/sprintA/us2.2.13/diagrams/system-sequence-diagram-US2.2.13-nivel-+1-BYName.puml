@@ -1,0 +1,80 @@
+@startuml 2.2.13-ByName
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Logistics Officer" as logisticsOfficer
+participant "Qualification Controller" as qualificationController
+participant "Qualification Service" as qualificationService
+participant "Qualification Repository" as qualificationRepository
+participant "Qualification Mapper" as qualificationMapper
+participant "Qualification" as qualification
+participant "Qualification Data Model" as qualificationDataModel
+participant "Shipping Management Context" as shippingManagementContext
+participant "Shipping Management Database" as database
+participant "QualificationDTO" as qualificationDTO
+
+title System Sequence Diagram - US2.2.13 (Get Qualification By Name)
+
+activate logisticsOfficer   
+logisticsOfficer -> qualificationController: GET /api/Qualification/ByName/{name}
+activate qualificationController
+
+qualificationController -> qualificationService: GetByName(name)
+activate qualificationService
+
+' Repository operations
+qualificationService -> qualificationRepository: GetQualificationsByNameAsync(name)
+activate qualificationRepository
+
+' Query database
+qualificationRepository -> shippingManagementContext: Set<QualificationDataModel>().Where(q => q.Name.Contains(name)).ToListAsync()
+activate shippingManagementContext
+shippingManagementContext -> database: SELECT * FROM Qualifications WHERE Name LIKE '%{name}%'
+activate database
+database --> shippingManagementContext: List<QualificationDataModel>
+deactivate database
+shippingManagementContext --> qualificationRepository: List<QualificationDataModel>
+deactivate shippingManagementContext
+
+' Convert data models to domain objects
+qualificationRepository -> qualificationMapper: ToDomain(List<QualificationDataModel>)
+activate qualificationMapper
+
+loop for each QualificationDataModel
+    qualificationMapper -> qualification: ToDomain via Factory
+    activate qualification
+    qualification --> qualificationMapper: qualification
+    deactivate qualification
+end
+
+qualificationMapper --> qualificationRepository: IEnumerable<Qualification>
+deactivate qualificationMapper
+
+qualificationRepository --> qualificationService: IEnumerable<Qualification>
+deactivate qualificationRepository
+
+' Convert domain objects to DTOs
+qualificationService -> qualificationDTO: ToDTO(IEnumerable<Qualification>)
+activate qualificationDTO
+
+loop for each Qualification
+    qualificationDTO -> qualificationDTO: ToDTO(qualification)
+end
+
+qualificationDTO --> qualificationService: IEnumerable<QualificationDTO>
+deactivate qualificationDTO
+
+qualificationService --> qualificationController: IEnumerable<QualificationDTO>
+deactivate qualificationService
+
+alt qualifications found
+    qualificationController --> logisticsOfficer: 200 OK (IEnumerable<QualificationDTO>)
+else no qualifications found
+    qualificationController --> logisticsOfficer: 404 Not Found ("No qualifications found with name containing '{name}'")
+end
+
+deactivate qualificationController
+deactivate logisticsOfficer
+
+@enduml

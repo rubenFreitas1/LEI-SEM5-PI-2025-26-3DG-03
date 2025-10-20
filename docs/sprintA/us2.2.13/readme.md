@@ -40,6 +40,41 @@ Um physical resource deverá ter sempre alguma qualificação associada? Por exe
 
 ## 3. Analysis
 
-Record Registration
+Qualification Registration
 
-![System Sequence Diagram ](images/system-sequence-diagram-US2.2.11.png)
+![System Sequence Diagram Registration](images/ssd-registration.png)
+
+Qualification Update
+
+![System Sequence Diagram Update](images/ssd-update.png)
+## 4. C4 Model
+
+#### Context - Level 1
+
+![Context](/docs/Global_Artifacts/context_lvl1.png)
+
+#### Containers - Level 2
+
+![Containers](/docs/Global_Artifacts/containers_lvl2.png)
+
+#### Components - Level 3
+
+![Components](images/nivel-3.png)
+
+#### Code - Level 4
+
+![Code](images/nivel-4.png)
+
+#### Level +1
+
+Qualification POST
+![nivel+1](images/nivel-+1-post.png)
+
+Qualification BET ByName
+![nivel+1](images/nivel-+1-BYName.png)
+
+Qualification GET ByCode
+![nivel+1](images/nivel-+1-BYCode.png)
+
+Qualification UPDATE
+![nivel+1](images/nivel-+1-UPDATE.png)

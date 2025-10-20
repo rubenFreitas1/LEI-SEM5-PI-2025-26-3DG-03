@@ -1,0 +1,62 @@
+@startuml 2.2.13-ByCode
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Logistics Officer" as logisticsOfficer
+participant "Qualification Controller" as qualificationController
+participant "Qualification Service" as qualificationService
+participant "Qualification Repository" as qualificationRepository
+participant "Qualification Mapper" as qualificationMapper
+participant "Qualification" as qualification
+participant "Qualification Data Model" as qualificationDataModel
+participant "Shipping Management Context" as shippingManagementContext
+participant "Shipping Management Database" as database
+participant "QualificationDTO" as qualificationDTO
+
+title System Sequence Diagram - US2.2.13 (Get Qualification By Code)
+
+activate logisticsOfficer   
+logisticsOfficer -> qualificationController: GET /api/Qualification/ByCode/{code}
+activate qualificationController
+qualificationController -> qualificationService: GetByCode(code)
+activate qualificationService
+qualificationService -> qualificationRepository: GetQualificationByCodeAsync(code)
+activate qualificationRepository
+qualificationRepository -> shippingManagementContext: Set<QualificationDataModel>().FirstOrDefaultAsync(q => q.Code == code)
+activate shippingManagementContext
+shippingManagementContext -> database: SELECT * FROM Qualifications WHERE Code = '{code}' LIMIT 1
+activate database
+database --> shippingManagementContext: QualificationDataModel or null
+deactivate database
+shippingManagementContext --> qualificationRepository: QualificationDataModel or null
+deactivate shippingManagementContext
+alt qualification found
+    qualificationRepository -> qualificationMapper: ToDomain(qualificationDataModel)
+    activate qualificationMapper
+    qualificationMapper -> qualification: ToDomain via Factory
+    activate qualification
+    qualification --> qualificationMapper: qualification
+    deactivate qualification
+    qualificationMapper --> qualificationRepository: qualification
+    deactivate qualificationMapper
+    qualificationRepository --> qualificationService: qualification
+    deactivate qualificationRepository
+    qualificationService -> qualificationDTO: ToDTO(qualification)
+    activate qualificationDTO
+    qualificationDTO --> qualificationService: QualificationDTO
+    deactivate qualificationDTO
+    qualificationService --> qualificationController: QualificationDTO
+    deactivate qualificationService
+    qualificationController --> logisticsOfficer: 200 OK (QualificationDTO)
+else qualification not found
+    qualificationRepository --> qualificationService: null
+    deactivate qualificationRepository
+    qualificationService --> qualificationController: null
+    deactivate qualificationService
+    qualificationController --> logisticsOfficer: 404 Not Found ("Qualification with code '{code}' not found.")
+end
+deactivate qualificationController
+deactivate logisticsOfficer
+
+@enduml

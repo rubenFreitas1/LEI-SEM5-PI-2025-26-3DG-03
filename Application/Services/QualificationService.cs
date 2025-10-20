@@ -102,17 +102,6 @@ namespace Application.Services
                 return false;
             }
 
-
-            if (!string.IsNullOrWhiteSpace(dto.Code) && !dto.Code!.Equals(existing.Code, StringComparison.OrdinalIgnoreCase))
-            {
-                if (await _qualificationRepository.QualificationCodeExistsAsync(dto.Code!))
-                {
-                    errorMessages.Add($"Another qualification with code '{dto.Code}' already exists.");
-                    return false;
-                }
-            }
-
-
             if (!string.IsNullOrWhiteSpace(dto.Name) && !dto.Name!.Equals(existing.Name, StringComparison.OrdinalIgnoreCase))
             {
                 if (await _qualificationRepository.QualificationNameExistsAsync(dto.Name!))

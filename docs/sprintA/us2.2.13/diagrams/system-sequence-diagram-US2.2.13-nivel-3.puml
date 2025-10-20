@@ -1,0 +1,28 @@
+@startuml Qualifications
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(LOA, "Logistics Operator", "System user managing logistics operations")
+
+System_Boundary(sms, "Shipping Management System") {
+    Container(Qualificationapi, "Qualification API", ".NET 8 (ASP.NET Core Web API)", "Provides endpoints to manage qualifications")
+    Container(QualificationController, "Qualification Controller", "ASP.NET Core MVC Controller", "Handles HTTP requests related to qualifications")
+    Container(QualificationService, "Qualification Service", ".NET 8 (ASP.NET Core)", "Business logic for qualifications")
+    Container(Qualification, "Qualification", "Domain Model", "Represents a qualification")
+    Container(QualificationRepository, "Qualification Repository", ".NET 8 (ASP.NET Core)", "Data access for qualifications")
+    Container(QualificationDbContext, "Qualification DbContext", ".NET 8 (Entity Framework Core)", "EF Core DbContext for qualifications")
+    ContainerDb(db, "Shipping Management Database", "SQL Server", "Stores all data related to shipping management")
+}
+
+Qualificationapi -[hidden]right-> QualificationController
+QualificationService -[hidden]right-> Qualification
+QualificationRepository -[hidden]right-> QualificationDbContext
+
+Rel(LOA, Qualificationapi, "Sends HTTP requests", "HTTPS/JSON")
+Rel(Qualificationapi, QualificationController, "Routes requests to", "Method Calls")
+Rel(QualificationController, QualificationService, "Calls methods in", "Method Calls")
+Rel(QualificationService, Qualification, "Uses", "Domain Logic")
+Rel(QualificationService, QualificationRepository, "Uses", "Method Calls")
+Rel(QualificationRepository, QualificationDbContext, "Uses", "Method Calls")
+Rel(QualificationDbContext, db, "Reads from and writes to", "EF Core/SQL")
+
+@enduml

@@ -1,0 +1,27 @@
+@startuml 2.2.13
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Logistics Officer" as logisticsOfficer
+participant "System" as system
+
+title System Sequence Diagram - US2.2.13
+
+== Register a Qualification ==
+activate logisticsOfficer
+
+logisticsOfficer -> system : Register a Qualification
+activate system
+
+system -> logisticsOfficer : Request Qualification Information("Unique Code, Qualification Name,\n Description")
+deactivate system
+logisticsOfficer -> system : Provide Qualification Information
+activate system
+system -> system : Create qualification record
+
+system -> logisticsOfficer : Confirm Qualification registration
+deactivate system
+
+
+@enduml

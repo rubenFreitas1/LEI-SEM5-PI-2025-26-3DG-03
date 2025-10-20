@@ -1,0 +1,142 @@
+@startuml 2.2.13-Update
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Logistics Officer" as logisticsOfficer
+participant "Qualification Controller" as qualificationController
+participant "Qualification Service" as qualificationService
+participant "Qualification Repository" as qualificationRepository
+participant "Qualification Mapper" as qualificationMapper
+participant "Qualification" as qualification
+participant "Qualification Data Model" as qualificationDataModel
+participant "Shipping Management Context" as shippingManagementContext
+participant "Shipping Management Database" as database
+participant "QualificationDTO" as qualificationDTO
+
+title System Sequence Diagram - US2.2.13 (Update Qualification)
+
+activate logisticsOfficer   
+logisticsOfficer -> qualificationController: PUT /api/Qualification/Update/{id} (qualificationDto)
+activate qualificationController
+
+' Validation
+qualificationController -> qualificationController: dto.Id = id
+qualificationController -> qualificationService: UpdateQualification(dto, errorMessages)
+activate qualificationService
+
+' Get existing qualification
+qualificationService -> qualificationRepository: GetQualificationByIdAsync(dto.Id)
+activate qualificationRepository
+qualificationRepository -> shippingManagementContext: Set<QualificationDataModel>().FirstOrDefaultAsync(q => q.Id == id)
+activate shippingManagementContext
+shippingManagementContext -> database: SELECT * FROM Qualifications WHERE Id = {id}
+activate database
+database --> shippingManagementContext: QualificationDataModel or null
+deactivate database
+shippingManagementContext --> qualificationRepository: QualificationDataModel or null
+deactivate shippingManagementContext
+
+alt qualification exists
+    qualificationRepository -> qualificationMapper: ToDomain(qualificationDataModel)
+    activate qualificationMapper
+    qualificationMapper -> qualification: ToDomain via Factory
+    activate qualification
+    qualification --> qualificationMapper: existing qualification
+    deactivate qualification
+    qualificationMapper --> qualificationRepository: existing qualification
+    deactivate qualificationMapper
+    
+    qualificationRepository --> qualificationService: existing qualification
+    deactivate qualificationRepository
+
+    ' Validation checks (only name uniqueness - code cannot be updated)
+    alt name changed  
+        qualificationService -> qualificationRepository: QualificationNameExistsAsync(newName)
+        activate qualificationRepository
+        qualificationRepository -> shippingManagementContext: Set<QualificationDataModel>().AnyAsync(q => q.Name == newName)
+        activate shippingManagementContext
+        shippingManagementContext -> database: SELECT COUNT(*) FROM Qualifications WHERE Name = '{newName}'
+        activate database
+        database --> shippingManagementContext: exists (boolean)
+        deactivate database
+        shippingManagementContext --> qualificationRepository: exists
+        deactivate shippingManagementContext
+        qualificationRepository --> qualificationService: exists
+        deactivate qualificationRepository
+    end
+
+    ' Update domain object (only Name and Description can be updated)
+    qualificationService -> qualificationDTO: UpdateToDomain(existing, dto)
+    activate qualificationDTO
+    qualificationDTO -> qualification: ChangeName(dto.Name)
+    activate qualification
+    qualification --> qualificationDTO: void
+    qualificationDTO -> qualification: ChangeDescription(dto.Description)
+    qualification --> qualificationDTO: void
+    deactivate qualification
+    qualificationDTO --> qualificationService: void
+    deactivate qualificationDTO
+
+    ' Save updates
+    qualificationService -> qualificationRepository: UpdateQualificationAsync(existing, errorMessages)
+    activate qualificationRepository
+    
+    qualificationRepository -> shippingManagementContext: Set<QualificationDataModel>().FirstOrDefaultAsync(q => q.Id == id)
+    activate shippingManagementContext
+    shippingManagementContext -> database: SELECT * FROM Qualifications WHERE Id = {id}
+    activate database
+    database --> shippingManagementContext: QualificationDataModel
+    deactivate database
+    shippingManagementContext --> qualificationRepository: QualificationDataModel
+    deactivate shippingManagementContext
+    
+    qualificationRepository -> qualificationMapper: UpdateDataModel(dataModel, qualification)
+    activate qualificationMapper
+    qualificationMapper -> qualificationDataModel: Update Name and Description only
+    activate qualificationDataModel
+    qualificationDataModel --> qualificationMapper: updated
+    deactivate qualificationDataModel
+    qualificationMapper --> qualificationRepository: void
+    deactivate qualificationMapper
+    
+    qualificationRepository -> shippingManagementContext: SaveChangesAsync()
+    activate shippingManagementContext
+    shippingManagementContext -> database: UPDATE Qualifications SET ... WHERE Id = {id}
+    activate database
+    database --> shippingManagementContext: Success
+    deactivate database
+    shippingManagementContext --> qualificationRepository: int (affected rows)
+    deactivate shippingManagementContext
+    
+    qualificationRepository -> qualificationMapper: ToDomain(updatedDataModel)
+    activate qualificationMapper
+    qualificationMapper -> qualification: ToDomain via Factory
+    activate qualification
+    qualification --> qualificationMapper: qualification
+    deactivate qualification
+    qualificationMapper --> qualificationRepository: qualification
+    deactivate qualificationMapper
+    
+    qualificationRepository --> qualificationService: qualification
+    deactivate qualificationRepository
+    
+    qualificationService --> qualificationController: true (success)
+    deactivate qualificationService
+    
+    qualificationController --> logisticsOfficer: 200 OK
+    
+else qualification not found
+    qualificationRepository --> qualificationService: null
+    deactivate qualificationRepository
+    
+    qualificationService --> qualificationController: false
+    deactivate qualificationService
+    
+    qualificationController --> logisticsOfficer: 404 Not Found ("Qualification not found or not updated.")
+end
+
+deactivate qualificationController
+deactivate logisticsOfficer
+
+@enduml

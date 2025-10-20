@@ -1,0 +1,26 @@
+@startuml 2.2.13
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Logistics Officer" as logisticsOfficer
+participant "System" as system
+
+title System Sequence Diagram - US2.2.13
+
+== Update a Qualification ==
+activate logisticsOfficer
+
+logisticsOfficer -> system : Update a Qualification
+activate system
+
+system -> logisticsOfficer : Request Qualification Information("Qualification Name, Description")
+deactivate system
+logisticsOfficer -> system : Provide Qualification Information
+activate system
+system -> system : Update qualification record
+
+system -> logisticsOfficer : Confirm Qualification update
+deactivate system
+
+@enduml

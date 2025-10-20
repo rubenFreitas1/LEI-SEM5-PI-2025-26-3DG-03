@@ -35,7 +35,6 @@ public class QualificationMapper
 
     public void UpdateDataModel(QualificationDataModel dm, Qualification q)
     {
-        dm.Code = q.Code;
         dm.Name = q.Name;
         dm.Description = q.Description;
     }

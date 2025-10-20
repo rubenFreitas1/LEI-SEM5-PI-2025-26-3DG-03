@@ -1,0 +1,101 @@
+@startuml QualificationCode
+
+
+class QualificationController { 
+	+GetAllQualifications()
+	+GetQualificationByName()
+	+GetQualificationById()
+	+GetQualificationByLocation()
+    +GetQualificationsByVesselTypes()
+	+PutQualification()
+	+PostQualification()
+}
+
+class QualificationService {
+	+GetAllQualifications()
+	+GetQualificationByName()
+	+GetQualificationById()
+	+GetQualificationByLocation()
+    +GetQualificationsByVesselTypes()
+	+AddQualification()
+	+UpdateQualification()
+}
+
+class QualificationDTO{
+    -Id: long
+    -Code: string
+    -Name: string
+    -Description: string
+    +ToDTO()
+    +ToDomain()
+    +UpdateToDomain()
+}
+
+
+interface IQualificationRepository{
+    +GetQualificationAsync()
+    +GetQualificationByNameAsync() 
+    +GetQualificationByIdAsync()
+    +GetQualificationByLocationAsync()
+    +GetQualificationsByVesselTypesAsync()
+    +AddQualification()
+    +UpdateQualification()
+}
+
+class QualificationRepository{
+    +GetQualificationAsync()
+    +GetQualificationByNameAsync()
+    +GetQualificationByIdAsync()
+    +GetQualificationByLocationAsync()
+    +GetQualificationsByVesselTypesAsync()
+    +AddQualification()
+    +UpdateQualification()
+}
+
+
+class Qualification{
+    -Id: long
+    -Code: string
+    -Name: string
+    -Description: string
+    +ChangeName()
+    +ChangeDescription()
+}
+
+class QualificationMapper{
+    +ToDomain()
+    +ToDataModel()
+    +UpdateDataModel()
+}
+
+interface IQualificationFactory{
+    +NewQualification()
+}
+
+class QualificationDataModel{
+    -Id: long
+    -Code: string
+    -Name: string
+    -Description: string
+}
+
+class QualificationFactory{
+    +NewQualification()
+}
+
+
+QualificationController --> QualificationService: uses
+QualificationService --> IQualificationRepository: uses
+QualificationService --> QualificationDTO: uses
+
+QualificationRepository --> QualificationMapper: uses
+QualificationMapper --> QualificationDataModel : uses
+QualificationMapper --> IQualificationFactory : uses
+QualificationFactory --> Qualification: creates
+
+
+QualificationFactory ..|> IQualificationFactory : implements
+
+QualificationRepository ..|> IQualificationRepository : implements
+
+@enduml
