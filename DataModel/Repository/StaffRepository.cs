@@ -17,6 +17,21 @@ public class StaffRepository : GenericRepository<Staff>, IStaffRepository
         _sMapper = mapper;
     }
 
+    public async Task<IEnumerable<Staff>> GetAllStaffAsync()
+    {
+        var staffDataModels = await _context.Set<StaffDataModel>()
+            .Include(s => s.Qualification)
+            .AsNoTracking()
+            .ToListAsync();
+
+        var result = new List<Staff>();
+        foreach (var sdm in staffDataModels)
+        {
+            result.Add(_sMapper.ToDomain(sdm));
+        }
+        return result;
+    }
+
     public async Task<Staff?> GetStaffByIDAsync(long id)
     {
         StaffDataModel? staffDM = await _context.Set<StaffDataModel>()
@@ -164,6 +179,15 @@ public class StaffRepository : GenericRepository<Staff>, IStaffRepository
                 errorMessages.Add("Staff not found!");
                 return null;
             }
+            if (staff.Qualification != null)
+            {
+                var codes = staff.Qualification.Select(q => q.Code).Where(c => c != null).Select(c => c!).ToList();
+                var existingQ = await _context.Set<QualificationDataModel>()
+                    .Where(q => q.Code != null && codes.Contains(q.Code))
+                    .ToListAsync();
+                staffDataModel.Qualification = existingQ;
+            }
+
             _sMapper.UpdateDataModel(staffDataModel, staff);
             await _context.SaveChangesAsync();
             return _sMapper.ToDomain(staffDataModel);

@@ -13,7 +13,7 @@ namespace DataModel.Model
         [Required]
         public string? Phone { get; set; }
         [Required]
-        public IEnumerable<QualificationDataModel>? Qualification { get; set; }
+        public List<QualificationDataModel>? Qualification { get; set; }
         [Required]
         public OperationalWindow? OperationalWindow { get; set; }
         [Required]

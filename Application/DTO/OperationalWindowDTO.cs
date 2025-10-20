@@ -61,11 +61,15 @@ namespace Application.DTO
             if (!IsValidTimeFormat(dto.EndTime))
                 throw new FormatException("EndTime must be in format hh:mm (e.g., 17:45).");
 
-            var startTime = TimeSpan.ParseExact(dto.StartTime, @"hh\:mm", CultureInfo.InvariantCulture);
-            var endTime = TimeSpan.ParseExact(dto.EndTime, @"hh\:mm", CultureInfo.InvariantCulture);
+            if (!TimeSpan.TryParseExact(dto.StartTime, @"hh\:mm", CultureInfo.InvariantCulture, out var startTime))
+                throw new FormatException("StartTime must be in format hh:mm (e.g., 08:30).");
+
+            if (!TimeSpan.TryParseExact(dto.EndTime, @"hh\:mm", CultureInfo.InvariantCulture, out var endTime))
+                throw new FormatException("EndTime must be in format hh:mm (e.g., 17:45).");
 
             return new OperationalWindow(dto.StartDay.Value, dto.EndDay.Value, startTime, endTime);
         }
+
 
         private static bool IsValidTimeFormat(string time)
         {

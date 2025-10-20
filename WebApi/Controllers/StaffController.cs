@@ -24,14 +24,25 @@ public class StaffController : ControllerBase
         _qualificationRepository = qualificationRepository;
     }
 
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<StaffDTO>>> GetAll()
+    {
+        var staffDTOs = await _staffService.GetAllStaff();
+        if (staffDTOs == null || !staffDTOs.Any())
+            return NotFound("No staff available.");
+        return Ok(staffDTOs);
+    }
+    
     [HttpGet("ByName/{name}")]
-    public async Task<ActionResult<IEnumerable<StaffDTO>>> GetStaffByName(string name)
+    public async Task<ActionResult> GetStaffByName(string name)
     {
         IEnumerable<StaffDTO>? staffDTO = await _staffService.GetStaffByName(name);
         if (staffDTO == null || !staffDTO.Any())
         {
             return NotFound($"Staff with name '{name}' not found.");
         }
+        if (staffDTO.Count() == 1)
+            return Ok(staffDTO.First());
         return Ok(staffDTO);
     }
 
@@ -58,25 +69,37 @@ public class StaffController : ControllerBase
     }
 
     [HttpGet("ByStatus/{status}")]
-    public async Task<ActionResult<IEnumerable<StaffDTO>>> GetStaffByStatus(ResourceStatus status)
+    public async Task<ActionResult<IEnumerable<StaffDTO>>> GetStaffByStatus(int status)
     {
-        IEnumerable<StaffDTO>? staffDTO = await _staffService.GetStaffByStatus(status, _errorMessages);
-        if (staffDTO == null && _errorMessages.Any())
+        _errorMessages.Clear();
+        if (!Enum.IsDefined(typeof(ResourceStatus), status))
         {
-            if (_errorMessages.Any(msg =>
-                msg.Contains("already exists", StringComparison.OrdinalIgnoreCase) ||
-                msg.Contains("Already exists", StringComparison.OrdinalIgnoreCase)))
-            {
+            return NotFound();
+        }
+
+        ResourceStatus rs = (ResourceStatus)status;
+        
+        if (rs != ResourceStatus.Available && rs != ResourceStatus.Unavailable)
+        {
+            return NotFound();
+        }
+
+        IEnumerable<StaffDTO>? staffDTO = await _staffService.GetStaffByStatus(rs, _errorMessages);
+        if (_errorMessages.Any())
+        {
+            if (_errorMessages.Any(msg => msg.Contains("already exists", StringComparison.OrdinalIgnoreCase)))
                 return Conflict(_errorMessages);
-            }
             return BadRequest(_errorMessages);
         }
+        if (staffDTO == null || !staffDTO.Any())
+            return NotFound();
         return Ok(staffDTO);
     }
 
     [HttpPost]
     public async Task<ActionResult<StaffDTO>> PostStaff(StaffDTO staffDTO)
     {
+        _errorMessages.Clear();
         if (staffDTO == null)
         {
             return BadRequest("Staff data is null.");
@@ -85,10 +108,26 @@ public class StaffController : ControllerBase
         {
             return BadRequest("At least one QualificationCode must be provided to create a Staff.");
         }
+        try
+        {
+            if (staffDTO.OperationalWindow != null)
+            {
+                var _ = OperationalWindowDTO.ToDomain(staffDTO.OperationalWindow);
+            }
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new List<string> { "invalid time: " + ex.Message });
+        }
+
         IEnumerable<Qualification> qualification = await _qualificationRepository.GetQualificationsByCodesAsync(staffDTO.QualificationCodes!);
         StaffDTO? createdStaff = await _staffService.AddStaff(staffDTO, qualification, _errorMessages);
         if (createdStaff == null)
         {
+            if (_errorMessages.Any(msg => msg.Contains("already exists", StringComparison.OrdinalIgnoreCase)))
+            {
+                return Conflict(_errorMessages);
+            }
             return BadRequest(_errorMessages);
         }
         return CreatedAtAction(nameof(GetStaffByName), new { name = createdStaff.Name }, createdStaff);
@@ -97,9 +136,21 @@ public class StaffController : ControllerBase
     [HttpPut("Update/{id}")]
     public async Task<IActionResult> PutStaff(long id, StaffDTO staffDTO)
     {
+        _errorMessages.Clear();
         if (staffDTO == null)
         {
             return BadRequest("Staff data must be provided.");
+        }
+        try
+        {
+            if (staffDTO.OperationalWindow != null)
+            {
+                var _ = OperationalWindowDTO.ToDomain(staffDTO.OperationalWindow);
+            }
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new List<string> { "invalid time: " + ex.Message });
         }
         IEnumerable<Qualification> qualification = await _qualificationRepository.GetQualificationsByCodesAsync(staffDTO.QualificationCodes!);
         bool wasUpdated = await _staffService.UpdateStaff(id, staffDTO, qualification, _errorMessages);

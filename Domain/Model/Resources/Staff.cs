@@ -54,8 +54,8 @@ namespace Domain.Model
 
             var trimmed = phone.Trim();
 
-            if (trimmed.Length > 9)
-                throw new ArgumentException("Phone must be at most 9 digits long.", nameof(phone));
+            if (trimmed.Length != 9)
+                throw new ArgumentException("Phone must be exactly 9 digits long.", nameof(phone));
 
             if (!Regex.IsMatch(trimmed, @"^\d+$"))
                 throw new ArgumentException("Phone must contain only numeric digits.", nameof(phone));

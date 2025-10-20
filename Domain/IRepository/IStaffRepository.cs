@@ -11,5 +11,6 @@ public interface IStaffRepository : IGenericRepository<Staff>
     Task<Staff> AddStaff(Staff staff);
     Task<IEnumerable<Staff>> GetStaffByQualificationCodeAsync(String qualificationCode);
     Task<IEnumerable<Staff>> GetStaffByStatusAsync(ResourceStatus status);
+    Task<IEnumerable<Staff>> GetAllStaffAsync();
     Task<Staff?> Update(Staff staff, List<string> errorMessages);
 }

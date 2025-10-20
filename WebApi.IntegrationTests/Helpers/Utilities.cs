@@ -23,6 +23,8 @@ public static class Utilities
         db.SaveChanges();
 
         db.StorageAreas.AddRange(GetSeedingStorageAreasDataModel(db.Docks.ToList()));
+        var qualifications = db.Qualifications.ToList();
+        db.Staffs.AddRange(GetSeedingStaffDataModel(qualifications));
         db.SaveChanges();
     }
 
@@ -33,6 +35,7 @@ public static class Utilities
         db.Docks.RemoveRange(db.Docks);
         db.VesselRecords.RemoveRange(db.VesselRecords);
         db.StorageAreas.RemoveRange(db.StorageAreas);
+        db.Staffs.RemoveRange(db.Staffs);
         InitializeDbForTests(db);
     }
 
@@ -82,7 +85,25 @@ public static class Utilities
             new QualificationDataModel(new Qualification("QUAL2", "Second Qualification", "Description for second qualification test"))
         };
     }
-
+    public static List<StaffDataModel> GetSeedingStaffDataModel(List<QualificationDataModel> qualifications)
+    {
+        var qual1 = qualifications.FirstOrDefault(q => q.Code == "QUAL1");
+        var qual2 = qualifications.FirstOrDefault(q => q.Code == "QUAL2");
+        List<QualificationDataModel> staffQualifications = new List<QualificationDataModel>();
+        staffQualifications.Add(qual1!);
+        staffQualifications.Add(qual2!);
+        if (qual1 == null || qual2 == null)
+            throw new InvalidOperationException("Required qualifications not found in seeding data.");
+        return new List<StaffDataModel>()
+        {
+            new StaffDataModel(new Staff("Staff One", new List<Qualification> { new Qualification(qual1.Code!, qual1.Name!, qual1.Description!),
+                new Qualification(qual2.Code!, qual2.Name!, qual2.Description!) }, "staff1@gmail.com", "987654321", new OperationalWindow(DayOfWeek.Monday,
+                DayOfWeek.Friday, new TimeSpan(9,0,0), new TimeSpan(17,0,0)), ResourceStatus.Available)),
+            new StaffDataModel(new Staff("Staff Two", new List<Qualification> { new Qualification(qual1.Code!, qual1.Name!, qual1.Description!) },
+                "staff2@gmail.com", "987654322", new OperationalWindow(DayOfWeek.Tuesday, DayOfWeek.Saturday, new TimeSpan(10,0,0), new TimeSpan(18,0,0)),
+                ResourceStatus.Unavailable))
+        };
+    }
 
     public static List<DockDataModel> GetSeedingDocksDataModel(List<VesselTypeDataModel> vesselTypes)
     {

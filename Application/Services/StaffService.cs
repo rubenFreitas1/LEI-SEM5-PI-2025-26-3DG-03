@@ -62,6 +62,18 @@ public class StaffService
         }
         return StaffDTOs;
     }
+
+    public async Task<IEnumerable<StaffDTO>> GetAllStaff()
+    {
+        var staffs = await _staffRepository.GetAllStaffAsync();
+        var list = new List<StaffDTO>();
+        foreach (var s in staffs)
+        {
+            list.Add(StaffDTO.ToDTO(s));
+        }
+        return list;
+    }
+    
     public async Task<StaffDTO?> AddStaff(StaffDTO staffDTO, IEnumerable<Qualification> qualifications, List<String> errorMessages)
     {
         if (qualifications == null || !qualifications.Any())
@@ -75,11 +87,14 @@ public class StaffService
             return null;
         }
         Staff staff;
-        Staff? staffByID = await _staffRepository.GetStaffByIDAsync(staffDTO.Id!.Value);
-        if (staffByID != null)
+        if (staffDTO.Id.HasValue)
         {
-            errorMessages.Add($"Staff with ID '{staffDTO.Id}' already exist.");
-            return null;
+            Staff? staffByID = await _staffRepository.GetStaffByIDAsync(staffDTO.Id.Value);
+            if (staffByID != null)
+            {
+                errorMessages.Add($"Staff with ID '{staffDTO.Id}' already exist.");
+                return null;
+            }
         }
 
         Staff? staffByEmail = await _staffRepository.GetStaffByEmailAsync(staffDTO.Email!);
@@ -103,7 +118,7 @@ public class StaffService
         }
         catch (Exception ex)
         {
-            errorMessages.Add("Error in converting DTO to Domain: " + ex.Message);
+            errorMessages.Add("Error creating Staff : " + ex.Message);
             return null;
         }
 
@@ -119,7 +134,7 @@ public class StaffService
             errorMessages.Add("Staff status must be either Available(0) or Unavailable(1).");
             return false;
         }
-        Staff? staffByID = await _staffRepository.GetStaffByIDAsync(staffDTO.Id!.Value);
+        Staff? staffByID = await _staffRepository.GetStaffByIDAsync(id);
 
         Staff? staffByEmail = await _staffRepository.GetStaffByEmailAsync(staffDTO.Email!);
         if (staffByEmail != null && staffByEmail.Id != staffByID?.Id)

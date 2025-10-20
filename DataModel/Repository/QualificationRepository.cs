@@ -25,14 +25,14 @@ public class QualificationRepository : GenericRepository<Qualification>, IQualif
 
     public async Task<Qualification?> GetQualificationByCodeAsync(string code)
     {
-        var dm = await _context.Set<QualificationDataModel>().SingleOrDefaultAsync(q => q.Code == code);
+        var dm = await _context.Set<QualificationDataModel>().FirstOrDefaultAsync(q => q.Code == code);
         if (dm == null) return null;
         return _mapper.ToDomain(dm);
     }
 
     public async Task<Qualification?> GetQualificationByIdAsync(long id)
     {
-        var dm = await _context.Set<QualificationDataModel>().SingleOrDefaultAsync(q => q.Id == id);
+        var dm = await _context.Set<QualificationDataModel>().FirstOrDefaultAsync(q => q.Id == id);
         if (dm == null) return null;
         return _mapper.ToDomain(dm);
     }

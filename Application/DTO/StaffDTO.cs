@@ -26,7 +26,7 @@ public class StaffDTO
     }
     public static StaffDTO ToDTO(Staff s)
     {
-        IEnumerable<string>? qualCodes = s.Qualification?.Select(q => q.Code).ToList();
+        IEnumerable<string>? qualCodes = s.Qualification?.Select(q => q.Code).Where(c => c != null).Select(c => c!).Distinct().ToList();
         try
         {
             OperationalWindowDTO opWindowDTO = OperationalWindowDTO.ToDTO(s.OperationalWindow!);
@@ -44,13 +44,13 @@ public class StaffDTO
         if (dto.QualificationCodes == null || !dto.QualificationCodes.Any())
             throw new InvalidOperationException("At least one QualificationCode must be provided to create a Staff.");
 
-        if (dto.Name is null)
+        if (string.IsNullOrWhiteSpace(dto.Name))
             throw new InvalidOperationException("Name cannot be null.");
 
-        if (dto.Email is null)
+        if (string.IsNullOrWhiteSpace(dto.Email))
             throw new InvalidOperationException("Email cannot be null.");
 
-        if (dto.Phone is null)
+        if (string.IsNullOrWhiteSpace(dto.Phone))
             throw new InvalidOperationException("Phone number cannot be null.");
 
         if (dto.OperationalWindow is null)
