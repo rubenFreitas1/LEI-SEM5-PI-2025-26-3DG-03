@@ -30,11 +30,12 @@ public class StorageArea
 
     public StorageArea(string code, string location, StorageAreaType type, int maxCapacity, int currentCapacity)
     {
+
         ValidateCode(code);
+        code.ToUpper().Trim();
         ValidateLocation(location);
         ValidateMaxCapacity(maxCapacity);
         ValidateCurrentCapacity(currentCapacity, maxCapacity);
-
         Code = code;
         Location = location;
         Type = type;
