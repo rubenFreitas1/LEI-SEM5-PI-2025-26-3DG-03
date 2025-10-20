@@ -94,24 +94,24 @@ public class RepresentativeRepository : GenericRepository<Representative>, IRepr
         }
     }
 
-    public async Task<Representative?> GetRepresentativeByOrganizationAsync(ShippingAgentOrganization organization)
+    public async Task<IEnumerable<Representative?>> GetRepresentativesByOrganizationAsync(ShippingAgentOrganization organization)
     {
-        try
+        var organizationDM = await _context.Set<ShippingAgentOrganizationDataModel>()
+            .SingleOrDefaultAsync(o => o.Id == organization.Id);
+
+        if (organizationDM == null)
         {
-            RepresentativeDataModel? representativeDM = await _context.Set<RepresentativeDataModel>()
+            return Enumerable.Empty<Representative?>();
+        }
+
+        var representativeDMs = await _context.Set<RepresentativeDataModel>()
             .Include(r => r.Organization)
-            .SingleOrDefaultAsync(r => r.Organization!.Id == organization.Id);
-            if (representativeDM != null)
-            {
-                Representative representative = _repMapper.ToDomain(representativeDM);
-                return representative;
-            }
-            return null;
-        }
-        catch
-        {
-            return null; throw;
-        }
+            .ToListAsync();
+
+        var filteredReps = representativeDMs
+            .Where(r => r.Organization != null && r.Organization.Id == organizationDM.Id);
+            
+        return _repMapper.ToDomain(filteredReps);
     }
 
     public async Task<Representative?> GetRepresentativeByNameAsync(string name)

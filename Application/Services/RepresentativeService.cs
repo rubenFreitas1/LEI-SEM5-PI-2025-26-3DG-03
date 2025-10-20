@@ -84,20 +84,26 @@ public class RepresentativeService
         return null;
     }
 
-    public async Task<RepresentativeDTO?> GetRepresentativeByOrganizationName(string organizationName)
+    public async Task<IEnumerable<RepresentativeDTO?>> GetRepresentativeByOrganizationName(string organizationName)
     {
-        ShippingAgentOrganization? organization = await _shippingAgentOrganizationRepository.GetShippingAgentOrganizationByLegalNameAsync(organizationName);
+        if (organizationName == null || organizationName.Trim() == "")
+        {
+            return Enumerable.Empty<RepresentativeDTO?>();
+        }
+
+        var organization = await _shippingAgentOrganizationRepository.GetShippingAgentOrganizationByLegalNameAsync(organizationName);
         if (organization == null)
         {
-            return null;
+            return Enumerable.Empty<RepresentativeDTO?>();
         }
-        Representative? representative = await _representativeRepository.GetRepresentativeByOrganizationAsync(organization);
-        if (representative != null)
+
+        IEnumerable<Representative?> representatives = await _representativeRepository.GetRepresentativesByOrganizationAsync(organization);
+        if (representatives == null || !representatives.Any())
         {
-            RepresentativeDTO representativeDTO = RepresentativeDTO.ToDTO(representative);
-            return representativeDTO;
+            return Enumerable.Empty<RepresentativeDTO?>();
         }
-        return null;
+        IEnumerable<RepresentativeDTO?> representativeDTOs = RepresentativeDTO.ToDTO(representatives.Where(r => r != null)!);
+        return representativeDTOs;
     }
 
     public async Task<RepresentativeDTO?> AddRepresentative(RepresentativeDTO representativeDTO, List<string> errorMessages)

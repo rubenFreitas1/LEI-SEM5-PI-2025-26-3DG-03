@@ -83,14 +83,18 @@ public class RepresentativeController : ControllerBase
     }
 
     [HttpGet("ByOrganization/{organizationName}")]
-    public async Task<ActionResult<RepresentativeDTO>> GetRepresentativeByOrganizationName(string organizationName)
+    public async Task<ActionResult<IEnumerable<RepresentativeDTO>>> GetRepresentativeByOrganizationName(string organizationName)
     {
-        RepresentativeDTO? representative = await _representativeService.GetRepresentativeByOrganizationName(organizationName);
-        if (representative == null)
+        if (organizationName == null)
         {
-            return NotFound($"Representative with organization name '{organizationName}' not found.");
+            return BadRequest("Organization name is required.");
         }
-        return Ok(representative);
+        var representatives = await _representativeService.GetRepresentativeByOrganizationName(organizationName);
+        if (representatives == null || !representatives.Any())
+        {
+            return NotFound($"No representatives found for organization '{organizationName}'.");
+        }
+        return Ok(representatives);
     }
 
     [HttpPut("Update/{id}")]

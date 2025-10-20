@@ -18,7 +18,7 @@ public interface IRepresentativeRepository : IGenericRepository<Representative>
 
     Task<Representative?> GetRepresentativeByNationalityAsync(string nationality);
 
-    Task<Representative?> GetRepresentativeByOrganizationAsync(ShippingAgentOrganization organization);
+    Task<IEnumerable<Representative?>> GetRepresentativesByOrganizationAsync(ShippingAgentOrganization organization);
 
     Task<Representative> AddRepresentative(Representative representative);
 
