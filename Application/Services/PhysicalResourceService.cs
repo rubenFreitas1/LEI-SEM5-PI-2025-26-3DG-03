@@ -52,7 +52,7 @@ namespace Application.Services
 
         public async Task<PhysicalResourceDTO?> Add(PhysicalResourceDTO dto, List<string> errorMessages)
         {
-            
+
             var existing = await _repo.GetPhysicalResourceByCodeAsync(dto.Code);
             if (existing != null)
             {
@@ -60,7 +60,7 @@ namespace Application.Services
                 return null;
             }
 
-            
+
             if (!await ValidateAssignmentArea(dto.Kind, dto.AssignedArea, errorMessages))
             {
                 return null;
@@ -80,8 +80,8 @@ namespace Application.Services
             {
                 var operationalWindow = OperationalWindowDTO.ToDomain(dto.OperationalWindow!);
                 var resource = _factory.NewPhysicalResource(dto.Code, dto.Name, dto.Description, dto.Kind, qualifications, dto.OperationalCapacity, operationalWindow, dto.SetupTimeMinutes == 0 ? null : (int?)dto.SetupTimeMinutes);
-                
-                
+
+
                 if (!string.IsNullOrWhiteSpace(dto.AssignedArea))
                 {
                     if (dto.Kind == PhysicalResourceKind.STSCrane)
@@ -108,7 +108,7 @@ namespace Application.Services
                 return false;
             }
 
-            
+
             if (!string.Equals(resource.PhysicalResourceCode, dto.Code, StringComparison.OrdinalIgnoreCase))
             {
                 var byCode = await _repo.GetPhysicalResourceByCodeAsync(dto.Code!);
@@ -119,7 +119,7 @@ namespace Application.Services
                 }
             }
 
-            
+
             if (!await ValidateAssignmentArea(dto.Kind, dto.AssignedArea, errorMessages))
             {
                 return false;
@@ -127,14 +127,14 @@ namespace Application.Services
 
             try
             {
-                
+
                 resource.ChangeName(dto.Name);
                 resource.ChangeDescription(dto.Description);
                 resource.ChangeKind(dto.Kind);
                 resource.ChangeOperationalCapacity(dto.OperationalCapacity);
                 resource.ChangeSetupTime(dto.SetupTimeMinutes == 0 ? null : (int?)dto.SetupTimeMinutes);
 
-                
+
                 if (!string.IsNullOrWhiteSpace(dto.AssignedArea))
                 {
                     if (dto.Kind == PhysicalResourceKind.STSCrane)
@@ -156,14 +156,14 @@ namespace Application.Services
                     }
                 }
 
-            
+
                 if (dto.OperationalWindow != null)
                 {
                     var operationalWindow = OperationalWindowDTO.ToDomain(dto.OperationalWindow);
                     resource.ChangeOperationalWindow(operationalWindow);
                 }
 
-                
+
                 resource.ChangeStatus(dto.Status);
 
                 await _repo.Update(resource, errorMessages);
@@ -176,14 +176,14 @@ namespace Application.Services
             }
         }
 
-        
+
         public async Task<IEnumerable<string>> GetAvailableDocks()
         {
             var docks = await _dockRepository.GetDocksAsync();
             return docks.Select(d => d.Name).Where(name => !string.IsNullOrEmpty(name))!;
         }
 
-        
+
         public async Task<IEnumerable<string>> GetAvailableStorageAreas()
         {
             var storageAreas = await _storageAreaRepository.GetStorageAreasAsync();
@@ -194,7 +194,7 @@ namespace Application.Services
         {
             if (string.IsNullOrWhiteSpace(assignedArea))
             {
-                
+
                 if (kind == PhysicalResourceKind.STSCrane)
                 {
                     errorMessages.Add("STS Cranes must be assigned to a dock.");
@@ -205,11 +205,11 @@ namespace Application.Services
                     errorMessages.Add("Trucks must be assigned to a storage area.");
                     return false;
                 }
-                
+
                 return true;
             }
 
-           
+
             if (kind == PhysicalResourceKind.STSCrane)
             {
                 var dock = await _dockRepository.GetDockByNameAsync(assignedArea);

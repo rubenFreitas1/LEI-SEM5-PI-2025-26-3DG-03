@@ -85,7 +85,7 @@ namespace WebApi.Controllers
             if (dto == null) return BadRequest("Resource data must be provided.");
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            
+
             var existing = await _service.GetById(id);
             if (existing != null && !string.Equals(existing.Code, dto.Code, StringComparison.OrdinalIgnoreCase))
             {

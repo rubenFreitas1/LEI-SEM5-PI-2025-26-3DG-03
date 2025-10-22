@@ -8,9 +8,9 @@ namespace Domain.Model.Resources
 {
     public enum PhysicalResourceKind
     {
-        STSCrane,        
-        MobileCrane, 
-        Truck,           
+        STSCrane,
+        MobileCrane,
+        Truck,
         Other
     }
 
@@ -29,9 +29,9 @@ namespace Domain.Model.Resources
             PhysicalResourceDescription = string.Empty;
         }
 
-        public PhysicalResource(string code, string name, string description, PhysicalResourceKind kind, 
-            IEnumerable<Qualification> qualificationRequirements, int operationalCapacity, 
-            OperationalWindow operationalWindow, int? setupTimeMinutes = null, 
+        public PhysicalResource(string code, string name, string description, PhysicalResourceKind kind,
+            IEnumerable<Qualification> qualificationRequirements, int operationalCapacity,
+            OperationalWindow operationalWindow, int? setupTimeMinutes = null,
             ResourceStatus status = ResourceStatus.Available)
             : base(name, qualificationRequirements, operationalWindow, status)
         {
@@ -56,15 +56,15 @@ namespace Domain.Model.Resources
         {
             if (PhysicalResourceKind == PhysicalResourceKind.STSCrane)
                 throw new InvalidOperationException("STS Cranes cannot be assigned to storage areas. They must be assigned to docks.");
-            
+
             if (PhysicalResourceKind == PhysicalResourceKind.MobileCrane)
                 throw new InvalidOperationException("Mobile Cranes are mobile and cannot be assigned to specific areas.");
-            
+
             if (string.IsNullOrWhiteSpace(storageAreaCode))
                 throw new ArgumentException("Storage area code cannot be null or empty.", nameof(storageAreaCode));
-            
+
             PhysicalResourceAssignedStorageAreaCode = storageAreaCode.Trim();
-            
+
             PhysicalResourceAssignedDockName = null;
         }
 
@@ -72,12 +72,12 @@ namespace Domain.Model.Resources
         {
             if (PhysicalResourceKind != PhysicalResourceKind.STSCrane)
                 throw new InvalidOperationException("Only STS Cranes can be assigned to docks.");
-            
+
             if (string.IsNullOrWhiteSpace(dockName))
                 throw new ArgumentException("Dock name cannot be null or empty.", nameof(dockName));
-            
+
             PhysicalResourceAssignedDockName = dockName.Trim();
-            
+
             PhysicalResourceAssignedStorageAreaCode = null;
         }
 
@@ -85,11 +85,11 @@ namespace Domain.Model.Resources
         {
             if (PhysicalResourceKind == PhysicalResourceKind.STSCrane)
                 throw new InvalidOperationException("STS Cranes must be assigned to a dock.");
-            
+
             if (PhysicalResourceKind == PhysicalResourceKind.Truck)
                 throw new InvalidOperationException("Trucks must be assigned to a storage area (yard).");
-            
-        
+
+
             PhysicalResourceAssignedStorageAreaCode = null;
             PhysicalResourceAssignedDockName = null;
         }

@@ -21,20 +21,20 @@ namespace DataModel.Mapper
         public PhysicalResource ToDomain(PhysicalResourceDataModel dm)
         {
             var quals = (dm.QualificationRequirements ?? Enumerable.Empty<QualificationDataModel>()).Select(q => _qualificationMapper.ToDomain(q)).ToList();
-            
-            
+
+
             var operationalWindow = new OperationalWindow(dm.StartDay, dm.EndDay, dm.StartTime, dm.EndTime);
-            
+
             var resource = _factory.NewPhysicalResource(dm.Code!, dm.Name!, dm.Description!, dm.Kind, quals, dm.OperationalCapacity, operationalWindow, dm.SetupTimeMinutes);
             resource.Id = dm.Id;
-            
-            
+
+
             if (!string.IsNullOrWhiteSpace(dm.AssignedStorageAreaCode))
                 resource.AssignToStorageArea(dm.AssignedStorageAreaCode);
             else if (!string.IsNullOrWhiteSpace(dm.AssignedDockName))
                 resource.AssignToDock(dm.AssignedDockName);
-            
-            
+
+
             resource.ChangeStatus(dm.Status);
             return resource;
         }
