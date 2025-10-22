@@ -254,9 +254,9 @@ namespace Domain.Tests
         public void Constructor_WithNumberLessThanCrew_ThrowsArgumentException()
         {
             // arrange
-            var vesselType = new VesselType("type","desc",100,1,1,1);
+            var vesselType = new VesselType("type", "desc", 100, 1, 1, 1);
             var vessel = new VesselRecord("9781889", "Vessel", vesselType, "Operator");
-            var org = new ShippingAgentOrganization("ORG1","Legal","Alt","Address","TAX");
+            var org = new ShippingAgentOrganization("ORG1", "Legal", "Alt", "Address", "TAX");
             var rep = new Representative(org, "Rep", "CIDX", "PT", "rep@example.com", "900000000");
             var crew = new List<CrewMember>
             {
@@ -269,9 +269,9 @@ namespace Domain.Tests
         [Fact]
         public void ChangeNumberOfCrewMembers_ToLessOrEqualThanCurrent_ThrowsArgumentException()
         {
-            var vesselType2 = new VesselType("type","desc",100,1,1,1);
+            var vesselType2 = new VesselType("type", "desc", 100, 1, 1, 1);
             var vessel2 = new VesselRecord("9781889", "Vessel", vesselType2, "Operator");
-            var org2 = new ShippingAgentOrganization("ORG1","Legal","Alt","Address","TAX");
+            var org2 = new ShippingAgentOrganization("ORG1", "Legal", "Alt", "Address", "TAX");
             var rep = new Representative(org2, "Rep", "CIDX", "PT", "rep@example.com", "900000000");
             var crew = new List<CrewMember>
             {
@@ -286,9 +286,9 @@ namespace Domain.Tests
         [Fact]
         public void ChangeNumberOfCrewMembers_ToGreaterThanCurrent_Succeeds()
         {
-            var vesselType3 = new VesselType("type","desc",100,1,1,1);
+            var vesselType3 = new VesselType("type", "desc", 100, 1, 1, 1);
             var vessel3 = new VesselRecord("9781889", "Vessel", vesselType3, "Operator");
-            var org3 = new ShippingAgentOrganization("ORG1","Legal","Alt","Address","TAX");
+            var org3 = new ShippingAgentOrganization("ORG1", "Legal", "Alt", "Address", "TAX");
             var rep = new Representative(org3, "Rep", "CIDX", "PT", "rep@example.com", "900000000");
             var crew = new List<CrewMember>
             {
