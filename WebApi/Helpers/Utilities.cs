@@ -4,6 +4,7 @@ namespace WebApi.Helpers;
 
 using DataModel.Model;
 using Domain.Model;
+using Domain.Model.Resources;
 
 
 public static class Utilities
@@ -57,6 +58,19 @@ public static class Utilities
                 var representatives = db.Representatives.ToList();
                 var storageAreas = db.StorageAreas.ToList();
                 db.VesselVisitNotifications.AddRange(GetSeedingVesselVisitNotificationsDataModel(vesselRecords, representatives, storageAreas));
+                db.SaveChanges();
+            }
+            
+            if (!db.Qualifications.Any())
+            {
+                db.Qualifications.AddRange(GetSeedingQualificationsDataModel());
+                db.SaveChanges();
+            }
+            
+            if (!db.PhysicalResources.Any())
+            {
+                var qualifications = db.Qualifications.ToList();
+                db.PhysicalResources.AddRange(GetSeedingPhysicalResourcesDataModel(qualifications));
                 db.SaveChanges();
             }
         }
@@ -372,5 +386,84 @@ public static class Utilities
             (org1, new List<RepresentativeDataModel> { rep1_org1, rep2_org1 }),
             (org2, new List<RepresentativeDataModel> { rep1_org2, rep2_org2 })
         };
+    }
+
+    public static List<QualificationDataModel> GetSeedingQualificationsDataModel()
+    {
+        return new List<QualificationDataModel>()
+        {
+            new QualificationDataModel { Code = "STSOP", Name = "STS Crane Operator", Description = "Qualified to operate STS cranes." },
+            new QualificationDataModel { Code = "MBLOP", Name = "Mobile Crane Operator", Description = "Qualified to operate mobile cranes." },
+            new QualificationDataModel { Code = "TRUCKDR", Name = "Truck Driver", Description = "Qualified to drive trucks." }
+        };
+    }
+
+    public static List<PhysicalResourceDataModel> GetSeedingPhysicalResourcesDataModel(List<QualificationDataModel> qualifications)
+    {
+        var stsOpQual = qualifications.FirstOrDefault(q => q.Code == "STSOP");
+        var mbOpQual = qualifications.FirstOrDefault(q => q.Code == "MBLOP");
+        var truckDriverQual = qualifications.FirstOrDefault(q => q.Code == "TRUCKDR");
+
+        var resources = new List<PhysicalResourceDataModel>();
+        if (stsOpQual != null)
+        {
+            resources.Add(new PhysicalResourceDataModel
+            {
+                Code = "STS001",
+                Name = "STS Crane 1",
+                Description = "Ship-to-Shore Crane 1",
+                Kind = PhysicalResourceKind.STSCrane,
+                SetupTimeMinutes = 30,
+                OperationalCapacity = 50,
+                AssignedDockName = "Dock A",
+                QualificationRequirements = new List<QualificationDataModel> { stsOpQual },
+                StartDay = DayOfWeek.Monday,
+                EndDay = DayOfWeek.Saturday,
+                StartTime = new TimeSpan(6,0,0),
+                EndTime = new TimeSpan(22,0,0),
+                Status = ResourceStatus.Available
+            });
+        }
+
+        if (truckDriverQual != null)
+        {
+            resources.Add(new PhysicalResourceDataModel
+            {
+                Code = "TRUCK001",
+                Name = "Truck 1",
+                Description = "Transport Truck 1",
+                Kind = PhysicalResourceKind.Truck,
+                SetupTimeMinutes = 15,
+                OperationalCapacity = 20,
+                AssignedStorageAreaCode = "WH001",
+                QualificationRequirements = new List<QualificationDataModel> { truckDriverQual },
+                StartDay = DayOfWeek.Monday,
+                EndDay = DayOfWeek.Friday,
+                StartTime = new TimeSpan(7,0,0),
+                EndTime = new TimeSpan(19,0,0),
+                Status = ResourceStatus.Available
+            });
+        }
+
+        if (mbOpQual != null)
+        {
+            resources.Add(new PhysicalResourceDataModel
+            {
+                Code = "MB001",
+                Name = "Mobile Crane 1",
+                Description = "Mobile Crane 1",
+                Kind = PhysicalResourceKind.MobileCrane,
+                SetupTimeMinutes = 20,
+                OperationalCapacity = 30,
+                QualificationRequirements = new List<QualificationDataModel> { mbOpQual },
+                StartDay = DayOfWeek.Monday,
+                EndDay = DayOfWeek.Friday,
+                StartTime = new TimeSpan(8,0,0),
+                EndTime = new TimeSpan(18,0,0),
+                Status = ResourceStatus.Available
+            });
+        }
+
+        return resources;
     }
 }
