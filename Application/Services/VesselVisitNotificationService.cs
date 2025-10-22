@@ -204,10 +204,17 @@ public class VesselVisitNotificationService
                 }
                 cargoManifests.Add(manifest);
             }
-            vesselVisitNotification.ChangeCargoManifests(cargoManifests);
+            try
+            {
+                vesselVisitNotification.ChangeCargoManifests(cargoManifests);
+            }
+            catch (Exception ex)
+            {
+                errorMessages.Add(ex.Message);
+                return null;
+            }
         }
         var added = await _vesselVisitNotificationRepository.AddNotificationAsync(vesselVisitNotification);
-
         return VesselVisitNotificationDTO.ToDTO(added);
     }
 
