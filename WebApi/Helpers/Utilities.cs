@@ -5,7 +5,7 @@ namespace WebApi.Helpers;
 using DataModel.Model;
 using Domain.Model;
 using Domain.Model.Resources;
-
+using ShippingManagement.Domain.Qualifications;
 
 public static class Utilities
 {
@@ -67,6 +67,12 @@ public static class Utilities
                 db.SaveChanges();
             }
 
+            if (!db.Staffs.Any())
+            {
+                db.Staffs.AddRange(GetSeedingStaffDataModel(db.Qualifications.ToList()));
+                db.SaveChanges();
+            }
+            
             if (!db.PhysicalResources.Any())
             {
                 var qualifications = db.Qualifications.ToList();
@@ -176,6 +182,22 @@ public static class Utilities
         return storageAreas;
     }
 
+    public static List<StaffDataModel> GetSeedingStaffDataModel(List<QualificationDataModel> qualifications)
+    {
+        var qual1 = qualifications.FirstOrDefault(q => q.Code == "STSOP");
+        var qual2 = qualifications.FirstOrDefault(q => q.Code == "MBLOP");
+        if (qual1 == null || qual2 == null)
+            throw new InvalidOperationException("Required qualifications not found in seeding data.");
+        return new List<StaffDataModel>()
+        {
+            new StaffDataModel(new Staff("Staff One", new List<Qualification> { new Qualification(qual1.Code!, qual1.Name!, qual1.Description!),
+                new Qualification(qual2.Code!, qual2.Name!, qual2.Description!) }, "staff1@gmail.com", "987654321", new OperationalWindow(DayOfWeek.Monday,
+                DayOfWeek.Friday, new TimeSpan(9,0,0), new TimeSpan(17,0,0)), ResourceStatus.Available)),
+            new StaffDataModel(new Staff("Staff Two", new List<Qualification> { new Qualification(qual1.Code!, qual1.Name!, qual1.Description!) },
+                "staff2@gmail.com", "987654322", new OperationalWindow(DayOfWeek.Tuesday, DayOfWeek.Saturday, new TimeSpan(10,0,0), new TimeSpan(18,0,0)),
+                ResourceStatus.Unavailable))
+        };
+    }
     public static List<VesselVisitNotificationDataModel> GetSeedingVesselVisitNotificationsDataModel(List<VesselRecordDataModel> vesselRecords, List<RepresentativeDataModel> representatives, List<StorageAreaDataModel> storageAreas)
     {
         var now = DateTime.UtcNow;

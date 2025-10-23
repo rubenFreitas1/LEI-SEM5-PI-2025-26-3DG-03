@@ -45,6 +45,7 @@ public static class Utilities
             }
             db.SaveChanges();
         }
+
         if (!db.VesselVisitNotifications.Any())
         {
             var vesselRecords = db.VesselRecords.ToList();
@@ -54,10 +55,15 @@ public static class Utilities
             db.SaveChanges();
         }
 
+        var vesselVisitNotifications = db.VesselVisitNotifications.ToList();
+        db.Decisions.AddRange(GetSeedingDecisionDataModel(vesselVisitNotifications));
+        db.SaveChanges();
+
     }
 
     public static void ReinitializeDbForTests(ShippingManagementContext db)
     {
+        db.Decisions.RemoveRange(db.Decisions);
         db.VesselVisitNotifications.RemoveRange(db.VesselVisitNotifications);
         db.Representatives.RemoveRange(db.Representatives);
         db.PhysicalResources.RemoveRange(db.PhysicalResources);
@@ -126,9 +132,6 @@ public static class Utilities
     {
         var qual1 = qualifications.FirstOrDefault(q => q.Code == "QUAL1");
         var qual2 = qualifications.FirstOrDefault(q => q.Code == "QUAL2");
-        List<QualificationDataModel> staffQualifications = new List<QualificationDataModel>();
-        staffQualifications.Add(qual1!);
-        staffQualifications.Add(qual2!);
         if (qual1 == null || qual2 == null)
             throw new InvalidOperationException("Required qualifications not found in seeding data.");
         return new List<StaffDataModel>()
@@ -417,6 +420,34 @@ public static class Utilities
         notifications.Add(n4);
 
         return notifications;
+    }
+
+    public static List<DecisionDataModel> GetSeedingDecisionDataModel(List<VesselVisitNotificationDataModel> vesselVisitNotifications)
+    {
+        var now = DateTime.UtcNow;
+        var decisions = new List<DecisionDataModel>();
+
+        var decision1 = new DecisionDataModel
+        {
+            VesselVisitNotification = vesselVisitNotifications[0],
+            ResponseMessage = "Dock A",
+            OfficerId = 0,
+            DecisionDate = now,
+            Status = DecisionStatus.Approved
+        };
+
+        var decision2 = new DecisionDataModel
+        {
+            VesselVisitNotification = vesselVisitNotifications[1],
+            ResponseMessage = "Rejected because of Vessel Record.",
+            OfficerId = 1,
+            DecisionDate = now,
+            Status = DecisionStatus.Rejected
+        };
+
+        decisions.Add(decision1);
+        decisions.Add(decision2);
+        return decisions;
     }
 
     public static List<PhysicalResourceDataModel> GetSeedingPhysicalResourcesDataModel(List<QualificationDataModel> qualifications)

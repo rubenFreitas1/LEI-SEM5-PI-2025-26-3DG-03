@@ -141,7 +141,6 @@ namespace WebApi.IntegrationTests.Tests
             Assert.Equal(dto.Name, returned.Name);
         }
 
-        // Emails are duplicated because Utilities.cs seeds the database with VesselTypes having those names
         [Theory]
         [InlineData("staff1@gmail.com")]
         [InlineData("staff2@gmail.com")]
@@ -166,7 +165,6 @@ namespace WebApi.IntegrationTests.Tests
             Assert.Equal(HttpStatusCode.Conflict, postResponse1.StatusCode);
         }
 
-        // Phone Numbers are duplicated because Utilities.cs seeds the database with VesselTypes having those names
         [Theory]
         [InlineData("987654321")]
         [InlineData("987654322")]
@@ -191,7 +189,6 @@ namespace WebApi.IntegrationTests.Tests
             Assert.Equal(HttpStatusCode.Conflict, postResponse1.StatusCode);
         }
 
-        // Invalid Phone Number formats
         [Theory]
         [InlineData("123")]
         [InlineData("abcdef")]
