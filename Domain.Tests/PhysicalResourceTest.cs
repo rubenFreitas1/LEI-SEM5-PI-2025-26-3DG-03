@@ -68,7 +68,7 @@ namespace Domain.Tests
             var qualifications = GetValidQualifications();
             var operationalWindow = GetValidOperationalWindow();
 
-            Assert.Throws<ArgumentException>(() => 
+            Assert.Throws<ArgumentException>(() =>
                 new PhysicalResource(code, "Valid Name", "Valid description text", PhysicalResourceKind.STSCrane, qualifications, 100, operationalWindow));
         }
 
@@ -82,7 +82,7 @@ namespace Domain.Tests
             var qualifications = GetValidQualifications();
             var operationalWindow = GetValidOperationalWindow();
 
-            Assert.Throws<ArgumentException>(() => 
+            Assert.Throws<ArgumentException>(() =>
                 new PhysicalResource("PR001", "Valid Name", description, PhysicalResourceKind.STSCrane, qualifications, 100, operationalWindow));
         }
 
@@ -94,7 +94,7 @@ namespace Domain.Tests
             var qualifications = GetValidQualifications();
             var operationalWindow = GetValidOperationalWindow();
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => 
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
                 new PhysicalResource("PR001", "Valid Name", "Valid description text", PhysicalResourceKind.STSCrane, qualifications, capacity, operationalWindow));
         }
 
