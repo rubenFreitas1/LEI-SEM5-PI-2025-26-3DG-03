@@ -1,0 +1,30 @@
+@startuml 2.2.4
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Port Authority Officer" as portOfficer
+participant "System" as system
+
+title System Sequence Diagram - US2.2.4
+
+== Update Storage Area ==
+activate portOfficer
+
+portOfficer -> system : Update a storage area
+activate system
+
+system -> portOfficer : Request Storage Area Information("Type,\n Location within the Port") to be updated
+deactivate system
+portOfficer -> system : Provide Storage Area Information to be updated
+
+activate system
+
+system -> system : Update storage area
+
+system -> portOfficer : Confirm storage area update
+deactivate system
+
+
+
+@enduml

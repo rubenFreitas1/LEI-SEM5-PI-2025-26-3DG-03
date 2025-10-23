@@ -109,7 +109,6 @@ public class StorageAreaRepository : GenericRepository<StorageArea>, IStorageAre
         try
         {
             StorageAreaDataModel storageAreaDM = _storageAreaMapper.ToDataModel(storageArea);
-            // Ensure StorageAreaDocks point to existing DockDataModel instances (so EF knows the principal)
             if (storageAreaDM.StorageAreaDocks != null && storageArea.StorageAreaDocks != null)
             {
                 var newSadList = new List<StorageAreaDockDataModel>();

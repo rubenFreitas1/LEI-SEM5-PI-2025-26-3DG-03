@@ -1,0 +1,158 @@
+@startuml StorageAreaCode
+
+
+class StorageAreaController { 
+	+GetAllStorageAreas()
+	+GetStorageAreaByCode(string code)
+	+GetStorageAreaById(int id)
+	+GetStorageAreaByLocation(string location)
+    +PostStorageArea(StorageAreaDTO storageAreaDTO)
+	+PutStorageArea(long id, StorageAreaDTO storageAreaDTO)
+}
+
+class StorageAreaService {
+	+GetAllStorageAreas()
+	+GetStorageAreaById(long id)
+	+GetStorageAreaByCode(string code)
+	+GetStorageAreaByLocation(string location)
+    +AddStorageArea(StorageAreaDTO storageAreaDTO, List<string> errorMessages)
+	+UpdateStorageArea(long id, StorageAreaDTO storageAreaDTO, List<string> errorMessages)
+}
+
+class StorageAreaDTO{
+    -Id: long
+    -Code: string
+    -Location: string
+    -StorageAreaType: StorageAreaType
+    -MaxCapacity: int
+    -CurrentCapacity: int
+    -StorageAreaDocks : List<StorageAreaDockDTO>
+    -LastModifiedAt : DateTime
+    +ToDTO(StorageArea storageArea)
+}
+
+class StorageAreaDockDTO{
+    DockName: string
+    Distance: double
+}
+
+
+interface IDockRepository{
+    +GetDockAsync()
+    +GetDockByNameAsync(string name)
+    +GetDockByIdAsync(long id)
+    +GetDockByLocationAsync(string location)
+    +GetDocksByVesselTypesAsync(IEnumerable<VesselType> vesselTypes)
+    +AddDock(Dock dock)
+    +Update(Dock dock, List<string> errorMessages)
+    +DockExists(long id)
+}
+
+interface IStorageAreaRepository{
+    +GetStorageAreasAsync()
+    +GetStorageAreaByCodeAsync(string name)
+    +GetStorageAreaByIdAsync(long id)
+    +GetStorageAreaByLocationAsync(string location)
+    +AddStorageArea(StorageArea storageArea)
+    +Update(StorageArea storageArea, List<string> errorMessages)
+    +StorageAreaExists(long id)
+}
+
+class StorageAreaRepository{
+    +GetStorageAreasAsync()
+    +GetStorageAreaByCodeAsync(string name)
+    +GetStorageAreaByIdAsync(long id)
+    +GetStorageAreaByLocationAsync(string location)
+    +AddStorageArea(StorageArea storageArea)
+    +Update(StorageArea storageArea, List<string> errorMessages)
+    +StorageAreaExists(long id)
+}
+
+
+class DockRepository{
+    +GetDockAsync()
+    +GetDockByNameAsync(string name)
+    +GetDockByIdAsync(long id)
+    +GetDockByLocationAsync(string location)
+    +GetDocksByVesselTypesAsync(IEnumerable<VesselType> vesselTypes)
+    +AddDock(Dock dock)
+    +Update(Dock dock, List<string> errorMessages)
+    +DockExists(long id)
+}
+
+
+class StorageArea{
+    -Id: long
+    -Code: string
+    -Location: string
+    -Type: StorageAreaType
+    -MaxCapacity: int
+    -CurrentCapacity: int
+    -StorageAreaDocks : List<StorageAreaDock>
+    -LastModifiedAt : DateTime
+    +ValidateCode(string code)
+    +ValidateLocation(string location)
+    +ValidateMaxCapacity(int maxCapacity)
+    +ValidateCurrentCapacity(int currentCapacity, int maxCapacity)
+    +ChangeLocation(string location)
+    +ChangeMaxCapacity(int maxCapacity)
+    +ChangeCurrentCapacity(int currentCapacity)
+    +AddStorageAreaDock(Dock dock, double distance)
+}
+
+class StorageAreaDock{
+    -StorageAreaId: long
+    -StorageArea : StorageArea
+    -Dock : Dock
+    -DockId: long
+    -Distance: double
+    +ValidateDistance(double distance)
+    +ValidateStorageArea(StorageArea storageArea)
+    +ValidateDock(Dock dock)
+}
+
+class StorageAreaMapper{
+    +ToDomain(StorageAreaDataModel storageAreaDM)
+    +ToDataModel(StorageArea storageArea)
+    +UpdateDataModelAsync(StorageAreaDataModel storageAreaDM, StorageArea storageArea, DbContext context)
+}
+
+interface IStorageAreaFactory{
+    +NewStorageArea(string code, string location, StorageAreaType type, int maxCapacity, int currentCapacity)
+}
+
+class StorageAreaDataModel{
+    -Id: long
+    -Code: string
+    -Location: string
+    -Type: string
+    -MaxCapacity: int
+    -CurrentCapacity: int
+    -StorageAreaDocks : List<StorageAreaDockDataModel>
+    -LastModifiedAt : DateTime
+}
+
+class StorageAreaFactory{
+    +NewStorageArea(string code, string location, StorageAreaType type, int maxCapacity, int currentCapacity)
+}
+
+
+StorageAreaController --> StorageAreaService: uses 
+StorageAreaService --> IDockRepository: uses
+StorageAreaService --> IStorageAreaRepository: uses
+StorageAreaService --> StorageAreaDTO: uses
+StorageAreaService --> StorageAreaDockDTO: uses
+
+StorageAreaRepository --> StorageAreaMapper: uses
+StorageAreaMapper --> StorageAreaDataModel : uses
+StorageAreaMapper --> IStorageAreaFactory : uses
+StorageAreaFactory --> StorageArea: creates
+
+
+StorageAreaFactory .up.|> IStorageAreaFactory : implements
+
+StorageAreaRepository ..|> IStorageAreaRepository : implements
+DockRepository .up.|> IDockRepository : implements
+
+StorageArea -right-> StorageAreaDock: contains
+@enduml

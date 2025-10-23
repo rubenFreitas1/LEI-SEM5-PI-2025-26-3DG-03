@@ -9,21 +9,24 @@ Container_Boundary(Dockapi, "Dock API") {
     Component(DockService, "Dock Service", ".NET 8 (ASP.NET Core)", "Business logic for Docks")
     Component(Dock, "Dock", "Domain Model", "Represents a Dock")
     Component(DockRepository, "Dock Repository", ".NET 8 (ASP.NET Core)", "Data access for Docks")
-    Component(DockDbContext, "Dock DbContext", ".NET 8 (Entity Framework Core)", "EF Core DbContext for Docks")
+    Component(VesselTypeRepository, "VesselType Repository", ".NET 8 (ASP.NET Core)", "Data access for Vessel Types")
+    Component(DbContext, "DbContext", ".NET 8 (Entity Framework Core)", "EF Core DbContext for Shipping Management")
     ComponentDb(db, "Shipping Management Database", "SQL Server", "Stores all data related to shipping management")
 }
 
 
 DockService -[hidden]right-> Dock
-DockRepository -[hidden]right-> DockDbContext
+DockRepository -[hidden]right-> DbContext
 
 
 Rel(PAO, DockController, "Sends HTTP requests", "HTTPS/JSON")
 Rel(DockController, DockService, "Calls methods in", "Method Calls")
 Rel(DockService, Dock, "Uses", "Domain Logic")
 Rel(DockService, DockRepository, "Uses", "Method Calls")
-Rel(DockRepository, DockDbContext, "Uses", "Method Calls")
-Rel(DockDbContext, db, "Reads from and writes to", "EF Core/SQL")
+Rel(DockService, VesselTypeRepository, "Uses", "Method Calls")
+Rel(DockRepository,DbContext, "Uses", "Method Calls")
+Rel(VesselTypeRepository, DbContext, "Uses", "Method Calls")
+Rel(DbContext, db, "Reads from and writes to", "EF Core/SQL")
 
 
 @enduml

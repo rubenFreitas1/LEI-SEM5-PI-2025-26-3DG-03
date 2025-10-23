@@ -1,0 +1,193 @@
+@startuml 2.2.4
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Port Authority Officer" as portOfficer
+participant "StorageArea Controller" as StorageAreaController
+participant "StorageArea Service" as StorageAreaService
+participant "StorageArea Repository" as StorageAreaRepository
+participant "Dock Repository" as DockRepository
+participant "StorageArea Mapper" as StorageAreaMapper
+participant "Dock Mapper" as DockMapper
+participant "StorageArea" as StorageAreaDomain
+participant "StorageAreaDock" as StorageAreaDockDomain
+participant "ShippingManagementContext" as DbContext
+participant "ShippingManagementDatabase" as Database
+
+title System Sequence Diagram - Update StorageArea (PUT)
+
+activate portOfficer
+	portOfficer -> StorageAreaController: PUT /api/StorageArea/Update/{id} (StorageAreaDTO)
+	activate StorageAreaController
+
+		StorageAreaController -> StorageAreaService: UpdateStorageArea(id, storageAreaDTO, errorMessages)
+		activate StorageAreaService
+
+			StorageAreaService -> StorageAreaRepository: GetStorageAreaByIdAsync(id)
+			activate StorageAreaRepository
+				StorageAreaRepository -> DbContext: Set<StorageAreaDataModel>().Include(sa => sa.StorageAreaDocks)!.ThenInclude(sad => sad.Dock)!.FirstOrDefaultAsync(sa => sa.Id == id)
+				activate DbContext
+					DbContext --> Database: SELECT * FROM StorageAreas WHERE Id = @id (Include StorageAreaDocks)
+					activate Database
+					Database --> DbContext: StorageAreaDataModel? (found/null)
+					deactivate Database
+					DbContext --> StorageAreaRepository: StorageAreaDataModel? (found/null)
+				deactivate DbContext
+				alt exists
+					StorageAreaRepository -> StorageAreaMapper: ToDomain(StorageAreaDataModel)
+					activate StorageAreaMapper
+						StorageAreaMapper --> StorageAreaRepository: storageArea (domain)
+					deactivate StorageAreaMapper
+					StorageAreaRepository --> StorageAreaService: storageArea
+				else
+					StorageAreaRepository --> StorageAreaService: null
+				end
+			deactivate StorageAreaRepository
+
+			alt storageArea is null
+				StorageAreaService -> StorageAreaController: return false + ["Storage area with id X does not exist"]
+			else
+
+				StorageAreaService -> StorageAreaRepository: GetStorageAreaByCodeAsync(storageAreaDTO.Code)
+				activate StorageAreaRepository
+					StorageAreaRepository -> DbContext: Set<StorageAreaDataModel>().Include(sa => sa.StorageAreaDocks)!.ThenInclude(sad => sad.Dock)!.FirstOrDefaultAsync(sa => sa.Code == code)
+					activate DbContext
+						DbContext --> Database: SELECT * FROM StorageAreas WHERE Code = @code
+						activate Database
+						Database --> DbContext: StorageAreaDataModel? (found/null)
+						deactivate Database
+						DbContext --> StorageAreaRepository: StorageAreaDataModel? (found/null)
+					deactivate DbContext
+					alt exists
+						StorageAreaRepository -> StorageAreaMapper: ToDomain(StorageAreaDataModel)
+						activate StorageAreaMapper
+							StorageAreaMapper --> StorageAreaRepository: storageArea (domain)
+						deactivate StorageAreaMapper
+						StorageAreaRepository --> StorageAreaService: storageAreaWithSameCode
+					else
+						StorageAreaRepository --> StorageAreaService: null
+					end
+				deactivate StorageAreaRepository
+
+				StorageAreaService -> StorageAreaRepository: GetStorageAreaByLocationAsync(storageAreaDTO.Location)
+				activate StorageAreaRepository
+					StorageAreaRepository -> DbContext: Set<StorageAreaDataModel>().Include(sa => sa.StorageAreaDocks)!.ThenInclude(sad => sad.Dock)!.FirstOrDefaultAsync(sa => sa.Location == location)
+					activate DbContext
+						DbContext --> Database: SELECT * FROM StorageAreas WHERE Location = @location
+						activate Database
+						Database --> DbContext: StorageAreaDataModel? (found/null)
+						deactivate Database
+						DbContext --> StorageAreaRepository: StorageAreaDataModel? (found/null)
+					deactivate DbContext
+					alt exists
+						StorageAreaRepository -> StorageAreaMapper: ToDomain(StorageAreaDataModel)
+						activate StorageAreaMapper
+							StorageAreaMapper --> StorageAreaRepository: storageArea (domain)
+						deactivate StorageAreaMapper
+						StorageAreaRepository --> StorageAreaService: storageAreaWithSameLocation
+					else
+						StorageAreaRepository --> StorageAreaService: null
+					end
+				deactivate StorageAreaRepository
+
+				alt code/location conflict
+					StorageAreaService -> StorageAreaController: return false + ["Conflict: code or location already exists"]
+				else
+					
+					StorageAreaService -> StorageAreaDomain: ChangeLocation(storageAreaDTO.Location)
+                        activate StorageAreaDomain
+                            StorageAreaDomain --> StorageAreaService:
+                        deactivate StorageAreaDomain
+					StorageAreaService -> StorageAreaDomain: ChangeMaxCapacity(storageAreaDTO.MaxCapacity)
+                        activate StorageAreaDomain
+                            StorageAreaDomain --> StorageAreaService:
+                        deactivate StorageAreaDomain
+					StorageAreaService -> StorageAreaDomain: ChangeCurrentCapacity(storageAreaDTO.CurrentCapacity)
+                        activate StorageAreaDomain
+                            StorageAreaDomain --> StorageAreaService:
+                        deactivate StorageAreaDomain
+					StorageAreaService -> StorageAreaDomain: StorageAreaDocks.Clear()
+                        activate StorageAreaDomain
+                            StorageAreaDomain --> StorageAreaService:
+                        deactivate StorageAreaDomain
+
+					loop for each storageAreaDockDTO in StorageAreaDTO.StorageAreaDocks
+						StorageAreaService -> DockRepository: GetDockByNameAsync(storageAreaDockDTO.DockName)
+						activate DockRepository
+							DockRepository -> DbContext: Set<DockDataModel>().Include(d => d.VesselTypesAllowed).SingleOrDefaultAsync(d => d.Name == name);
+							activate DbContext
+								DbContext --> Database: SELECT * FROM Docks WHERE Name = @name
+								activate Database
+								Database --> DbContext: DockDataModel? (found/null)
+								deactivate Database
+								DbContext --> DockRepository: DockDataModel? (found/null)
+							deactivate DbContext
+							alt dock found
+								DockRepository -> DockMapper: ToDomain(DockDataModel)
+                                    activate DockMapper
+                                        DockMapper --> DockRepository: dock (domain)
+                                    deactivate DockMapper
+								DockRepository --> StorageAreaService: dock
+								StorageAreaService -> StorageAreaDomain: AddStorageAreaDock(dock, distance)
+                                    activate StorageAreaDomain
+                                        StorageAreaDomain --> StorageAreaDockDomain: <<create>> StorageAreaDock(storageArea,dock ,distance)
+                                            activate StorageAreaDockDomain
+                                                StorageAreaDockDomain --> StorageAreaDomain: StorageAreaDock (new instance)
+                                            deactivate StorageAreaDockDomain
+                                        StorageAreaDomain --> StorageAreaService: 
+                                    deactivate StorageAreaDomain
+							else
+								DockRepository --> StorageAreaService: null
+								StorageAreaService --> StorageAreaController: return false + ["Dock with name '" + storageAreaDockDTO.DockName + "' does not exist"]
+							end
+						deactivate DockRepository
+					end
+
+					StorageAreaService -> StorageAreaRepository: Update(storageArea, errorMessages)
+					activate StorageAreaRepository
+
+						StorageAreaRepository -> DbContext: Set<StorageAreaDataModel>().Include(sa => sa.StorageAreaDocks)!.ThenInclude(sad => sad.Dock)!.FirstOrDefaultAsync(sa => sa.Id == storageArea.Id)
+						activate DbContext
+							DbContext --> Database: SELECT * FROM StorageAreas WHERE Id = @id (Include StorageAreaDocks)
+							activate Database
+							Database --> DbContext: storageAreaDM
+							deactivate Database
+							DbContext --> StorageAreaRepository: storageAreaDM
+						deactivate DbContext
+
+						StorageAreaRepository -> StorageAreaMapper: UpdateDataModelAsync(storageAreaDM, storageArea, DbContext)
+						activate StorageAreaMapper
+							StorageAreaMapper --> StorageAreaRepository: storageAreaDM (updated)
+						deactivate StorageAreaMapper
+
+						StorageAreaRepository -> DbContext: SaveChangesAsync()
+						activate DbContext
+							DbContext -> Database: UPDATE StorageArea ... and join table updates
+							activate Database
+							Database --> DbContext: Commit/Success
+							deactivate Database
+							DbContext --> StorageAreaRepository: saved
+						deactivate DbContext
+
+					    StorageAreaRepository --> StorageAreaService: true
+					deactivate StorageAreaRepository
+
+					StorageAreaService --> StorageAreaController: return true
+				end
+			end
+
+		deactivate StorageAreaService
+
+		alt success
+			StorageAreaController --> portOfficer: 200 OK
+		else validation error
+			StorageAreaController --> portOfficer: 400 Bad Request (errorMessages)
+		else conflict
+			StorageAreaController --> portOfficer: 409 Conflict (errorMessages)
+		end
+	deactivate StorageAreaController
+deactivate portOfficer
+
+@enduml
+

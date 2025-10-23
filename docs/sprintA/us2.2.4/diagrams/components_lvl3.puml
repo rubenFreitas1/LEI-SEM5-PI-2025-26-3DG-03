@@ -1,0 +1,32 @@
+@startuml Storage Area
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(PAO, "Port Authority Officer", "System user managing port authority operations")
+
+Container_Boundary(StorageAreaApi, "Storage Area API") {
+    Component(StorageAreaController, "Storage Area Controller", "ASP.NET Core MVC Controller", "Handles HTTP requests related to Storage Areas")
+    Component(StorageAreaService, "Storage Area Service", ".NET 8 (ASP.NET Core)", "Business logic for Storage Areas")
+    Component(StorageArea, "Storage Area", "Domain Model", "Represents a Storage Area")
+    Component(StorageAreaRepository, "Storage Area Repository", ".NET 8 (ASP.NET Core)", "Data access for Storage Areas")
+    Component(DockRepository, "Dock Repository", ".NET 8 (ASP.NET Core)", "Data access for Docks")
+    Component(DbContext, "DbContext", ".NET 8 (Entity Framework Core)", "EF Core DbContext for Shipping Management")
+    ComponentDb(db, "Shipping Management Database", "SQL Server", "Stores all data related to Shipping Management")
+}
+
+
+StorageAreaService -[hidden]right-> StorageArea
+StorageAreaRepository -[hidden]right-> DbContext
+
+
+Rel(PAO, StorageAreaController, "Sends HTTP requests", "HTTPS/JSON")
+Rel(StorageAreaController, StorageAreaService, "Calls methods in", "Method Calls")
+Rel(StorageAreaService, StorageArea, "Uses", "Domain Logic")
+Rel(StorageAreaService, StorageAreaRepository, "Uses", "Method Calls")
+Rel(StorageAreaService, DockRepository, "Uses", "Method Calls")
+Rel(StorageAreaRepository, DbContext, "Uses", "Method Calls")
+Rel(DockRepository, DbContext, "Uses", "Method Calls")
+Rel(DbContext, db, "Reads from and writes to", "EF Core/SQL")
+
+
+@enduml
