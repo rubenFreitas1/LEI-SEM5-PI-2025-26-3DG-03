@@ -47,6 +47,10 @@ enum ResourceStatus {
     Maintenance
 }
 
+interface IQualificationRepository{
+    +GetQualificationsByCodesAsync(IEnumerable<string> codes)
+}
+
 interface IStaffRepository{
     +GetStaffByIdAsync(long id)
     +GetStaffByEmailAsync(string email)
@@ -69,6 +73,10 @@ class StaffRepository{
     +GetStaffByStatusAsync(ResourceStatus status)
     +AddStaffAsync(Staff staff)
     +Update(Staff staff, List<string> errorMessages)
+}
+
+class QualificationRepository{
+    +GetQualificationByCodeAsync(string code)
 }
 
 
@@ -145,6 +153,7 @@ class StaffFactory{
 
 StaffController --> StaffService: uses 
 StaffService --> IStaffRepository: uses
+StaffService --> IQualificationRepository: uses
 StaffService --> StaffDTO: uses
 StaffDTO --> OperationalWindowDTO: uses
 
@@ -156,8 +165,10 @@ Resource --> OperationalWindow: uses
 Resource --> Qualification: uses
 
 StaffFactory ..|> IStaffFactory : implements
-Resource ..|> Staff : extends
+Staff ..|> Resource : extends
 Resource --> ResourceStatus: uses
 StaffRepository ..|> IStaffRepository : implements
+QualificationRepository .up.|> IQualificationRepository : implements
+
 
 @enduml

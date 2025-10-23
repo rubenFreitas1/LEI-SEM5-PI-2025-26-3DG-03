@@ -25,22 +25,22 @@ activate logisticsOfficer
     
     logisticsOfficer -> staffController:  POST /api/Staff
     activate staffController
+   
+            staffController -> staffService: AddStaff(staffDTO, qualification, _errorMessages)
+            activate staffService
 
-        staffController -> qualificationRepository: GetQualificationsByCodesAsync(staffDTO.QualificationCodes!)
-        activate qualificationRepository
+                staffService -> qualificationRepository: GetQualificationsByCodesAsync(staffDTO.QualificationCodes!)
+            activate qualificationRepository
 
-            qualificationRepository -> database: Set<QualificationDataModel>().Where(q => q.Code != null && codes.Contains(q.Code)).ToListAsync()
-            activate database
+                qualificationRepository -> database: Set<QualificationDataModel>().Where(q => q.Code != null && codes.Contains(q.Code)).ToListAsync()
+                activate database
 
-                database --> qualificationRepository: qualifications
-            deactivate database
+                    database --> qualificationRepository: qualifications
+                deactivate database
 
-            qualificationRepository --> staffController: qualifications
-        deactivate qualificationRepository
-        
-        staffController -> staffService: AddStaff(staffDTO, qualification, _errorMessages)
-        activate staffService
-            
+                qualificationRepository --> staffService: qualifications
+            deactivate qualificationRepository
+
             staffService -> staffRepository: GetStaffByIDAsync(staffDTO.Id.Value)
             activate staffRepository
 

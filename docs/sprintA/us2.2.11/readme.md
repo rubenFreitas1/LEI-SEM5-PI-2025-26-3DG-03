@@ -100,3 +100,208 @@ Qualification POST
 
 Qualification UPDATE
 ![nivel+1](images/code_+1_Put.png)
+
+## 5. Integration Tests
+
+### Tests Related To Post
+
+```csharp
+        [Fact]
+        public async Task PostStaff_ThenGetByName_ReturnsCreatedAndOk()
+        {
+            var dto = new StaffDTO
+            {
+                Name = "TestName",
+                QualificationCodes = new List<string> { "QUAL1", "QUAL2" },
+                Email = "stafftest@gmail.com",
+                Phone = "987654333",
+                OperationalWindow = new OperationalWindowDTO
+                {
+                    StartDay = DayOfWeek.Monday,
+                    EndDay = DayOfWeek.Friday,
+                    StartTime = "09:00",
+                    EndTime = "17:00"
+                },
+                Status = ResourceStatus.Available
+            };
+            var postResponse = await _client.PostAsJsonAsync("/api/Staff", dto);
+            Assert.Equal(HttpStatusCode.Created, postResponse.StatusCode);
+
+            var getResponse = await _client.GetAsync($"/api/Staff/ByName/{dto.Name}");
+            Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+            var returned = await getResponse.Content.ReadFromJsonAsync<StaffDTO>();
+            Assert.NotNull(returned);
+            Assert.Equal(dto.Name, returned.Name);
+        }
+
+        [Theory]
+        [InlineData("staff1@gmail.com")]
+        [InlineData("staff2@gmail.com")]
+        public async Task PostStaff_DuplicateEmail_ReturnsConflict(string email)
+        {
+            var dto = new StaffDTO
+            {
+                Name = "TestName",
+                QualificationCodes = new List<string> { "QUAL1", "QUAL2" },
+                Email = email,
+                Phone = "987654333",
+                OperationalWindow = new OperationalWindowDTO
+                {
+                    StartDay = DayOfWeek.Monday,
+                    EndDay = DayOfWeek.Friday,
+                    StartTime = "09:00",
+                    EndTime = "17:00"
+                },
+                Status = ResourceStatus.Available
+            };
+            var postResponse1 = await _client.PostAsJsonAsync("/api/Staff", dto);
+            Assert.Equal(HttpStatusCode.Conflict, postResponse1.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("987654321")]
+        [InlineData("987654322")]
+        public async Task PostStaff_DuplicatePhone_ReturnsConflict(string phone)
+        {
+            var dto = new StaffDTO
+            {
+                Name = "TestName",
+                QualificationCodes = new List<string> { "QUAL1", "QUAL2" },
+                Email = "testemail@gmail.com",
+                Phone = phone,
+                OperationalWindow = new OperationalWindowDTO
+                {
+                    StartDay = DayOfWeek.Monday,
+                    EndDay = DayOfWeek.Friday,
+                    StartTime = "09:00",
+                    EndTime = "17:00"
+                },
+                Status = ResourceStatus.Available
+            };
+            var postResponse1 = await _client.PostAsJsonAsync("/api/Staff", dto);
+            Assert.Equal(HttpStatusCode.Conflict, postResponse1.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("9:00")]
+        [InlineData("09-00")]
+        [InlineData("25:00")]
+        [InlineData("12:60")]
+        [InlineData("abc")]
+        [InlineData("")]
+        public async Task PostStaff_InvalidTimeFormat_ReturnsBadRequest(string startTime)
+        {
+            var dto = new StaffDTO
+            {
+                Name = "TestName",
+                QualificationCodes = new List<string> { "QUAL1", "QUAL2" },
+                Email = "validemail@gmail.com",
+                Phone = "987654333",
+                OperationalWindow = new OperationalWindowDTO
+                {
+                    StartDay = DayOfWeek.Monday,
+                    EndDay = DayOfWeek.Friday,
+                    StartTime = startTime,
+                    EndTime = "17:00"
+                },
+                Status = ResourceStatus.Available
+            };
+
+            var postResponse = await _client.PostAsJsonAsync("/api/Staff", dto);
+
+            Assert.Equal(HttpStatusCode.BadRequest, postResponse.StatusCode);
+
+            var error = await postResponse.Content.ReadAsStringAsync();
+            Assert.Contains("invalid time", error, StringComparison.OrdinalIgnoreCase);
+        }
+```
+
+### Tests Related To Put
+
+```csharp
+[Theory]
+        [InlineData("Updated Staff One", new[] { "QUAL1" }, "staff1updated@gmail.com", "987654329", ResourceStatus.Available)]
+        [InlineData("Updated Staff Two", new[] { "QUAL2" }, "staff2updated@gmail.com", "987654330", ResourceStatus.Unavailable)]
+        public async Task PutStaff_UpdatesSuccessfully(string name, string[] qualificationCodes, string email, string phone, ResourceStatus status)
+        {
+            var response = await _client.GetAsync("/api/Staff");
+            response.EnsureSuccessStatusCode();
+            var staffs = await response.Content.ReadFromJsonAsync<List<StaffDTO>>();
+            Assert.NotNull(staffs);
+            var staff = staffs!.FirstOrDefault(s => s.Email == "staff1@gmail.com");
+            Assert.NotNull(staff);
+
+            staff.Name = name;
+            staff.Email = email;
+            staff.Phone = phone;
+            staff.Status = status;
+            staff.QualificationCodes = qualificationCodes;
+
+            var putResponse = await _client.PutAsJsonAsync($"/api/Staff/Update/{staff.Id}", staff);
+            Assert.Equal(HttpStatusCode.OK, putResponse.StatusCode);
+
+            var getResponse = await _client.GetAsync("/api/Staff");
+            getResponse.EnsureSuccessStatusCode();
+            var updatedList = await getResponse.Content.ReadFromJsonAsync<List<StaffDTO>>();
+            var returned = updatedList!.FirstOrDefault(s => s.Email == email);
+            Assert.NotNull(returned);
+            Assert.Equal(name, returned.Name);
+            Assert.Equal(email, returned.Email);
+            Assert.Equal(phone, returned.Phone);
+            Assert.Equal(status, returned.Status);
+            Assert.Equal(qualificationCodes, returned.QualificationCodes);
+        }
+
+        [Fact]
+        public async Task PutStaff_NotExisting_ReturnsNotFound()
+        {
+            var dto = new StaffDTO
+            {
+                Id = 99999,
+                Name = "NonExistent",
+                Email = "nonexistent@gmail.com",
+                Phone = "987654336",
+                QualificationCodes = new List<string> { "QUAL1" },
+                OperationalWindow = new OperationalWindowDTO
+                {
+                    StartDay = DayOfWeek.Monday,
+                    EndDay = DayOfWeek.Friday,
+                    StartTime = "09:00",
+                    EndTime = "17:00"
+                },
+                Status = ResourceStatus.Available
+            };
+
+            var putResponse = await _client.PutAsJsonAsync($"/api/Staff/Update/{dto.Id}", dto);
+            Assert.Equal(HttpStatusCode.NotFound, putResponse.StatusCode);
+        }
+
+        [Fact]
+        public async Task PutStaff_UpdatePartialFields_Succeeds()
+        {
+            var response = await _client.GetAsync("/api/Staff");
+            response.EnsureSuccessStatusCode();
+            var staffs = await response.Content.ReadFromJsonAsync<List<StaffDTO>>();
+            var staff = staffs!.First();
+            Assert.NotNull(staff);
+
+            var originalEmail = staff.Email;
+            var originalPhone = staff.Phone;
+
+            staff.Name = "Partially Updated Name";
+            staff.Status = ResourceStatus.Unavailable;
+
+            var putResponse = await _client.PutAsJsonAsync($"/api/Staff/Update/{staff.Id}", staff);
+            Assert.Equal(HttpStatusCode.OK, putResponse.StatusCode);
+
+            var getResponse = await _client.GetAsync($"/api/Staff/ByID/{staff.Id}");
+            var updatedStaff = await getResponse.Content.ReadFromJsonAsync<StaffDTO>();
+            Assert.NotNull(updatedStaff);
+            Assert.Equal("Partially Updated Name", updatedStaff!.Name);
+            Assert.Equal(ResourceStatus.Unavailable, updatedStaff.Status);
+
+            Assert.Equal(originalEmail, updatedStaff.Email);
+            Assert.Equal(originalPhone, updatedStaff.Phone);
+        }
+```
+

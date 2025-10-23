@@ -3,16 +3,20 @@ namespace Application.Services;
 using Domain.Model;
 
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
+using System.Globalization;
 using Domain.IRepository;
 using ShippingManagement.Domain.Qualifications;
 using Application.DTO;
 
 public class StaffService
 {
-    private readonly IStaffRepository _staffRepository;
-    public StaffService(IStaffRepository staffRepository)
+    private readonly IStaffRepository _staffRepository;  
+    private readonly IQualificationRepository _qualificationRepository;
+    public StaffService(IStaffRepository staffRepository, IQualificationRepository qualificationRepository)
     {
         _staffRepository = staffRepository;
+        _qualificationRepository = qualificationRepository;
     }
 
     public async Task<IEnumerable<StaffDTO>> GetStaffByName(String name)
@@ -74,8 +78,10 @@ public class StaffService
         return list;
     }
 
-    public async Task<StaffDTO?> AddStaff(StaffDTO staffDTO, IEnumerable<Qualification> qualifications, List<String> errorMessages)
+    public async Task<StaffDTO?> AddStaff(StaffDTO staffDTO, List<String> errorMessages)
     {
+        IEnumerable<Qualification> qualifications = await _qualificationRepository.GetQualificationsByCodesAsync(staffDTO.QualificationCodes!);
+
         if (qualifications == null || !qualifications.Any())
         {
             errorMessages.Add("At least one valid QualificationCode must be provided to update a Staff.");
@@ -111,6 +117,34 @@ public class StaffService
             return null;
         }
 
+        var opDto = staffDTO.OperationalWindow;
+        var preErrors = new List<string>();
+        if (opDto == null)
+        {
+            errorMessages.Add("OperationalWindow cannot be null.");
+            return null;
+        }
+        if (opDto.StartDay != null && opDto.EndDay != null && opDto.StartDay > opDto.EndDay)
+        {
+            preErrors.Add("EndDay cannot be before StartDay");
+        }
+        var timeRegex = new Regex("^(?:[01]\\d|2[0-3]):[0-5]\\d$");
+        bool startFormatOk = !string.IsNullOrWhiteSpace(opDto.StartTime) && timeRegex.IsMatch(opDto.StartTime);
+        bool endFormatOk = !string.IsNullOrWhiteSpace(opDto.EndTime) && timeRegex.IsMatch(opDto.EndTime);
+        if (startFormatOk && endFormatOk)
+        {
+            if (TimeSpan.TryParseExact(opDto.StartTime, "hh\\:mm", CultureInfo.InvariantCulture, out var s) &&
+                TimeSpan.TryParseExact(opDto.EndTime, "hh\\:mm", CultureInfo.InvariantCulture, out var e))
+            {
+                if (s >= e) preErrors.Add("EndTime cannot be before StartTime");
+            }
+        }
+        if (preErrors.Any())
+        {
+            errorMessages.AddRange(preErrors);
+            return null;
+        }
+
         try
         {
             OperationalWindow opWindow = OperationalWindowDTO.ToDomain(staffDTO.OperationalWindow!);
@@ -118,7 +152,7 @@ public class StaffService
         }
         catch (Exception ex)
         {
-            errorMessages.Add("Error creating Staff : " + ex.Message);
+            errorMessages.Add("invalid time: " + ex.Message);
             return null;
         }
 
@@ -127,8 +161,9 @@ public class StaffService
         return sDTO;
     }
 
-    public async Task<bool> UpdateStaff(long id, StaffDTO staffDTO, IEnumerable<Qualification> qualifications, List<string> errorMessages)
+    public async Task<bool> UpdateStaff(long id, StaffDTO staffDTO, List<string> errorMessages)
     {
+        IEnumerable<Qualification> qualifications = await _qualificationRepository.GetQualificationsByCodesAsync(staffDTO.QualificationCodes!);
         if (staffDTO.Status != ResourceStatus.Available && staffDTO.Status != ResourceStatus.Unavailable)
         {
             errorMessages.Add("Staff status must be either Available(0) or Unavailable(1).");
@@ -155,7 +190,45 @@ public class StaffService
             errorMessages.Add("Staff not found");
             return false;
         }
-        OperationalWindow opWindow = OperationalWindowDTO.ToDomain(staffDTO.OperationalWindow!);
+        var opDto = staffDTO.OperationalWindow;
+        var preErrors = new List<string>();
+        if (opDto == null)
+        {
+            errorMessages.Add("OperationalWindow cannot be null.");
+            return false;
+        }
+        if (opDto.StartDay != null && opDto.EndDay != null && opDto.StartDay > opDto.EndDay)
+        {
+            preErrors.Add("EndDay cannot be before StartDay");
+        }
+        var timeRegex = new Regex("^(?:[01]\\d|2[0-3]):[0-5]\\d$");
+        bool startFormatOk = !string.IsNullOrWhiteSpace(opDto.StartTime) && timeRegex.IsMatch(opDto.StartTime);
+        bool endFormatOk = !string.IsNullOrWhiteSpace(opDto.EndTime) && timeRegex.IsMatch(opDto.EndTime);
+        if (startFormatOk && endFormatOk)
+        {
+            if (TimeSpan.TryParseExact(opDto.StartTime, "hh\\:mm", CultureInfo.InvariantCulture, out var s) &&
+                TimeSpan.TryParseExact(opDto.EndTime, "hh\\:mm", CultureInfo.InvariantCulture, out var e))
+            {
+                if (s >= e) preErrors.Add("EndTime cannot be before StartTime");
+            }
+        }
+        if (preErrors.Any())
+        {
+            errorMessages.AddRange(preErrors);
+            return false;
+        }
+
+        OperationalWindow opWindow;
+        try
+        {
+            opWindow = OperationalWindowDTO.ToDomain(staffDTO.OperationalWindow!);
+        }
+        catch (Exception ex)
+        {
+            errorMessages.Add("invalid time: " + ex.Message);
+            return false;
+        }
+
         try
         {
             staff.ChangeName(staffDTO.Name!);

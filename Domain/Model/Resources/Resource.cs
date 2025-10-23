@@ -15,6 +15,7 @@ namespace Domain.Model
         public OperationalWindow OperationalWindow { get; set; }
 
         public ResourceStatus Status { get; set; }
+        public DateTime LastModifiedAt { get; set; }
 
         protected Resource()
         {
@@ -34,29 +35,34 @@ namespace Domain.Model
             Qualification = qualification;
             OperationalWindow = operationalWindow;
             Status = status;
+            LastModifiedAt = DateTime.UtcNow;
         }
 
         public void ChangeName(string name)
         {
             ValidateName(name);
             Name = name.Trim();
+            LastModifiedAt = DateTime.UtcNow;
         }
 
         public void ChangeQualifications(IEnumerable<Qualification> qualification)
         {
             ValidateQualification(qualification);
             Qualification = qualification;
+            LastModifiedAt = DateTime.UtcNow;
         }
 
         public void ChangeStatus(ResourceStatus status)
         {
             Status = status;
+            LastModifiedAt = DateTime.UtcNow;
         }
 
         public void ChangeOperationalWindow(OperationalWindow operationalWindow)
         {
             ValidateOperationalWindow(operationalWindow);
             OperationalWindow = operationalWindow;
+            LastModifiedAt = DateTime.UtcNow;
         }
 
         private static void ValidateName(string name)

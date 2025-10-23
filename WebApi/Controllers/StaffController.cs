@@ -15,13 +15,11 @@ using System.Threading.Tasks;
 public class StaffController : ControllerBase
 {
     private readonly StaffService _staffService;
-    private readonly IQualificationRepository _qualificationRepository;
     List<string> _errorMessages = new List<string>();
 
-    public StaffController(StaffService staffService, IQualificationRepository qualificationRepository)
+    public StaffController(StaffService staffService)
     {
         _staffService = staffService;
-        _qualificationRepository = qualificationRepository;
     }
 
     [HttpGet]
@@ -108,20 +106,8 @@ public class StaffController : ControllerBase
         {
             return BadRequest("At least one QualificationCode must be provided to create a Staff.");
         }
-        try
-        {
-            if (staffDTO.OperationalWindow != null)
-            {
-                var _ = OperationalWindowDTO.ToDomain(staffDTO.OperationalWindow);
-            }
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new List<string> { "invalid time: " + ex.Message });
-        }
-
-        IEnumerable<Qualification> qualification = await _qualificationRepository.GetQualificationsByCodesAsync(staffDTO.QualificationCodes!);
-        StaffDTO? createdStaff = await _staffService.AddStaff(staffDTO, qualification, _errorMessages);
+        
+        StaffDTO? createdStaff = await _staffService.AddStaff(staffDTO, _errorMessages);
         if (createdStaff == null)
         {
             if (_errorMessages.Any(msg => msg.Contains("already exists", StringComparison.OrdinalIgnoreCase)))
@@ -141,21 +127,14 @@ public class StaffController : ControllerBase
         {
             return BadRequest("Staff data must be provided.");
         }
-        try
-        {
-            if (staffDTO.OperationalWindow != null)
-            {
-                var _ = OperationalWindowDTO.ToDomain(staffDTO.OperationalWindow);
-            }
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new List<string> { "invalid time: " + ex.Message });
-        }
-        IEnumerable<Qualification> qualification = await _qualificationRepository.GetQualificationsByCodesAsync(staffDTO.QualificationCodes!);
-        bool wasUpdated = await _staffService.UpdateStaff(id, staffDTO, qualification, _errorMessages);
+        
+        bool wasUpdated = await _staffService.UpdateStaff(id, staffDTO, _errorMessages);
         if (!wasUpdated && _errorMessages.Any())
         {
+            if (_errorMessages.Any(msg => msg.Contains("Staff not found", StringComparison.OrdinalIgnoreCase)))
+            {
+                return NotFound(_errorMessages);
+            }
             if (_errorMessages.Any(msg =>
                 msg.Contains("already exists", StringComparison.OrdinalIgnoreCase) ||
                 msg.Contains("Already exists", StringComparison.OrdinalIgnoreCase)))

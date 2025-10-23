@@ -18,6 +18,7 @@ namespace DataModel.Model
         public OperationalWindow? OperationalWindow { get; set; }
         [Required]
         public ResourceStatus? Status { get; set; }
+        public DateTime LastModifiedAt { get; set; }
 
         public StaffDataModel() { }
 

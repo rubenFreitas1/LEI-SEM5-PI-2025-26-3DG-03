@@ -6,6 +6,7 @@ skinparam shadowing false
 actor "Logistics Officer" as logisticsOfficer
 participant "Staff Controller" as staffController
 participant "Staff Service" as staffService
+participant "Operational Window DTO" as operationalWindowDTO
 participant "Qualification Repository" as qualificationRepository
 participant "Staff Repository" as staffRepository
 participant "Staff Mapper" as staffMapper
@@ -23,22 +24,22 @@ activate logisticsOfficer
     
     logisticsOfficer -> staffController:  Put /api/Staff
     activate staffController
-
-        staffController -> qualificationRepository: GetQualificationsByCodesAsync(staffDTO.QualificationCodes!)
-        activate qualificationRepository
-
-            qualificationRepository -> database: Set<QualificationDataModel>().Where(q => q.Code != null && codes.Contains(q.Code)).ToListAsync()
-            activate database
-
-                database --> qualificationRepository: qualifications
-            deactivate database
-
-            qualificationRepository --> staffController: qualifications
-        deactivate qualificationRepository
         
         staffController -> staffService: UpdateStaff(id, staffDTO, qualification, _errorMessages)
         activate staffService
             
+            staffService -> qualificationRepository: GetQualificationsByCodesAsync(staffDTO.QualificationCodes!)
+            activate qualificationRepository
+
+                qualificationRepository -> database: Set<QualificationDataModel>().Where(q => q.Code != null && codes.Contains(q.Code)).ToListAsync()
+                activate database
+
+                    database --> qualificationRepository: qualifications
+                deactivate database
+
+                qualificationRepository --> staffService: qualifications
+            deactivate qualificationRepository
+
             staffService -> staffRepository: GetStaffByIDAsync(staffDTO.Id.Value)
             activate staffRepository
 

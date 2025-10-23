@@ -21,7 +21,7 @@ namespace Domain.Model
         private static void ValidateDays(DayOfWeek startDay, DayOfWeek endDay)
         {
             if (startDay > endDay)
-                throw new ArgumentException("StartDay must be the same or earlier in the week than EndDay.");
+                throw new ArgumentException("EndDay cannot be before StartDay");
         }
 
         private static void ValidateTimes(TimeSpan startTime, TimeSpan endTime)
@@ -31,7 +31,7 @@ namespace Domain.Model
             if (endTime < TimeSpan.Zero || endTime > TimeSpan.FromDays(1))
                 throw new ArgumentOutOfRangeException(nameof(endTime));
             if (startTime >= endTime)
-                throw new ArgumentException("StartTime must be earlier than EndTime.");
+                throw new ArgumentException("EndTime cannot be before StartTime");
         }
     }
 }

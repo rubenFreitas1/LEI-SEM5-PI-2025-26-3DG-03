@@ -26,12 +26,14 @@ namespace Domain.Model
         {
             ValidateEmail(email);
             Email = email.Trim();
+            LastModifiedAt = DateTime.UtcNow;
         }
 
         public void ChangePhone(string phone)
         {
             ValidatePhone(phone);
             Phone = phone.Trim();
+            LastModifiedAt = DateTime.UtcNow;
         }
 
         private static void ValidateEmail(string email)

@@ -219,7 +219,6 @@ namespace WebApi.IntegrationTests.Tests
             Assert.Equal(HttpStatusCode.BadRequest, postResponse.StatusCode);
         }
 
-        // Invalid Time Formats
         [Theory]
         [InlineData("9:00")]
         [InlineData("09-00")]
@@ -252,38 +251,54 @@ namespace WebApi.IntegrationTests.Tests
             var error = await postResponse.Content.ReadAsStringAsync();
             Assert.Contains("invalid time", error, StringComparison.OrdinalIgnoreCase);
         }
-
-        [Theory]
-        [InlineData("Updated Staff One", new[] { "QUAL1" }, "staff1updated@gmail.com", "987654329", ResourceStatus.Available)]
-        [InlineData("Updated Staff Two", new[] { "QUAL2" }, "staff2updated@gmail.com", "987654330", ResourceStatus.Unavailable)]
-        public async Task PutStaff_UpdatesSuccessfully(string name, string[] qualificationCodes, string email, string phone, ResourceStatus status)
+        [Fact]
+        public async Task PostStaff_EndTimeBeforeStartTime_ReturnsBadRequest()
         {
-            var response = await _client.GetAsync("/api/Staff");
-            response.EnsureSuccessStatusCode();
-            var staffs = await response.Content.ReadFromJsonAsync<List<StaffDTO>>();
-            Assert.NotNull(staffs);
-            var staff = staffs!.FirstOrDefault(s => s.Email == "staff1@gmail.com");
-            Assert.NotNull(staff);
+            var dto = new StaffDTO
+            {
+                Name = "InvalidTimeStaff",
+                Email = "invalidtime@gmail.com",
+                Phone = "987654337",
+                QualificationCodes = new List<string> { "QUAL1" },
+                OperationalWindow = new OperationalWindowDTO
+                {
+                    StartDay = DayOfWeek.Monday,
+                    EndDay = DayOfWeek.Friday,
+                    StartTime = "17:00",
+                    EndTime = "09:00"
+                },
+                Status = ResourceStatus.Available
+            };
 
-            staff.Name = name;
-            staff.Email = email;
-            staff.Phone = phone;
-            staff.Status = status;
-            staff.QualificationCodes = qualificationCodes;
+            var postResponse = await _client.PostAsJsonAsync("/api/Staff", dto);
+            Assert.Equal(HttpStatusCode.BadRequest, postResponse.StatusCode);
+            var error = await postResponse.Content.ReadAsStringAsync();
+            Assert.Contains("EndTime cannot be before StartTime", error, StringComparison.OrdinalIgnoreCase);
+        }
 
-            var putResponse = await _client.PutAsJsonAsync($"/api/Staff/Update/{staff.Id}", staff);
-            Assert.Equal(HttpStatusCode.OK, putResponse.StatusCode);
+        [Fact]
+        public async Task PostStaff_EndDayBeforeStartDay_ReturnsBadRequest()
+        {
+            var dto = new StaffDTO
+            {
+                Name = "InvalidDayStaff",
+                Email = "invalidday@gmail.com",
+                Phone = "987654338",
+                QualificationCodes = new List<string> { "QUAL1" },
+                OperationalWindow = new OperationalWindowDTO
+                {
+                    StartDay = DayOfWeek.Friday,
+                    EndDay = DayOfWeek.Monday,
+                    StartTime = "09:00",
+                    EndTime = "17:00"
+                },
+                Status = ResourceStatus.Available
+            };
 
-            var getResponse = await _client.GetAsync("/api/Staff");
-            getResponse.EnsureSuccessStatusCode();
-            var updatedList = await getResponse.Content.ReadFromJsonAsync<List<StaffDTO>>();
-            var returned = updatedList!.FirstOrDefault(s => s.Email == email);
-            Assert.NotNull(returned);
-            Assert.Equal(name, returned.Name);
-            Assert.Equal(email, returned.Email);
-            Assert.Equal(phone, returned.Phone);
-            Assert.Equal(status, returned.Status);
-            Assert.Equal(qualificationCodes, returned.QualificationCodes);
+            var postResponse = await _client.PostAsJsonAsync("/api/Staff", dto);
+            Assert.Equal(HttpStatusCode.BadRequest, postResponse.StatusCode);
+            var error = await postResponse.Content.ReadAsStringAsync();
+            Assert.Contains("EndDay cannot be before StartDay", error, StringComparison.OrdinalIgnoreCase);
         }
 
         [Theory]
@@ -337,6 +352,165 @@ namespace WebApi.IntegrationTests.Tests
             var postResponse = await _client.PostAsJsonAsync("/api/Staff", dto);
             Assert.Equal(HttpStatusCode.BadRequest, postResponse.StatusCode);
         }
+
+        [Theory]
+        [InlineData("Updated Staff One", new[] { "QUAL1" }, "staff1updated@gmail.com", "987654329", ResourceStatus.Available)]
+        [InlineData("Updated Staff Two", new[] { "QUAL2" }, "staff2updated@gmail.com", "987654330", ResourceStatus.Unavailable)]
+        public async Task PutStaff_UpdatesSuccessfully(string name, string[] qualificationCodes, string email, string phone, ResourceStatus status)
+        {
+            var response = await _client.GetAsync("/api/Staff");
+            response.EnsureSuccessStatusCode();
+            var staffs = await response.Content.ReadFromJsonAsync<List<StaffDTO>>();
+            Assert.NotNull(staffs);
+            var staff = staffs!.FirstOrDefault(s => s.Email == "staff1@gmail.com");
+            Assert.NotNull(staff);
+
+            staff.Name = name;
+            staff.Email = email;
+            staff.Phone = phone;
+            staff.Status = status;
+            staff.QualificationCodes = qualificationCodes;
+
+            var putResponse = await _client.PutAsJsonAsync($"/api/Staff/Update/{staff.Id}", staff);
+            Assert.Equal(HttpStatusCode.OK, putResponse.StatusCode);
+
+            var getResponse = await _client.GetAsync("/api/Staff");
+            getResponse.EnsureSuccessStatusCode();
+            var updatedList = await getResponse.Content.ReadFromJsonAsync<List<StaffDTO>>();
+            var returned = updatedList!.FirstOrDefault(s => s.Email == email);
+            Assert.NotNull(returned);
+            Assert.Equal(name, returned.Name);
+            Assert.Equal(email, returned.Email);
+            Assert.Equal(phone, returned.Phone);
+            Assert.Equal(status, returned.Status);
+            Assert.Equal(qualificationCodes, returned.QualificationCodes);
+        }
+
+        [Fact]
+        public async Task PutStaff_NotExisting_ReturnsNotFound()
+        {
+            var dto = new StaffDTO
+            {
+                Id = 99999,
+                Name = "NonExistent",
+                Email = "nonexistent@gmail.com",
+                Phone = "987654336",
+                QualificationCodes = new List<string> { "QUAL1" },
+                OperationalWindow = new OperationalWindowDTO
+                {
+                    StartDay = DayOfWeek.Monday,
+                    EndDay = DayOfWeek.Friday,
+                    StartTime = "09:00",
+                    EndTime = "17:00"
+                },
+                Status = ResourceStatus.Available
+            };
+
+            var putResponse = await _client.PutAsJsonAsync($"/api/Staff/Update/{dto.Id}", dto);
+            Assert.Equal(HttpStatusCode.NotFound, putResponse.StatusCode);
+        }
+
+        [Fact]
+        public async Task PutStaff_UpdatePartialFields_Succeeds()
+        {
+            var response = await _client.GetAsync("/api/Staff");
+            response.EnsureSuccessStatusCode();
+            var staffs = await response.Content.ReadFromJsonAsync<List<StaffDTO>>();
+            var staff = staffs!.First();
+            Assert.NotNull(staff);
+
+            var originalEmail = staff.Email;
+            var originalPhone = staff.Phone;
+
+            staff.Name = "Partially Updated Name";
+            staff.Status = ResourceStatus.Unavailable;
+
+            var putResponse = await _client.PutAsJsonAsync($"/api/Staff/Update/{staff.Id}", staff);
+            Assert.Equal(HttpStatusCode.OK, putResponse.StatusCode);
+
+            var getResponse = await _client.GetAsync($"/api/Staff/ByID/{staff.Id}");
+            var updatedStaff = await getResponse.Content.ReadFromJsonAsync<StaffDTO>();
+            Assert.NotNull(updatedStaff);
+            Assert.Equal("Partially Updated Name", updatedStaff!.Name);
+            Assert.Equal(ResourceStatus.Unavailable, updatedStaff.Status);
+
+            Assert.Equal(originalEmail, updatedStaff.Email);
+            Assert.Equal(originalPhone, updatedStaff.Phone);
+        }
+
+        [Fact]
+        public async Task PutStaff_UpdateWithDuplicateEmail_ReturnsConflict()
+        {
+            var response = await _client.GetAsync("/api/Staff");
+            response.EnsureSuccessStatusCode();
+            var staffs = await response.Content.ReadFromJsonAsync<List<StaffDTO>>();
+            Assert.True(staffs!.Count >= 2, "Need at least 2 staff entries for this test");
+
+            var staff1 = staffs[0];
+            var staff2 = staffs[1];
+
+            staff1.Email = staff2.Email;
+
+            var putResponse = await _client.PutAsJsonAsync($"/api/Staff/Update/{staff1.Id}", staff1);
+            Assert.Equal(HttpStatusCode.Conflict, putResponse.StatusCode);
+        }
+        [Fact]
+        public async Task PutStaff_UpdateWithDuplicatePhone_ReturnsConflict()
+        {
+            var response = await _client.GetAsync("/api/Staff");
+            response.EnsureSuccessStatusCode();
+            var staffs = await response.Content.ReadFromJsonAsync<List<StaffDTO>>();
+            Assert.True(staffs!.Count >= 2, "Need at least 2 staff entries for this test");
+
+            var staff1 = staffs[0];
+            var staff2 = staffs[1];
+
+            staff1.Phone = staff2.Phone;
+
+            var putResponse = await _client.PutAsJsonAsync($"/api/Staff/Update/{staff1.Id}", staff1);
+            Assert.Equal(HttpStatusCode.Conflict, putResponse.StatusCode);
+        }
+        [Theory]
+        [InlineData("", "validemail@gmail.com")]
+        [InlineData("Valid Name", "")]
+        [InlineData("Valid Name", "invalidemail")]
+        public async Task PutStaff_UpdateInvalidFields_ReturnsBadRequest(string name, string email)
+        {
+            var response = await _client.GetAsync("/api/Staff");
+            response.EnsureSuccessStatusCode();
+            var staffs = await response.Content.ReadFromJsonAsync<List<StaffDTO>>();
+            var staff = staffs!.First();
+
+            staff.Name = name;
+            staff.Email = email;
+
+            var putResponse = await _client.PutAsJsonAsync($"/api/Staff/Update/{staff.Id}", staff);
+            Assert.Equal(HttpStatusCode.BadRequest, putResponse.StatusCode);
+        }
+
+        [Fact]
+        public async Task PutStaff_UpdateInvalidOperationalWindow_ReturnsBadRequest()
+        {
+            var response = await _client.GetAsync("/api/Staff");
+            response.EnsureSuccessStatusCode();
+            var staffs = await response.Content.ReadFromJsonAsync<List<StaffDTO>>();
+            var staff = staffs!.First();
+
+            Assert.NotNull(staff.OperationalWindow);
+
+            staff.OperationalWindow!.StartTime = "17:00";
+            staff.OperationalWindow.EndTime = "09:00";
+            staff.OperationalWindow.StartDay = DayOfWeek.Friday;
+            staff.OperationalWindow.EndDay = DayOfWeek.Monday;
+
+            var putResponse = await _client.PutAsJsonAsync($"/api/Staff/Update/{staff.Id}", staff);
+            Assert.Equal(HttpStatusCode.BadRequest, putResponse.StatusCode);
+
+            var error = await putResponse.Content.ReadAsStringAsync();
+            Assert.Contains("EndTime cannot be before StartTime", error, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("EndDay cannot be before StartDay", error, StringComparison.OrdinalIgnoreCase);
+        }
+
 
     }
 }
