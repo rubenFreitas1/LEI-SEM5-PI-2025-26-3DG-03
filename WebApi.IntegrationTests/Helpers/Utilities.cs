@@ -63,7 +63,7 @@ public static class Utilities
         db.Qualifications.RemoveRange(db.Qualifications);
         db.VesselTypes.RemoveRange(db.VesselTypes);
         db.ShippingAgentOrganizations.RemoveRange(db.ShippingAgentOrganizations);
-        
+
 
         db.SaveChanges();
 

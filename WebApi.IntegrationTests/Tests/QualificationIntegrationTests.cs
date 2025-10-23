@@ -34,10 +34,10 @@ namespace WebApi.IntegrationTests.Tests
         {
             var response = await _client.GetAsync("/api/Qualification");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            
+
             var qualifications = await response.Content.ReadFromJsonAsync<List<QualificationDTO>>();
             Assert.NotNull(qualifications);
-            Assert.True(qualifications.Count >= 3); 
+            Assert.True(qualifications.Count >= 3);
         }
 
         [Theory]
@@ -57,7 +57,7 @@ namespace WebApi.IntegrationTests.Tests
         {
             var response = await _client.GetAsync($"/api/Qualification/ByCode/{code}");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            
+
             var qualification = await response.Content.ReadFromJsonAsync<QualificationDTO>();
             Assert.NotNull(qualification);
             Assert.Equal(code, qualification.Code);
@@ -80,7 +80,7 @@ namespace WebApi.IntegrationTests.Tests
         {
             var response = await _client.GetAsync($"/api/Qualification/ByName/{name}");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            
+
             var qualifications = await response.Content.ReadFromJsonAsync<List<QualificationDTO>>();
             Assert.NotNull(qualifications);
             Assert.NotEmpty(qualifications);
@@ -98,14 +98,14 @@ namespace WebApi.IntegrationTests.Tests
 
             var postResponse = await _client.PostAsJsonAsync("/api/Qualification", newQualification);
             Assert.Equal(HttpStatusCode.Created, postResponse.StatusCode);
-            
+
             var createdQualification = await postResponse.Content.ReadFromJsonAsync<QualificationDTO>();
             Assert.NotNull(createdQualification);
             Assert.Equal(newQualification.Code, createdQualification.Code);
             Assert.Equal(newQualification.Name, createdQualification.Name);
             Assert.Equal(newQualification.Description, createdQualification.Description);
-            
-            
+
+
             var getResponse = await _client.GetAsync($"/api/Qualification/ByCode/{newQualification.Code}");
             Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
         }
@@ -145,11 +145,11 @@ namespace WebApi.IntegrationTests.Tests
         }
 
         [Theory]
-        [InlineData("", "Valid Name", "Valid description with two words")] 
-        [InlineData(null, "Valid Name", "Valid description with two words")] 
-        [InlineData("   ", "Valid Name", "Valid description with two words")] 
-        [InlineData("TOOLONGCODE123456", "Valid Name", "Valid description with two words")] 
-        [InlineData("CODE@#$", "Valid Name", "Valid description with two words")] 
+        [InlineData("", "Valid Name", "Valid description with two words")]
+        [InlineData(null, "Valid Name", "Valid description with two words")]
+        [InlineData("   ", "Valid Name", "Valid description with two words")]
+        [InlineData("TOOLONGCODE123456", "Valid Name", "Valid description with two words")]
+        [InlineData("CODE@#$", "Valid Name", "Valid description with two words")]
         public async Task PostQualification_InvalidCode_ReturnsBadRequest(string? code, string name, string description)
         {
             var invalidQualification = new QualificationDTO
@@ -164,11 +164,11 @@ namespace WebApi.IntegrationTests.Tests
         }
 
         [Theory]
-        [InlineData("VALID1", "", "Valid description with two words")] 
-        [InlineData("VALID2", null, "Valid description with two words")] 
-        [InlineData("VALID3", "   ", "Valid description with two words")] 
-        [InlineData("VALID4", "Invalid123", "Valid description with two words")] 
-        [InlineData("VALID5", "Invalid@Name", "Valid description with two words")] 
+        [InlineData("VALID1", "", "Valid description with two words")]
+        [InlineData("VALID2", null, "Valid description with two words")]
+        [InlineData("VALID3", "   ", "Valid description with two words")]
+        [InlineData("VALID4", "Invalid123", "Valid description with two words")]
+        [InlineData("VALID5", "Invalid@Name", "Valid description with two words")]
         public async Task PostQualification_InvalidName_ReturnsBadRequest(string code, string? name, string description)
         {
             var invalidQualification = new QualificationDTO
@@ -183,10 +183,10 @@ namespace WebApi.IntegrationTests.Tests
         }
 
         [Theory]
-        [InlineData("VALID6", "Valid Name", "")] 
-        [InlineData("VALID7", "Valid Name", null)] 
-        [InlineData("VALID8", "Valid Name", "   ")] 
-        [InlineData("VALID9", "Valid Name", "OneWord")] 
+        [InlineData("VALID6", "Valid Name", "")]
+        [InlineData("VALID7", "Valid Name", null)]
+        [InlineData("VALID8", "Valid Name", "   ")]
+        [InlineData("VALID9", "Valid Name", "OneWord")]
         [InlineData("VALID10", "Valid Name", "This is a very long description that exceeds the maximum allowed length of 150 characters for qualification descriptions and should therefore be rejected by the validation logic in the domain model because it is too long to be stored properly in the system database")] // > 150 chars
         public async Task PostQualification_InvalidDescription_ReturnsBadRequest(string code, string name, string? description)
         {
@@ -211,14 +211,14 @@ namespace WebApi.IntegrationTests.Tests
             Assert.NotNull(qualification);
             Assert.Equal("QUAL1", qualification.Code);
 
-            
+
             qualification.Name = name;
             qualification.Description = description;
 
             var putResponse = await _client.PutAsJsonAsync($"/api/Qualification/Update/{qualification.Id}", qualification);
             Assert.Equal(HttpStatusCode.OK, putResponse.StatusCode);
 
-            
+
             var getResponse = await _client.GetAsync($"/api/Qualification/ByCode/{qualification.Code}");
             Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
             var updatedQualification = await getResponse.Content.ReadFromJsonAsync<QualificationDTO>();
@@ -228,19 +228,19 @@ namespace WebApi.IntegrationTests.Tests
         }
 
         [Theory]
-        [InlineData("Second Qualification")] 
-        [InlineData("Third Qualification")] 
+        [InlineData("Second Qualification")]
+        [InlineData("Third Qualification")]
         public async Task PutQualification_DuplicateName_ReturnsBadRequest(string duplicateName)
         {
-            
+
             var response = await _client.GetAsync("/api/Qualification/ByCode/QUAL1");
             var qualification = await response.Content.ReadFromJsonAsync<QualificationDTO>();
             Assert.NotNull(qualification);
             Assert.Equal("QUAL1", qualification.Code);
             Assert.Equal("First Qualification", qualification.Name);
 
-            
-            qualification.Name = duplicateName; 
+
+            qualification.Name = duplicateName;
             qualification.Description = "Updated description with words";
 
             var putResponse = await _client.PutAsJsonAsync($"/api/Qualification/Update/{qualification.Id}", qualification);
@@ -250,66 +250,66 @@ namespace WebApi.IntegrationTests.Tests
 
 
         [Theory]
-        [InlineData(null, "Valid Description with words")] 
-        [InlineData("", "Valid Description with words")] 
-        [InlineData("   ", "Valid Description with words")] 
+        [InlineData(null, "Valid Description with words")]
+        [InlineData("", "Valid Description with words")]
+        [InlineData("   ", "Valid Description with words")]
         public async Task PutQualification_NullOrEmptyName_IgnoresUpdate(string? name, string description)
         {
-            
+
             var response = await _client.GetAsync("/api/Qualification/ByCode/QUAL2");
             var qualification = await response.Content.ReadFromJsonAsync<QualificationDTO>();
             Assert.NotNull(qualification);
             Assert.Equal("QUAL2", qualification.Code);
-            var originalName = qualification.Name; 
+            var originalName = qualification.Name;
 
-            qualification.Name = name; 
-            qualification.Description = description; 
+            qualification.Name = name;
+            qualification.Description = description;
 
             var putResponse = await _client.PutAsJsonAsync($"/api/Qualification/Update/{qualification.Id}", qualification);
             Assert.Equal(HttpStatusCode.OK, putResponse.StatusCode);
 
-            
+
             var getResponse = await _client.GetAsync($"/api/Qualification/ByCode/QUAL2");
             var updatedQualification = await getResponse.Content.ReadFromJsonAsync<QualificationDTO>();
             Assert.NotNull(updatedQualification);
-            Assert.Equal(originalName, updatedQualification.Name); 
-            Assert.Equal(description, updatedQualification.Description); 
+            Assert.Equal(originalName, updatedQualification.Name);
+            Assert.Equal(description, updatedQualification.Description);
         }
 
         [Theory]
-        [InlineData("Updated Name", null)] 
-        [InlineData("Updated Name Two", "")] 
-        [InlineData("Updated Name Three", "   ")] 
+        [InlineData("Updated Name", null)]
+        [InlineData("Updated Name Two", "")]
+        [InlineData("Updated Name Three", "   ")]
         public async Task PutQualification_NullOrEmptyDescription_IgnoresUpdate(string name, string? description)
         {
-            
+
             var response = await _client.GetAsync("/api/Qualification/ByCode/QUAL3");
             var qualification = await response.Content.ReadFromJsonAsync<QualificationDTO>();
             Assert.NotNull(qualification);
             Assert.Equal("QUAL3", qualification.Code);
-            var originalDescription = qualification.Description; 
+            var originalDescription = qualification.Description;
 
-            qualification.Name = name; 
-            qualification.Description = description; 
+            qualification.Name = name;
+            qualification.Description = description;
 
             var putResponse = await _client.PutAsJsonAsync($"/api/Qualification/Update/{qualification.Id}", qualification);
             Assert.Equal(HttpStatusCode.OK, putResponse.StatusCode);
 
-            
+
             var getResponse = await _client.GetAsync($"/api/Qualification/ByCode/QUAL3");
             var updatedQualification = await getResponse.Content.ReadFromJsonAsync<QualificationDTO>();
             Assert.NotNull(updatedQualification);
-            Assert.Equal(name, updatedQualification.Name); 
-            Assert.Equal(originalDescription, updatedQualification.Description); 
+            Assert.Equal(name, updatedQualification.Name);
+            Assert.Equal(originalDescription, updatedQualification.Description);
         }
 
         [Theory]
-        [InlineData("Invalid Name 123", "Valid description but invalid name")] 
-        [InlineData("Valid Name", "OnlyOneWord")] 
-        [InlineData("Invalid@Name", "Valid description with multiple words")] 
+        [InlineData("Invalid Name 123", "Valid description but invalid name")]
+        [InlineData("Valid Name", "OnlyOneWord")]
+        [InlineData("Invalid@Name", "Valid description with multiple words")]
         public async Task PutQualification_InvalidData_ReturnsBadRequest(string name, string description)
         {
-            
+
             var response = await _client.GetAsync("/api/Qualification/ByCode/QUAL1");
             var qualification = await response.Content.ReadFromJsonAsync<QualificationDTO>();
             Assert.NotNull(qualification);
