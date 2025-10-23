@@ -1,0 +1,174 @@
+@startuml code_lvl4+1_Post_Representative
+!define RECTANGLE class
+
+title Sequence Diagram - POST Representative (Level 4+1)
+
+actor Client
+participant "RepresentativeController" as Controller
+participant "RepresentativeService" as Service
+participant "IRepresentativeRepository" as RepRepository
+participant "IShippingAgentOrganizationRepository" as SARepository
+participant "RepresentativeMapper" as Mapper
+participant "IRepresentativeFactory" as Factory
+participant "Representative" as Domain
+participant "RepresentativeDataModel" as DataModel
+database "ShippingManagementContext" as Database
+
+Client -> Controller : POST /api/Representative\n(RepresentativeDTO representativeDTO)
+
+activate Controller
+Controller -> Controller : Validate representativeDTO != null
+
+Controller -> Service : AddRepresentative(representativeDTO, errorMessages)
+activate Service
+
+Service -> SARepository : GetShippingAgentOrganizationByLegalNameAsync(representativeDTO.OrganizationName)
+activate SARepository
+SARepository -> Database : SingleOrDefaultAsync(sa => sa.LegalName == legalName)
+activate Database
+Database --> SARepository : ShippingAgentOrganizationDataModel or null
+deactivate Database
+
+alt Organization not found
+    SARepository --> Service : null
+    deactivate SARepository
+    Service -> Service : errorMessages.Add("No Shipping Agent Organization found with the Legal Name")
+    Service --> Controller : null
+else Organization found
+    SARepository --> Service : ShippingAgentOrganization
+    deactivate SARepository
+
+    Service -> RepRepository : GetRepresentativeByCitizenIdAsync(representativeDTO.CitizenId)
+    activate RepRepository
+    RepRepository -> Database : SingleOrDefaultAsync(r => r.CitizenId == citizenId)\n.Include(r => r.Organization)
+    activate Database
+    Database --> RepRepository : RepresentativeDataModel or null
+    deactivate Database
+    
+    alt Representative with CitizenId already exists
+        RepRepository -> Mapper : ToDomain(representativeDataModel)
+        activate Mapper
+        Mapper --> RepRepository : Representative (existing)
+        deactivate Mapper
+        RepRepository --> Service : Representative (existing)
+        deactivate RepRepository
+        Service -> Service : errorMessages.Add("Representative with CitizenId already exists")
+        Service --> Controller : null
+    else CitizenId available
+        RepRepository --> Service : null
+        deactivate RepRepository
+        
+
+        Service -> RepRepository : GetRepresentativeByEmailAsync(representativeDTO.Email)
+        activate RepRepository
+        RepRepository -> Database : SingleOrDefaultAsync(r => r.Email == email)\n.Include(r => r.Organization)
+        activate Database
+        Database --> RepRepository : RepresentativeDataModel or null
+        deactivate Database
+        
+        alt Representative with Email already exists
+            RepRepository --> Service : Representative (existing)
+            deactivate RepRepository
+            Service -> Service : errorMessages.Add("Representative with Email already exists")
+            Service --> Controller : null
+        else Email available
+            RepRepository --> Service : null
+            deactivate RepRepository
+
+            Service -> RepRepository : GetRepresentativeByPhoneNumberAsync(representativeDTO.PhoneNumber)
+            activate RepRepository
+            RepRepository -> Database : SingleOrDefaultAsync(r => r.PhoneNumber == phoneNumber)\n.Include(r => r.Organization)
+            activate Database
+            Database --> RepRepository : RepresentativeDataModel or null
+            deactivate Database
+            
+            alt Representative with PhoneNumber already exists
+                RepRepository --> Service : Representative (existing)
+                deactivate RepRepository
+                Service -> Service : errorMessages.Add("Representative with PhoneNumber already exists")
+                Service --> Controller : null
+            else PhoneNumber available
+                RepRepository --> Service : null
+                deactivate RepRepository
+
+                Service -> Factory : NewRepresentative(organization, name, citizenId, nationality, email, phoneNumber)
+                activate Factory
+                Factory -> Domain : new Representative(organization, name, citizenId, nationality, email, phoneNumber)
+                activate Domain
+                Domain -> Domain : CheckOrganization(organization) - validate not null
+                Domain -> Domain : CheckName(name) - validate not null/empty
+                Domain -> Domain : Normalize citizenId = citizenId.ToUpper().Trim()
+                Domain -> Domain : Normalize nationality = nationality.ToUpper().Trim()
+                Domain -> Domain : CheckNationality(nationality) - validate 2 letters
+                Domain -> Domain : Normalize email = email.ToLower().Trim()
+                Domain -> Domain : CheckEmail(email) - validate email format
+                Domain -> Domain : Normalize phoneNumber = phoneNumber.Trim()
+                Domain -> Domain : CheckPhoneNumber(phoneNumber) - validate 9 digits
+                Domain -> Domain : Set properties & LastModifiedAt = DateTime.UtcNow
+                Domain --> Factory : Representative instance
+                deactivate Domain
+                Factory --> Service : Representative
+                deactivate Factory
+
+                Service -> RepRepository : AddRepresentative(representative)
+                activate RepRepository
+                RepRepository -> Mapper : ToDataModel(representative)
+                activate Mapper
+                Mapper -> DataModel : new RepresentativeDataModel(representative)
+                activate DataModel
+                DataModel -> DataModel : Set properties including ShippingAgentOrganizationDataModel
+                DataModel --> Mapper : RepresentativeDataModel
+                deactivate DataModel
+                Mapper --> RepRepository : RepresentativeDataModel
+                deactivate Mapper
+                
+                RepRepository -> Database : Where(o => o.Id == representative.Organization.Id)
+                activate Database
+                Database --> RepRepository : Existing ShippingAgentOrganizationDataModel
+                deactivate Database
+                
+                RepRepository -> Database : Add(representativeDataModel)
+                activate Database
+                RepRepository -> Database : SaveChangesAsync()
+                Database --> RepRepository : EntityEntry<RepresentativeDataModel>
+                deactivate Database
+                
+                RepRepository -> Mapper : ToDomain(representativeDataModelSaved)
+                activate Mapper
+                Mapper -> Factory : NewRepresentative(...)
+                activate Factory
+                Factory -> Domain : new Representative(...)
+                activate Domain
+                Domain --> Factory : Representative
+                deactivate Domain
+                Factory --> Mapper : Representative
+                deactivate Factory
+                Mapper -> Domain : Set Id & LastModifiedAt
+                activate Domain
+                Domain --> Mapper : Updated Representative
+                deactivate Domain
+                Mapper --> RepRepository : Representative (saved)
+                deactivate Mapper
+                RepRepository --> Service : Representative (saved)
+                deactivate RepRepository
+                
+                Service -> Service : RepresentativeDTO.ToDTO(addedRepresentative)
+                Service --> Controller : RepresentativeDTO
+            end
+        end
+    end
+end
+
+deactivate Service
+
+alt Success
+    Controller --> Client : 201 Created\nCreatedAtAction(GetRepresentativeById, representativeDTO)
+else Conflict (CitizenId, Email, or PhoneNumber already exists)
+    Controller --> Client : 409 Conflict\n(errorMessages)
+else Bad Request (Organization not found or validation errors)
+    Controller --> Client : 400 Bad Request\n(errorMessages)
+end
+
+deactivate Controller
+
+@enduml

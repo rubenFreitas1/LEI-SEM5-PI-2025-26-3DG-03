@@ -22,7 +22,7 @@
 
 **Forum Insight:**
 
-Still no questions asked about the US'S.
+* No clarifications worth mention from the forum.
 
 
 ## 3. Analysis

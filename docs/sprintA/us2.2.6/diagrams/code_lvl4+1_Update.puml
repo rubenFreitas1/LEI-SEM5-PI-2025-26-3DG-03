@@ -1,0 +1,166 @@
+@startuml code_lvl4+1_Update_Representative
+!define RECTANGLE class
+
+title Sequence Diagram - PUT Representative Update (Level 4+1)
+
+actor Client
+participant "RepresentativeController" as Controller
+participant "RepresentativeService" as Service
+participant "IRepresentativeRepository" as RepRepository
+participant "IShippingAgentOrganizationRepository" as SARepository
+participant "RepresentativeMapper" as Mapper
+participant "Representative" as Domain
+participant "RepresentativeDataModel" as DataModel
+database "ShippingManagementContext" as Database
+
+Client -> Controller : PUT /api/Representative/Update/{id}\n(long id, RepresentativeDTO representativeDTO)
+
+activate Controller
+Controller -> Controller : Validate representativeDTO != null
+
+Controller -> Service : UpdateRepresentative(id, representativeDTO, errorMessages)
+activate Service
+
+Service -> RepRepository : GetRepresentativeByIdAsync(id)
+activate RepRepository
+RepRepository -> Database : SingleOrDefaultAsync(r => r.Id == id)\n.Include(r => r.Organization)
+activate Database
+Database --> RepRepository : RepresentativeDataModel or null
+deactivate Database
+
+alt Representative not found
+    RepRepository --> Service : null
+    deactivate RepRepository
+    Service -> Service : errorMessages.Add("Representative not found")
+    Service --> Controller : false
+else Representative found
+    RepRepository -> Mapper : ToDomain(representativeDataModel)
+    activate Mapper
+    Mapper --> RepRepository : Representative (existing)
+    deactivate Mapper
+    RepRepository --> Service : Representative (existing)
+    deactivate RepRepository
+
+    Service -> RepRepository : GetRepresentativeByCitizenIdAsync(representativeDTO.CitizenId)
+    activate RepRepository
+    RepRepository -> Database : SingleOrDefaultAsync(r => r.CitizenId == citizenId)\n.Include(r => r.Organization)
+    activate Database
+    Database --> RepRepository : RepresentativeDataModel or null
+    deactivate Database
+    
+    alt CitizenId exists in different representative
+        RepRepository -> Mapper : ToDomain(representativeDataModel)
+        activate Mapper
+        Mapper --> RepRepository : Representative
+        deactivate Mapper
+        RepRepository --> Service : Representative (with different ID)
+        deactivate RepRepository
+        
+        Service -> Service : Check if representative.Id != id
+        Service -> Service : errorMessages.Add("Representative with CitizenId already exists")
+        Service --> Controller : false
+    else CitizenId available or same representative
+        RepRepository --> Service : null or same representative
+        deactivate RepRepository
+
+        Service -> RepRepository : GetRepresentativeByEmailAsync(representativeDTO.Email)
+        activate RepRepository
+        RepRepository -> Database : SingleOrDefaultAsync(r => r.Email == email)\n.Include(r => r.Organization)
+        activate Database
+        Database --> RepRepository : RepresentativeDataModel or null
+        deactivate Database
+        
+        alt Email exists in different representative
+            RepRepository --> Service : Representative (with different ID)
+            deactivate RepRepository
+            Service -> Service : errorMessages.Add("Representative with Email already exists")
+            Service --> Controller : false
+        else Email available or same representative
+            RepRepository --> Service : null or same representative
+            deactivate RepRepository
+
+            Service -> RepRepository : GetRepresentativeByPhoneNumberAsync(representativeDTO.PhoneNumber)
+            activate RepRepository
+            RepRepository -> Database : SingleOrDefaultAsync(r => r.PhoneNumber == phoneNumber)\n.Include(r => r.Organization)
+            activate Database
+            Database --> RepRepository : RepresentativeDataModel or null
+            deactivate Database
+            
+            alt PhoneNumber exists in different representative
+                RepRepository --> Service : Representative (with different ID)
+                deactivate RepRepository
+                Service -> Service : errorMessages.Add("Representative with PhoneNumber already exists")
+                Service --> Controller : false
+            else PhoneNumber available or same representative
+                RepRepository --> Service : null or same representative
+                deactivate RepRepository
+
+                Service -> SARepository : GetShippingAgentOrganizationByLegalNameAsync(representativeDTO.OrganizationName)
+                activate SARepository
+                SARepository -> Database : SingleOrDefaultAsync(sa => sa.LegalName == legalName)
+                activate Database
+                Database --> SARepository : ShippingAgentOrganizationDataModel or null
+                deactivate Database
+                
+                alt Organization not found
+                    SARepository --> Service : null
+                    deactivate SARepository
+                    Service -> Service : errorMessages.Add("No Shipping Agent Organization found")
+                    Service --> Controller : false
+                else Organization found
+                    SARepository --> Service : ShippingAgentOrganization
+                    deactivate SARepository
+
+                    Service -> RepRepository : Update(representative, errorMessages)
+                    activate RepRepository
+                    RepRepository -> Database : SingleOrDefaultAsync(r => r.Id == representative.Id)\n.Include(r => r.Organization)
+                    activate Database
+                    Database --> RepRepository : RepresentativeDataModel
+                    deactivate Database
+                    
+                    RepRepository -> Mapper : UpdateDataModelAsync(representativeDataModel, representative, context)
+                    activate Mapper
+                    Mapper -> Database : FindAsync(representative.Organization.Id)
+                    activate Database
+                    Database --> Mapper : Existing ShippingAgentOrganizationDataModel
+                    deactivate Database
+                    
+                    Mapper -> DataModel : Update properties\n(Name, CitizenId, Nationality, Email, PhoneNumber, Organization, LastModifiedAt)
+                    activate DataModel
+                    DataModel --> Mapper : Updated RepresentativeDataModel
+                    deactivate DataModel
+                    Mapper --> RepRepository : void
+                    deactivate Mapper
+                    
+                    RepRepository -> Database : SaveChangesAsync()
+                    activate Database
+                    Database --> RepRepository : Changes saved
+                    deactivate Database
+                    
+                    RepRepository -> Mapper : ToDomain(representativeDataModel)
+                    activate Mapper
+                    Mapper --> RepRepository : Updated Representative
+                    deactivate Mapper
+                    RepRepository --> Service : Updated Representative
+                    deactivate RepRepository
+                    
+                    Service --> Controller : true
+                end
+            end
+        end
+    end
+end
+
+deactivate Service
+
+alt Update successful
+    Controller --> Client : 200 OK
+else Conflict (CitizenId, Email, or PhoneNumber already exists)
+    Controller --> Client : 409 Conflict\n(errorMessages)
+else Bad Request (Representative not found, Organization not found, or validation errors)
+    Controller --> Client : 400 Bad Request\n(errorMessages)
+end
+
+deactivate Controller
+
+@enduml
