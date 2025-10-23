@@ -48,3 +48,14 @@ Physical Resources Creation
 Physical Resources Management
 
 ![System Sequence Diagram](images/system-sequence-diagram-US2.2.12-manage.png)
+
+
+## Forum
+https://moodle.isep.ipp.pt/mod/forum/discuss.php?d=1333
+https://moodle.isep.ipp.pt/mod/forum/discuss.php?d=1303
+https://moodle.isep.ipp.pt/mod/forum/discuss.php?d=1051
+https://moodle.isep.ipp.pt/mod/forum/discuss.php?d=1110
+https://moodle.isep.ipp.pt/mod/forum/discuss.php?d=1094
+https://moodle.isep.ipp.pt/mod/forum/discuss.php?d=1075
+https://moodle.isep.ipp.pt/mod/forum/discuss.php?d=1048
+https://moodle.isep.ipp.pt/mod/forum/discuss.php?d=813
