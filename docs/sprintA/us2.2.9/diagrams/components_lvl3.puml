@@ -1,0 +1,43 @@
+@startuml VesselVisitNotificationComponentsLvl3
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(SAR, "Shipping Agent Representative", "System user managing vessel visit notifications")
+
+Container_Boundary(VesselVisitNotificationApi, "Vessel Visit Notification API") {
+    Component(VesselVisitNotificationController, "Vessel Visit Notification Controller", "ASP.NET Core MVC Controller", "Handles HTTP requests related to Vessel Visit Notifications")
+    Component(VesselVisitNotificationService, "Vessel Visit Notification Service", ".NET 8 (ASP.NET Core)", "Business logic for managing Vessel Visit Notifications")
+    Component(VesselVisitNotification, "Vessel Visit Notification", "Domain Model", "Represents a Vessel Visit Notification")
+    Component(CargoManifest, "Cargo Manifest", "Domain Model", "Represents a Cargo Manifest associated with a Vessel Visit Notification")
+    Component(CargoManifestEntry, "Cargo Manifest Entry", "Domain Model", "Represents an entry in a Cargo Manifest")
+    Component(Container, "Container", "Domain Model", "Represents a Container associated with a Cargo Manifest Entry")
+    Component(CrewMember, "Crew Member", "Domain Model", "Represents a Crew Member associated with a Vessel Visit Notification")
+    Component(VesselVisitNotificationRepository, "Vessel Visit Notification Repository", ".NET 8 (ASP.NET Core)", "Data access for Vessel Visit Notifications")
+    Component(VesselRepository, "Vessel Repository", ".NET 8 (ASP.NET Core)", "Data access for Vessels")
+    Component(RepresentativeRepository, "Representative Repository", ".NET 8 (ASP.NET Core)", "Data access for Shipping Agent Representatives")
+    Component(DbContext, "DbContext", ".NET 8 (Entity Framework Core)", "EF Core DbContext for Shipping Management")
+    ComponentDb(db, "Shipping Management Database", "SQL Server", "Stores all data related to Shipping Management")
+}
+
+
+VesselVisitNotificationService -[hidden]right-> VesselVisitNotification
+VesselVisitNotificationRepository -[hidden]right-> DbContext
+
+
+Rel(SAR, VesselVisitNotificationController, "Sends HTTP requests", "HTTPS/JSON")
+Rel(VesselVisitNotificationController, VesselVisitNotificationService, "Calls methods in", "Method Calls")
+Rel(VesselVisitNotificationService, VesselVisitNotification, "Uses", "Domain Logic")
+Rel(VesselVisitNotificationService, VesselVisitNotificationRepository, "Uses", "Method Calls")
+Rel(VesselVisitNotificationService, VesselRepository, "Uses", "Method Calls")
+Rel(VesselVisitNotificationService, RepresentativeRepository, "Uses", "Method Calls")
+Rel(VesselVisitNotificationRepository, DbContext, "Uses", "Method Calls")
+Rel(VesselRepository, DbContext, "Uses", "Method Calls")
+Rel(RepresentativeRepository, DbContext, "Uses", "Method Calls")
+Rel(DbContext, db, "Reads from and writes to", "EF Core/SQL")
+
+Rel(VesselVisitNotification, CargoManifest, "Contains")
+Rel(CargoManifest, CargoManifestEntry, "Contains")
+Rel(VesselVisitNotification, CrewMember, "Contains")
+Rel(CargoManifestEntry, Container, "Associated with")
+
+@enduml

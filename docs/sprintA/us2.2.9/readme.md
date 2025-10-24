@@ -46,6 +46,139 @@ However, it may be possible to work on Vessel Visit Notifications submitted by o
 
 ![System Sequence Diagram ](images/system-sequence-diagram-US2.2.9.png)
 
+## 4. C4 Model
 
+#### Components - Level 3
+
+![Components](images/components_lvl3.png)
+
+#### Code - Level 4
+
+![Code](images/code_lvl4.png)
+
+### Model4+1
+
+Update Vessel Visit Notification
+
+![Model4+1](images/model4+1-update.png)
+
+
+## 5. Tests
+
+### Tests Related To Put
+
+```
+    [Fact]
+    public async Task Put_UpdateValid_ReturnsOk()
+    {
+        var dto = BuildValidDto();
+        var createResp = await _client.PostAsJsonAsync("/api/VesselVisitNotification", dto);
+        Assert.Equal(HttpStatusCode.Created, createResp.StatusCode);
+        var created = await createResp.Content.ReadFromJsonAsync<VesselVisitNotificationDTO>();
+        Assert.NotNull(created);
+
+        created!.Volume = 200.0;
+        created.Eta = created.Eta.AddDays(1);
+        created.Etd = created.Etd.AddDays(1);
+        created.CargoType = CargoType.General;
+
+        var updResp = await _client.PutAsJsonAsync($"/api/VesselVisitNotification/Update/{created.Code}", created);
+        Assert.Equal(HttpStatusCode.OK, updResp.StatusCode);
+
+        // verify
+        var getResp = await _client.GetAsync($"/api/VesselVisitNotification/ByCode/{created.Code}");
+        getResp.EnsureSuccessStatusCode();
+        var updated = await getResp.Content.ReadFromJsonAsync<VesselVisitNotificationDTO>();
+        Assert.NotNull(updated);
+        Assert.Equal(200.0, updated!.Volume);
+    }
+
+```
+
+
+```
+    
+    [Fact]
+    public async Task Put_OverlappingVisit_ReturnsBadRequest()
+    {
+        var dto = BuildValidDto();
+        var r1 = await _client.PostAsJsonAsync("/api/VesselVisitNotification", dto);
+        Assert.Equal(HttpStatusCode.Created, r1.StatusCode);
+        var created1 = await r1.Content.ReadFromJsonAsync<VesselVisitNotificationDTO>();
+
+        var dto2 = BuildValidDto();
+        dto2.Eta = dto.Eta.AddDays(5);
+        dto2.Etd = dto.Etd.AddDays(5);
+        var r2 = await _client.PostAsJsonAsync("/api/VesselVisitNotification", dto2);
+        Assert.Equal(HttpStatusCode.Created, r2.StatusCode);
+        var created2 = await r2.Content.ReadFromJsonAsync<VesselVisitNotificationDTO>();
+
+        created2!.Eta = created1!.Eta.AddDays(0);
+        created2.Etd = created1.Etd.AddHours(1);
+
+        var updResp = await _client.PutAsJsonAsync($"/api/VesselVisitNotification/Update/{created2.Code}", created2);
+        Assert.Equal(HttpStatusCode.BadRequest, updResp.StatusCode);
+        var errors = await updResp.Content.ReadFromJsonAsync<List<string>>() ?? new List<string>();
+        Assert.Contains(errors, e => e.ToLowerInvariant().Contains("overlapping visit") || e.ToLowerInvariant().Contains("overlap"));
+    }
+
+    [Fact]
+    public async Task Put_MultipleLoadingManifests_ReturnsBadRequest()
+    {
+        var dto = BuildValidDto();
+        var createResp = await _client.PostAsJsonAsync("/api/VesselVisitNotification", dto);
+        Assert.Equal(HttpStatusCode.Created, createResp.StatusCode);
+        var created = await createResp.Content.ReadFromJsonAsync<VesselVisitNotificationDTO>();
+
+        created!.CargoManifests!.Add(new CargoManifestDTO
+        {
+            ManifestType = CargoManifestType.Loading,
+            Entries = new List<CargoManifestEntryDTO>
+            {
+                new CargoManifestEntryDTO { ContainerNumber = "ABCU2223334", Row = 1, Bay = 2, Tier = 1, StorageAreaCode = "WH001" }
+            }
+        });
+
+        var updResp = await _client.PutAsJsonAsync($"/api/VesselVisitNotification/Update/{created.Code}", created);
+        Assert.Equal(HttpStatusCode.BadRequest, updResp.StatusCode);
+        var errors = await updResp.Content.ReadFromJsonAsync<List<string>>() ?? new List<string>();
+        Assert.Contains(errors, e => e.Contains("Cargo manifests cannot contain more than one loading manifest") || e.Contains("more than one loading"));
+    }
+
+    
+    [Fact]
+    public async Task Put_InvalidETAETD_ReturnsBadRequest()
+    {
+        var dto = BuildValidDto();
+        var createResp = await _client.PostAsJsonAsync("/api/VesselVisitNotification", dto);
+        Assert.Equal(HttpStatusCode.Created, createResp.StatusCode);
+        var created = await createResp.Content.ReadFromJsonAsync<VesselVisitNotificationDTO>();
+
+        created!.Eta = DateTime.UtcNow.AddDays(10);
+        created.Etd = DateTime.UtcNow.AddDays(9);
+        var updResp = await _client.PutAsJsonAsync($"/api/VesselVisitNotification/Update/{created.Code}", created);
+        Assert.Equal(HttpStatusCode.BadRequest, updResp.StatusCode);
+        var errors = await updResp.Content.ReadFromJsonAsync<List<string>>() ?? new List<string>();
+        Assert.Contains(errors, e => e.Contains("ETA must be earlier") || e.Contains("ETA must be earlier than ETD"));
+    }
+
+    [Fact]
+    public async Task Put_NumberOfCrewMembers_ReduceBelowCurrent_ReturnsBadRequest()
+    {
+        var dto = BuildValidDto();
+        dto.NumberOfCrewMembers = 5;
+        var createResp = await _client.PostAsJsonAsync("/api/VesselVisitNotification", dto);
+        Assert.Equal(HttpStatusCode.Created, createResp.StatusCode);
+        var created = await createResp.Content.ReadFromJsonAsync<VesselVisitNotificationDTO>();
+        Assert.NotNull(created);
+
+        created!.NumberOfCrewMembers = 1;
+        var updResp = await _client.PutAsJsonAsync($"/api/VesselVisitNotification/Update/{created.Code}", created);
+        Assert.Equal(HttpStatusCode.BadRequest, updResp.StatusCode);
+        var errors = await updResp.Content.ReadFromJsonAsync<List<string>>() ?? new List<string>();
+        Assert.Contains(errors, e => e.Contains("Number of crew members must be greater than the current number of crew members") || e.Contains("Number of crew members"));
+    }
+
+```
 
 

@@ -1,0 +1,332 @@
+@startuml VesselVisitNotificationCode
+
+
+class VesselVisitNotificationController{ 
+	+GetAllVesselVisitNotifications()
+	+GetAllDecisions()
+	+GetVesselVisitNotificationById(int id)
+	+GetDecisionById(long id)
+    +GetVesselVisitNotificationByCode(string code)
+	+GetVesselVisitNotificationByOrg(string orgCode)
+    +GetVesselVisitNotificationsByVesselIMO_Org(string vesselIMO, string orgCode)
+    +GetVesselVisitNotificationsByDateRange_Org(DateTime startDate, DateTime endDate, string orgCode)
+    +GetVesselVisitNotificationsByRepresentative(string citizenId)
+    +GetVesselVisitNotificationsByStatus_Org(VisitStatus status, string orgCode)
+    +PostVesselVisitNotification([FromBody] VesselVisitNotificationDTO vesselVisitNotificationDTO)
+    +PostDecision(DecisionDTO decisionDTO)
+    +PutVesselVisitNotification(string visitCode, VesselVisitNotificationDTO vesselVisitNotificationDTO)
+}
+
+class VesselVisitNotificationService {
+	+GetAllVesselVisitNotifications()
+	+GetAllDecisions()
+	+GetVesselVisitNotificationByCode(string visitCode)
+	+GetVesselVisitNotificationById(long id)
+    +GetDecisionById(long id)
+	+GetVesselVisitNotificationByOrg(string orgCode)
+    +GetVesselVisitNotificationsByVesselIMO_Org(string imoNumber, string orgCode)
+    +GetVesselVisitNotificationsByDateRange_Org(DateTime startDate, DateTime endDate, string orgCode)
+    +GetVesselVisitNotificationsByRepresentative(string citizenId)
+    +GetVesselVisitNotificationsByStatus_Org(VisitStatus status, string orgCode)
+    +AddVesselVisitNotification(VesselVisitNotificationDTO notificationDTO, List<string> errorMessages)
+    +AddDecision(DecisionDTO decisionDTO, List<string> errorMessages)
+    -ConvertCrewMemberDTOsToCrewMembers(List<CrewMemberDTO> crewMemberDTOs)
+    -GenerateUniqueVisitCodeAsync(DateTime eta)
+    +UpdateVesselVisitNotification(string visitCode, VesselVisitNotificationDTO notificationDTO, List<string> errorMessages)
+
+}
+
+interface IDockRepository{
+    +GetDockAsync()
+    +GetDockByNameAsync(string name)
+    +GetDockByIdAsync(long id)
+    +GetDockByLocationAsync(string location)
+    +GetDocksByVesselTypesAsync(IEnumerable<VesselType> vesselTypes)
+    +AddDock(Dock dock)
+    +Update(Dock dock, List<string> errorMessages)
+    +DockExists(long id)
+}
+
+class DockRepository{
+    +GetDockAsync()
+    +GetDockByNameAsync(string name)
+    +GetDockByIdAsync(long id)
+    +GetDockByLocationAsync(string location)
+    +GetDocksByVesselTypesAsync(IEnumerable<VesselType> vesselTypes)
+    +AddDock(Dock dock)
+    +Update(Dock dock, List<string> errorMessages)
+    +DockExists(long id)
+}
+
+interface IStorageAreaRepository{
+    +GetStorageAreasAsync()
+    +GetStorageAreaByCodeAsync(string name)
+    +GetStorageAreaByIdAsync(long id)
+    +GetStorageAreaByLocationAsync(string location)
+    +AddStorageArea(StorageArea storageArea)
+    +Update(StorageArea storageArea, List<string> errorMessages)
+    +StorageAreaExists(long id)
+}
+
+
+class StorageAreaRepository{
+    +GetStorageAreasAsync()
+    +GetStorageAreaByCodeAsync(string name)
+    +GetStorageAreaByIdAsync(long id)
+    +GetStorageAreaByLocationAsync(string location)
+    +AddStorageArea(StorageArea storageArea)
+    +Update(StorageArea storageArea, List<string> errorMessages)
+    +StorageAreaExists(long id)
+}
+
+interface IVesselVisitNotificationRepository {
+    +GetAllVesselVisitNotificationsAsync()
+    +GetVesselVisitNotificationByIdAsync(long id)
+    +GetVesselVisitNotificationByCodeAsync(string visitCode)
+    +GetVesselVisitNotificationByOrgAsync(string orgCode)
+    +GetVesselVisitNotificationsByVesselIMO_OrgAsync(string vesselIMO, string orgCode)
+    +GetVesselVisitNotificationsByDateRange_OrgAsync(DateTime startDate, DateTime endDate, string orgCode)
+    +GetVesselVisitNotificationsByRepresentativeAsync(string citizenId)
+    +GetVesselVisitNotificationsByStatus_OrgAsync(VisitStatus status, string orgCode)
+    +AddVesselVisitNotificationAsync(VesselVisitNotification notification)
+    +UpdateVesselVisitNotificationAsync(VesselVisitNotification notification, List<string> errorMessages)
+}
+
+class VesselVisitNotificationRepository {
+    +GetAllVesselVisitNotificationsAsync()
+    +GetVesselVisitNotificationByIdAsync(long id)
+    +GetVesselVisitNotificationByCodeAsync(string visitCode)
+    +GetVesselVisitNotificationByOrgAsync(string orgCode)
+    +GetVesselVisitNotificationsByVesselIMO_OrgAsync(string vesselIMO, string orgCode)
+    +GetVesselVisitNotificationsByDateRange_OrgAsync(DateTime startDate, DateTime endDate, string orgCode)
+    +GetVesselVisitNotificationsByRepresentativeAsync(string citizenId)
+    +GetVesselVisitNotificationsByStatus_OrgAsync(VisitStatus status, string orgCode)
+    +AddVesselVisitNotificationAsync(VesselVisitNotification notification)
+    +UpdateVesselVisitNotificationAsync(VesselVisitNotification notification, List<string> errorMessages)
+}
+
+interface IDecisionRepository {
+    +GetAllAsync()
+    +GetDecisionByIdAsync(long id)
+    +AddDecisionAsync(Decision decision)
+}
+
+class DecisionRepository {
+    +GetAllAsync()
+    +GetDecisionByIdAsync(long id)
+    +AddDecisionAsync(Decision decision)
+}
+
+interface IVesselRecordRepository {
+    +GetVesselRecordsAsync()
+    +GetVesselRecordByImoNumberAsync(string imoNumber)
+    +GetVesselRecordByIdAsync(long id)
+    +GetVesselRecordByVesselNameAsync(string name)
+    +GetVesselRecordByOperatorAsync(string operatorName)
+    +AddVesselRecord(VesselRecord vesselRecord)
+    +Update(VesselRecord vesselRecord, List<string> errorMessages)
+    +VesselRecordExists(long id)
+}
+
+class VesselRecordRepository {
+    +GetVesselRecordsAsync()
+    +GetVesselRecordByImoNumberAsync(string imoNumber)
+    +GetVesselRecordByIdAsync(long id)
+    +GetVesselRecordByVesselNameAsync(string name)
+    +GetVesselRecordByOperatorAsync(string operatorName)
+    +AddVesselRecord(VesselRecord vesselRecord)
+    +Update(VesselRecord vesselRecord, List<string> errorMessages)
+    +VesselRecordExists(long id)
+}
+
+interface IRepresentativeRepository {
+    +GetRepresentativesAsync()
+    +GetRepresentativeByCitizenIdAsync(string citizenId)
+    +GetRepresentativeByEmailAsync(string email)
+    +GetRepresentativeByNationalityAsync(string nationality)
+    +GetRepresentativesByOrganizationAsync(ShippingAgentOrganization organization)
+    +GetRepresentativeByNameAsync(string name)
+    +GetRepresentativeByPhoneNumberAsync(string phoneNumber)
+    +GetRepresentativeByIdAsync(long id)
+    +AddRepresentative(Representative representative)
+    +Update(Representative representative, List<string> errorMessages)
+    +RepresentativeExists(long id)
+}
+
+class RepresentativeRepository {
+    +GetRepresentativesAsync()
+    +GetRepresentativeByCitizenIdAsync(string citizenId)
+    +GetRepresentativeByEmailAsync(string email)
+    +GetRepresentativeByNationalityAsync(string nationality)
+    +GetRepresentativesByOrganizationAsync(ShippingAgentOrganization organization)
+    +GetRepresentativeByNameAsync(string name)
+    +GetRepresentativeByPhoneNumberAsync(string phoneNumber)
+    +GetRepresentativeByIdAsync(long id)
+    +AddRepresentative(Representative representative)
+    +Update(Representative representative, List<string> errorMessages)
+    +RepresentativeExists(long id)
+}
+
+
+class VesselVisitNotificationDTO{
+    -Id: long
+    -Code: string
+    -VesselIMO: string
+    -RepresentativeCitizenID: string
+    -Eta: int
+    -Etd: int
+    -CargoManifests: List<CargoManifestDTO>
+    -CargoType : CargoType
+    -Volume: double
+    -CrewMembers: List<CrewMemberDTO>
+    -VisitStatus: VisitStatus
+    -NumberOfCrewMembers: int
+    -LastModifiedAt : DateTime
+    +ToDTO(VesselVisitNotification vesselVisitNotification)
+}
+
+class CargoManifestDTO{
+    ManifestType: CargoManifestType
+    Entries: List<CargoManifestEntryDTO>
+}
+
+class CargoManifestEntryDTO{
+    ContainerNumber: string
+    Row: int
+    Bay: int
+    Tier: int
+    StorageAreaCode: string
+}
+
+
+class VesselVisitNotification{
+    -Id: long
+    -Code: string
+    -VesselId: long
+    -Vessel: VesselRecord
+    -RepresentativeId: long
+    -Representative: Representative
+    -ETA: DateTime
+    -ETD: DateTime
+    -CargoManifests: List<CargoManifest>
+    -CargoType: CargoType
+    -Volume: double
+    -CrewMembers: List<CrewMember>
+    -NumberOfCrewMembers: int
+    -AssignedDock: Dock
+    -VisitStatus: VisitStatus
+    -LastModifiedAt : DateTime
+    +ValidateCode(code)
+    +ValidateETAETD(eta, etd)
+    +ValidateVesselRecord(vessel)
+    +ValidateRepresentative(representative)
+    +ValidateCargoManifests(cargoManifests)
+    +ValidateVolume(volume)
+    +ValidateCrewMembers(crewMembers)
+    +ValidateNumberOfCrewMembers(numberOfCrewMembers)
+    +AssignDock(Dock dock)
+    +ChangeVessel(VesselRecord vessel)
+    +ChangeETAETD(DateTime eta, DateTime etd)
+    +ChangeVolume(double volume)
+    +ChangeNumberOfCrewMembers(int numberOfCrewMembers)
+    +ChangeCargoType(CargoType cargoType)
+}
+
+class CargoManifest{
+    -Id: long
+    -ManifestType: CargoManifestType
+    -Entries: List<CargoManifestEntry>
+    -VesselVisitNotificationId: long
+    -VesselVisitNotification: VesselVisitNotification
+}
+
+class CargoManifestEntry{
+    -Id: long
+    -Container: Container
+    -Row: int
+    -Bay: int
+    -Tier: int
+    -StorageAreaId: long
+    -StorageArea: StorageArea
+    -CargoManifestId: long
+    -CargoManifest: CargoManifest
+    +ValidateCargoManifest(CargoManifest cargoManifest)
+    +ValidateContainer(Container container)
+    +ValidateRow(int row)
+    +ValidateBay(int bay)
+    +ValidateTier(int tier)
+    +ValidateLocation(StorageArea location)
+}
+
+class Container{
+    -Id: long
+    -ContainerNumber: string
+    +ValidateContainerNumber(string containerNumber)
+}
+
+class VesselVisitNotificationMapper{
+    +ToDomain(VesselVisitNotificationDataModel vesselVisitDM)
+    +ToDataModel(VesselVisitNotification vesselVisit)
+    +UpdateDataModelAsync(VesselVisitNotificationDataModel dm, VesselVisitNotification domain, DbContext context)
+}
+
+interface IVesselVisitNotificationFactory{
+    +NewVesselVisitNotification(string code, VesselRecord vessel, Representative representative, DateTime eta, DateTime etd, List<CargoManifest> cargoManifests, CargoType cargoType, double volume, List<CrewMember> crewMembers, int numberOfCrewMembers)
+}
+
+class VesselVisitNotificationDataModel{
+    -Id: long
+    -Code: string
+    -VesselId: long
+    -Vessel: VesselRecordDataModel
+    -RepresentativeId: long
+    -Representative: RepresentativeDataModel
+    -ETA: DateTime
+    -ETD: DateTime
+    -CargoManifests: List<CargoManifestDataModel>
+    -CargoType: CargoType
+    -Volume: double
+    -CrewMembers: List<CrewMemberDataModel>
+    -AssignedDock: DockDataModel
+    -VisitStatus: string
+    -NumberOfCrewMembers: int
+    -LastModifiedAt : DateTime
+}
+
+class VesselVisitNotificationFactory{
+    +NewVesselVisitNotification(string code, VesselRecord vessel, Representative representative, DateTime eta, DateTime etd, List<CargoManifest> cargoManifests, CargoType cargoType, double volume, List<CrewMember> crewMembers, int numberOfCrewMembers)
+}
+
+
+VesselVisitNotificationController --> VesselVisitNotificationService: uses 
+VesselVisitNotificationService --> IDockRepository: uses
+VesselVisitNotificationService --> IStorageAreaRepository: uses
+VesselVisitNotificationService --> IVesselVisitNotificationRepository: uses
+VesselVisitNotificationService --> IVesselRecordRepository: uses
+VesselVisitNotificationService --> IRepresentativeRepository: uses
+VesselVisitNotificationService --> IDecisionRepository: uses
+
+VesselVisitNotificationService --> VesselVisitNotificationDTO: uses
+
+VesselVisitNotificationRepository --> VesselVisitNotificationMapper: uses
+VesselVisitNotificationMapper --> VesselVisitNotificationDataModel : uses
+VesselVisitNotificationMapper --> IVesselVisitNotificationFactory : uses
+VesselVisitNotificationFactory --> VesselVisitNotification: creates
+
+VesselVisitNotification -right-> CargoManifest: contains
+CargoManifest -right-> CargoManifestEntry: contains
+CargoManifestEntry -right-> Container: contains
+
+VesselVisitNotificationDTO --> CargoManifestDTO: contains
+CargoManifestDTO --> CargoManifestEntryDTO: contains
+
+VesselVisitNotificationFactory .up.|> IVesselVisitNotificationFactory : implements
+
+StorageAreaRepository .up.|> IStorageAreaRepository : implements
+DockRepository .up.|> IDockRepository : implements
+RepresentativeRepository .up.|> IRepresentativeRepository : implements
+VesselVisitNotificationRepository .up.|> IVesselVisitNotificationRepository : implements
+DecisionRepository .up.|> IDecisionRepository : implements
+VesselRecordRepository .up.|> IVesselRecordRepository : implements
+
+@enduml

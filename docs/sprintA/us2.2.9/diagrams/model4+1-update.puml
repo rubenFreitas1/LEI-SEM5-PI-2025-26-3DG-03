@@ -1,4 +1,4 @@
-@startuml us2.2.8_vesselvisit_register
+@startuml us2.2.8_vesselvisit_update
 skinparam monochrome true
 skinparam packageStyle rectangle
 skinparam shadowing false
@@ -23,15 +23,14 @@ participant "StorageArea Mapper" as StorageAreaMapper
 participant "ShippingManagementContext" as DbContext
 participant "ShippingManagementDatabase" as Database
 
-title System Sequence Diagram - POST VesselVisitNotification (US2.2.8)
+title System Sequence Diagram - PUT VesselVisitNotification (US2.2.9)
 
 activate representative
-	representative -> VVNController: POST /api/VesselVisitNotification (VesselVisitNotificationDTO)
+	representative -> VVNController: PUT /api/VesselVisitNotification/Update/{visitCode} (VesselVisitNotificationDTO)
 	activate VVNController
 
-		VVNController -> VVNService: AddVesselVisitNotification(dto, errorMessages)
+		VVNController -> VVNService: UpdateVesselVisitNotification(visitCode, vesselVisitNotificationDTO, _errorMessages)
 		activate VVNService
-			VVNService -> VVNService: Generate unique code
 			VVNService -> VVNRepository: GetVisitByCodeAsync(dto.Code)
 			activate VVNRepository
 				VVNRepository -> DbContext: Set<VesselVisitNotificationDataModel>().Include(vvn => vvn.Vessel)!.ThenInclude(v => v.VesselType)\n.Include(vvn => vvn.Representative)!.ThenInclude(r => r.Organization)\n.Include(vvn => vvn.CargoManifests)!.ThenInclude(cm => cm.Entries)\n.ThenInclude(e => e.StorageArea).Include(vvn => vvn.CrewMembers)!.FirstOrDefaultAsync(vvn => vvn.Code == visitCode)
@@ -46,11 +45,11 @@ activate representative
                         activate VVNMapper
                             VVNMapper --> VVNRepository: VesselVisitNotification (domain)
                     deactivate VVNMapper    
-				alt exists
-					VVNRepository -> VVNService: VesselVisitNotification (domain)
-					VVNService -> VVNController: return null + ["Vessel Visit Notification with the same code already exists."]
-				else
+				alt not found
 					VVNRepository --> VVNService: null
+					VVNService -> VVNController: return null + ["Vessel Visit Notification not found."]
+				else
+                    VVNRepository -> VVNService: VesselVisitNotification (domain)
 				end
 			deactivate VVNRepository
 			VVNService -> VVNRepository: GetVisitsByVesselIMOAsync(dto.VesselIMO)
@@ -117,14 +116,23 @@ activate representative
 
             VVNService -> VVNService: ConvertCrewMemberDTOsToCrewMembers(notificationDTO.CrewMembers)
 
-			VVNService -> VVNFactory: NewVesselVisitNotification(code, vessel, representative, eta, etd, emptyCargoManifests, cargoType, volume, crewMembers, numberOfCrew)
-			activate VVNFactory
-				VVNFactory --> VVNDomain: <<create>> VesselVisitNotification(code, vessel, representative, eta, etd, emptyCargoManifests, cargoType, volume, crewMembers, numberOfCrew)
-                    activate VVNDomain
-                        VVNDomain --> VVNFactory: VesselVisitNotification (new instance)
-                    deactivate VVNDomain
-            VVNFactory --> VVNService: VesselVisitNotification (domain)
-			deactivate VVNFactory
+			VVNService -> VVNDomain: ChangeVessel(vessel)
+                activate VVNDomain
+                    VVNDomain --> VVNService: 
+                deactivate VVNDomain
+            VVNService -> VVNDomain: ChangeRepresentative(representative)
+                activate VVNDomain
+                    VVNDomain --> VVNService: 
+                deactivate VVNDomain
+            VVNService -> VVNDomain: ChangeETAETD(notificationDTO.Eta, notificationDTO.Etd)
+                activate VVNDomain
+                    VVNDomain --> VVNService: 
+                deactivate VVNDomain
+            VVNService -> VVNDomain: ChangeNumberOfCrewMembers(notificationDTO.NumberOfCrewMembers)
+                activate VVNDomain
+                    VVNDomain --> VVNService: 
+                deactivate VVNDomain
+
 
 			loop for each cargoManifestDTO in dto.CargoManifests
 				VVNService -> CargoManifest: <<create>> new CargoManifest(cmDto.ManifestType, new List<CargoManifestEntry>(), vesselVisitNotification)
@@ -170,45 +178,59 @@ activate representative
 
 			VVNService -> VVNDomain: ChangeCargoManifests(cargoManifests)
                 activate VVNDomain
-                    VVNDomain --> VVNService: updated VesselVisitNotification (domain)
+                    VVNDomain --> VVNService: 
                 deactivate VVNDomain
-			VVNService -> VVNRepository: AddNotificationAsync(VesselVisitNotification)
+            VVNService -> VVNDomain: ChangeCargoType(notificationDTO.CargoType)
+                activate VVNDomain
+                    VVNDomain --> VVNService: 
+                deactivate VVNDomain
+            VVNService -> VVNDomain: ChangeVolume(notificationDTO.Volume)
+                activate VVNDomain
+                    VVNDomain --> VVNService:
+                deactivate VVNDomain
+            VVNService -> VVNDomain: ChangeCrewMembers(crewMembers)
+                activate VVNDomain
+                    VVNDomain --> VVNService:
+                deactivate VVNDomain
+            VVNService -> VVNDomain: ChangeVisitStatus(notificationDTO.VisitStatus)
+                activate VVNDomain
+                    VVNDomain --> VVNService:
+                deactivate VVNDomain
+            
+			VVNService -> VVNRepository: UpdateVisitAsync(existingNotification, errorMessages)
 			activate VVNRepository
-				VVNRepository -> VVNMapper: ToDataModel(VesselVisitNotification)
-				activate VVNMapper
-                    VVNMapper --> VVNRepository: VesselVisitNotificationDataModel
-                deactivate VVNMapper
+				
+                VVNRepository -> DbContext: Set<VesselVisitNotificationDataModel>().Include(vvn => vvn.Vessel).ThenInclude(v => v.VesselType)\n.Include(vvn => vvn.Representative).ThenInclude(r => r.Organization)\n.Include(vvn => vvn.CargoManifests)!.ThenInclude(cm => cm.Entries)\n.ThenInclude(e => e.StorageArea).Include(vvn => vvn.CrewMembers)!\n.FirstOrDefaultAsync(vvn => vvn.Id == notification.Id)
+                    activate DbContext  
+                        DbContext --> Database: SELECT * FROM VesselVisitNotifications WHERE Id = @id
+                        activate Database
+                        Database --> DbContext: VesselVisitNotificationDataModel? (found/null)
+                        deactivate Database
+                        DbContext --> VVNRepository: VesselVisitNotificationDataModel? (found/null)
+                    deactivate DbContext
                 VVNRepository --> VVNMapper : UpdateDataModelAsync(dm, notification, _context)
                     activate VVNMapper
                         VVNMapper --> VVNRepository: 
                     deactivate VVNMapper
-				VVNRepository -> DbContext: Set<VesselVisitNotificationDataModel>().Add(vvnDM)
-					activate DbContext
-						DbContext -> Database: INSERT INTO VesselVisitNotifications ... (and related tables)
-						activate Database
-						Database --> DbContext: Inserted rows / generated ids
-						deactivate Database
-						DbContext --> VVNRepository: saved DataModel
-					deactivate DbContext
-				VVNRepository -> VVNMapper: ToDomain(VesselVisitNotificationDataModel)
-				activate VVNMapper
-					VVNMapper --> VVNRepository: VesselVisitNotification (domain)
-				deactivate VVNMapper
-			VVNRepository --> VVNService: VesselVisitNotification (domain)
+				VVNRepository -> DbContext: SaveChangesAsync()
+                    activate DbContext
+                        DbContext --> Database: UPDATE VesselVistitNotification ... and join table updates
+                        activate Database
+                        Database --> DbContext: Commit/Success
+                        deactivate Database
+                        DbContext --> VVNRepository:
+                    deactivate DbContext
+			    VVNRepository --> VVNService: true
 			deactivate VVNRepository
-            VVNService --> VVNDTO: ToDTO(VesselVisitNotification)
-                activate VVNDTO
-                    VVNDTO --> VVNService: VesselVisitNotificationDTO
-                deactivate VVNDTO
-			VVNService --> VVNController: return created DTO
+			VVNService --> VVNController: true
 		deactivate VVNService
 
-		alt created
-            VVNController --> representative: 201 Created (VesselVisitNotificationDTO)
+		alt success
+            VVNController --> representative: 200 OK
         else validation error
             VVNController --> representative: 400 Bad Request (errorMessages)
         else conflict
-            VVNController --> representative: 409 Conflict (errorMessages)
+            VVNController --> representative: 404 Not Found (errorMessages)
         end
 	deactivate VVNController
 deactivate representative
