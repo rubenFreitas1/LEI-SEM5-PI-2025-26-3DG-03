@@ -1,0 +1,203 @@
+@startuml PhysicalResourceCode
+
+
+class PhysicalResourcesController {
+	+GetAll()
+	+GetByCode(string code)
+	+GetByDescription(string description)
+	+GetByKind(PhysicalResourceKind kind)
+    +GetByStatus(ResourceStatus status)
+	+Post(PhysicalResourceDTO dto)
+    +Put(long id, PhysicalResourceDTO dto)
+}
+class PhysicalResourceService {
+	+GetAll()
+	+GetById(long id)
+	+GetByCode(string code)
+	+Search(string? code, string? name, string? description, PhysicalResourceKind? kind, ResourceStatus? status)
+	+Add(PhysicalResourceDTO dto, List<string> errorMessages)
+    +Update(long id, PhysicalResourceDTO dto, List<string> errorMessages)
+	+GetAvailableDocks()
+    +GetAvailableStorageAreas()
+}
+
+class PhysicalResourceDTO{
+    -Id: long?
+    -Code: string
+    -Name: string
+    -Description: string
+    -Kind: PhysicalResourceKind
+    -SetupTimeMinutes: int
+    -OperationalCapacity: int
+    -AssignedArea: string
+    -QualificationCode: string
+    -OperationalWindow: OperationalWindowDTO?
+    -Status: ResourceStatus
+    +ToDTO(PhysicalResource resource)
+}
+
+class OperationalWindowDTO{
+    -StartDay: DayOfWeek
+    -EndDay: DayOfWeek
+    -StartTime: string
+    -EndTime: string
+    +ToDTO(OperationalWindow operationalWindow)
+}
+
+enum PhysicalResourceKind {
+    STSCrane
+    MobileCrane
+    Truck
+    Other
+}
+
+enum ResourceStatus {
+    Available
+    Unavailable
+}
+
+interface IQualificationRepository{
+    +GetQualificationByCodeAsync(string code)
+}
+
+interface IStorageAreaRepository{
+    +GetStorageAreaByCodeAsync(string code)
+}
+
+interface IDockRepository{
+    +GetDockByNameAsync(string name)
+}
+
+interface IPhysicalResourceRepository{
+    +GetAllPhysicalResourcesAsync()
+    +GetPhysicalResourceByIdAsync(long id)
+    +GetPhysicalResourceByCodeAsync(string code)
+    +SearchAsync(string? code, string? name, string? description, PhysicalResourceKind? kind, ResourceStatus? status)
+    +AddPhysicalResource(PhysicalResource resource)
+    +Update(PhysicalResource resource, List<string> errorMessages)
+}
+
+class PhysicalResourceRepository{
+    +GetAllPhysicalResourcesAsync()
+    +GetPhysicalResourceByIdAsync(long id)
+    +GetPhysicalResourceByCodeAsync(string code)
+    +SearchAsync(string? code, string? name, string? description, PhysicalResourceKind? kind, ResourceStatus? status)
+    +AddPhysicalResource(PhysicalResource resource)
+    +Update(PhysicalResource resource, List<string> errorMessages)
+}
+
+class QualificationRepository{
+    +GetQualificationByCodeAsync(string code)
+}
+
+class StorageAreaRepository{
+    +GetStorageAreaByCodeAsync(string code)
+}
+
+class DockRepository{
+    +GetDockByNameAsync(string name)
+}
+
+class PhysicalResource{
+    -PhysicalResourceCode: string
+    -PhysicalResourceDescription: string
+    -PhysicalResourceKind: PhysicalResourceKind
+    -PhysicalResourceSetupTimeMinutes: int?
+    -PhysicalResourceOperationalCapacity: int
+    -PhysicalResourceAssignedStorageAreaCode: string?
+    -PhysicalResourceAssignedDockName: string?
+    +ChangeDescription(string description)
+    +AssignToStorageArea(string storageAreaCode)
+    +AssignToDock(string dockName)
+    +RemoveAssignment()
+    +ChangeOperationalCapacity(int capacity)
+    +ChangeSetupTime(int? minutes)
+    +ChangeKind(PhysicalResourceKind kind)
+    +Deactivate()
+    +Reactivate()
+}
+
+class Resource{
+    -Id: long
+    -Name: string
+    -Qualification: IEnumerable<Qualification>
+    -OperationalWindow: OperationalWindow
+    -Status: ResourceStatus
+    +ChangeStatus(ResourceStatus status)
+    +ChangeName(string name)
+    +ChangeQualification(IEnumerable<Qualification> qualification)
+    +ChangeOperationalWindow(OperationalWindow operationalWindow)
+}
+
+class OperationalWindow{
+    -StartDay: DayOfWeek
+    -EndDay: DayOfWeek
+    -StartTime: TimeSpan
+    -EndTime: TimeSpan
+}
+
+class Qualification{
+    -Id: long
+    -Code: string
+    -Name: string
+    -Description: string
+}
+
+class PhysicalResourceMapper{
+    +ToDomain(PhysicalResourceDataModel dm)
+    +ToDataModel(PhysicalResource resource)
+    +UpdateDataModel(PhysicalResourceDataModel dm, PhysicalResource resource)
+}
+
+interface IPhysicalResourceFactory{
+    +NewPhysicalResource(string code, string name, string description, PhysicalResourceKind kind,\n IEnumerable<Qualification> qualificationRequirements, int operationalCapacity,\n OperationalWindow operationalWindow, int? setupTimeMinutes)
+}
+
+class PhysicalResourceDataModel{
+    -Id: long
+    -Code: string?
+    -Name: string?
+    -Description: string?
+    -Kind: PhysicalResourceKind
+    -SetupTimeMinutes: int?
+    -OperationalCapacity: int
+    -AssignedStorageAreaCode: string?
+    -AssignedDockName: string?
+    -StartDay: DayOfWeek
+    -EndDay: DayOfWeek
+    -StartTime: TimeSpan
+    -EndTime: TimeSpan
+    -Status: ResourceStatus
+}
+
+class PhysicalResourceFactory{
+    +NewPhysicalResource(string code, string name, string description, PhysicalResourceKind kind,\n IEnumerable<Qualification> qualificationRequirements, int operationalCapacity,\n OperationalWindow operationalWindow, int? setupTimeMinutes)
+}
+
+
+PhysicalResourcesController --> PhysicalResourceService: uses 
+PhysicalResourceService --> IPhysicalResourceRepository: uses
+PhysicalResourceService --> IQualificationRepository: uses
+PhysicalResourceService --> IStorageAreaRepository: uses
+PhysicalResourceService --> IDockRepository: uses
+PhysicalResourceService --> PhysicalResourceDTO: uses
+PhysicalResourceDTO --> OperationalWindowDTO: uses
+
+PhysicalResourceRepository --> PhysicalResourceMapper: uses
+PhysicalResourceMapper --> PhysicalResourceDataModel : uses
+PhysicalResourceMapper --> IPhysicalResourceFactory : uses
+PhysicalResourceFactory --> PhysicalResource: creates
+Resource --> OperationalWindow: uses
+Resource --> Qualification: uses
+
+PhysicalResourceFactory ..|> IPhysicalResourceFactory : implements
+PhysicalResource ..|> Resource : extends
+PhysicalResource --> PhysicalResourceKind: uses
+Resource --> ResourceStatus: uses
+PhysicalResourceRepository ..|> IPhysicalResourceRepository : implements
+QualificationRepository .up.|> IQualificationRepository : implements
+StorageAreaRepository .up.|> IStorageAreaRepository : implements
+DockRepository .up.|> IDockRepository : implements
+
+
+@enduml

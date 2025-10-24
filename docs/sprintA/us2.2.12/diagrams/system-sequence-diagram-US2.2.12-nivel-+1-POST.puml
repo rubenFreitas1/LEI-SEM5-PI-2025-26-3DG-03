@@ -1,0 +1,111 @@
+@startuml system-sequence-diagram-US2.2.12-POST
+
+participant "Logistics Officer" as logisticsOfficer
+participant "Physical Resources Controller" as physicalResourceController
+participant "Physical Resource Service" as physicalResourceService
+participant "Physical Resource Repository" as physicalResourceRepository
+participant "Physical Resource Mapper" as physicalResourceMapper
+participant "Physical Resource Factory" as physicalResourceFactory
+participant "Physical Resource" as physicalResource
+participant "Physical Resource Data Model" as physicalResourceDataModel
+participant "Qualification Repository" as qualificationRepository
+participant "Storage Area Repository" as storageAreaRepository
+participant "Dock Repository" as dockRepository
+participant "Qualification" as qualification
+
+title System Sequence Diagram - US2.2.12 (Add Physical Resource - POST)
+
+logisticsOfficer -> physicalResourceController: POST /api/PhysicalResources
+activate physicalResourceController
+
+physicalResourceController -> physicalResourceController: Validate ModelState
+physicalResourceController -> physicalResourceService: Add(dto, errorMessages)
+activate physicalResourceService
+
+physicalResourceService -> physicalResourceRepository: GetPhysicalResourceByCodeAsync(dto.Code)
+activate physicalResourceRepository
+physicalResourceRepository --> physicalResourceService: existing resource (null if not found)
+deactivate physicalResourceRepository
+
+alt existing resource found
+    physicalResourceService --> physicalResourceController: null (with error message)
+    physicalResourceController --> logisticsOfficer: 409 Conflict
+else resource not found (continue)
+    physicalResourceService -> physicalResourceService: ValidateAssignmentArea(dto.Kind, dto.AssignedArea, errorMessages)
+    
+    alt validation for STS Crane
+        physicalResourceService -> dockRepository: GetDockByNameAsync(dto.AssignedArea)
+        activate dockRepository
+        dockRepository --> physicalResourceService: dock
+        deactivate dockRepository
+    else validation for Truck
+        physicalResourceService -> storageAreaRepository: GetStorageAreaByCodeAsync(dto.AssignedArea)
+        activate storageAreaRepository
+        storageAreaRepository --> physicalResourceService: storageArea
+        deactivate storageAreaRepository
+    end
+    
+    alt validation failed
+        physicalResourceService --> physicalResourceController: null (with error messages)
+        physicalResourceController --> logisticsOfficer: 400 Bad Request
+    else validation passed
+        alt qualification code provided
+            physicalResourceService -> qualificationRepository: GetQualificationByCodeAsync(dto.QualificationCode)
+            activate qualificationRepository
+            qualificationRepository --> physicalResourceService: qualification
+            deactivate qualificationRepository
+        end
+        
+        physicalResourceService -> physicalResourceFactory: NewPhysicalResource(code, name, description, kind, qualifications, operationalCapacity, operationalWindow, setupTimeMinutes)
+        activate physicalResourceFactory
+        physicalResourceFactory -> physicalResource: new PhysicalResource(...)
+        activate physicalResource
+        physicalResource --> physicalResourceFactory: resource
+        deactivate physicalResource
+        physicalResourceFactory --> physicalResourceService: resource
+        deactivate physicalResourceFactory
+        
+        alt assigned area provided
+            alt STS Crane
+                physicalResourceService -> physicalResource: AssignToDock(dto.AssignedArea)
+                activate physicalResource
+                physicalResource --> physicalResourceService: void
+                deactivate physicalResource
+            else Truck
+                physicalResourceService -> physicalResource: AssignToStorageArea(dto.AssignedArea)
+                activate physicalResource
+                physicalResource --> physicalResourceService: void
+                deactivate physicalResource
+            end
+        end
+        
+        physicalResourceService -> physicalResourceRepository: AddPhysicalResource(resource)
+        activate physicalResourceRepository
+        physicalResourceRepository -> physicalResourceMapper: ToDataModel(resource)
+        activate physicalResourceMapper
+        physicalResourceMapper -> physicalResourceDataModel: new PhysicalResourceDataModel(resource)
+        activate physicalResourceDataModel
+        physicalResourceDataModel --> physicalResourceMapper: dataModel
+        deactivate physicalResourceDataModel
+        physicalResourceMapper --> physicalResourceRepository: dataModel
+        deactivate physicalResourceMapper
+        
+        physicalResourceRepository -> physicalResourceRepository: SaveChangesAsync()
+        physicalResourceRepository -> physicalResourceMapper: ToDomain(savedDataModel)
+        activate physicalResourceMapper
+        physicalResourceMapper --> physicalResourceRepository: savedResource
+        deactivate physicalResourceMapper
+        physicalResourceRepository --> physicalResourceService: savedResource
+        deactivate physicalResourceRepository
+        
+        physicalResourceService -> physicalResourceService: PhysicalResourceDTO.ToDTO(savedResource)
+        physicalResourceService --> physicalResourceController: physicalResourceDTO
+        deactivate physicalResourceService
+        
+        physicalResourceController --> logisticsOfficer: 201 Created (with physicalResourceDTO)
+    end
+end
+
+deactivate physicalResourceController
+
+@enduml

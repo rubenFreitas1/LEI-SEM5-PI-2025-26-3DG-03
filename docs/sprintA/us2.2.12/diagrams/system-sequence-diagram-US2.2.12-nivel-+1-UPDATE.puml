@@ -1,0 +1,158 @@
+@startuml system-sequence-diagram-US2.2.12-UPDATE
+
+participant "Logistics Officer" as logisticsOfficer
+participant "Physical Resources Controller" as physicalResourceController
+participant "Physical Resource Service" as physicalResourceService
+participant "Physical Resource Repository" as physicalResourceRepository
+participant "Physical Resource Mapper" as physicalResourceMapper
+participant "Physical Resource" as physicalResource
+participant "Physical Resource Data Model" as physicalResourceDataModel
+participant "Qualification Repository" as qualificationRepository
+participant "Storage Area Repository" as storageAreaRepository
+participant "Dock Repository" as dockRepository
+participant "Qualification" as qualification
+
+title System Sequence Diagram - US2.2.12 (Update Physical Resource - PUT)
+
+logisticsOfficer -> physicalResourceController: PUT /api/PhysicalResources/Update/{id}
+activate physicalResourceController
+
+physicalResourceController -> physicalResourceController: Validate ModelState
+physicalResourceController -> physicalResourceService: GetById(id)
+activate physicalResourceService
+
+physicalResourceService -> physicalResourceRepository: GetPhysicalResourceByIdAsync(id)
+activate physicalResourceRepository
+physicalResourceRepository --> physicalResourceService: existing resource
+deactivate physicalResourceRepository
+
+alt existing resource found and code changed
+    physicalResourceService -> physicalResourceRepository: GetPhysicalResourceByCodeAsync(dto.Code)
+    activate physicalResourceRepository
+    physicalResourceRepository --> physicalResourceService: resourceWithSameCode
+    deactivate physicalResourceRepository
+    
+    alt code conflict with different resource
+        physicalResourceService --> physicalResourceController: false (with error message)
+        physicalResourceController --> logisticsOfficer: 409 Conflict
+    end
+end
+
+physicalResourceController -> physicalResourceService: Update(id, dto, errorMessages)
+
+alt existing resource not found
+    physicalResourceService --> physicalResourceController: false (resource not found)
+    physicalResourceController --> logisticsOfficer: 400 Bad Request
+else resource found (continue)
+    physicalResourceService -> physicalResourceService: ValidateAssignmentArea(dto.Kind, dto.AssignedArea, errorMessages)
+    
+    alt validation for STS Crane
+        physicalResourceService -> dockRepository: GetDockByNameAsync(dto.AssignedArea)
+        activate dockRepository
+        dockRepository --> physicalResourceService: dock
+        deactivate dockRepository
+    else validation for Truck
+        physicalResourceService -> storageAreaRepository: GetStorageAreaByCodeAsync(dto.AssignedArea)
+        activate storageAreaRepository
+        storageAreaRepository --> physicalResourceService: storageArea
+        deactivate storageAreaRepository
+    end
+    
+    alt validation failed
+        physicalResourceService --> physicalResourceController: false (with error messages)
+        physicalResourceController --> logisticsOfficer: 400 Bad Request
+    else validation passed
+        alt qualification code provided
+            physicalResourceService -> qualificationRepository: GetQualificationByCodeAsync(dto.QualificationCode)
+            activate qualificationRepository
+            qualificationRepository --> physicalResourceService: qualification
+            deactivate qualificationRepository
+        end
+        
+        physicalResourceService -> physicalResource: ChangeName(dto.Name)
+        activate physicalResource
+        physicalResource --> physicalResourceService: void
+        deactivate physicalResource
+        
+        physicalResourceService -> physicalResource: ChangeDescription(dto.Description)
+        activate physicalResource
+        physicalResource --> physicalResourceService: void
+        deactivate physicalResource
+        
+        physicalResourceService -> physicalResource: ChangeKind(dto.Kind)
+        activate physicalResource
+        physicalResource --> physicalResourceService: void
+        deactivate physicalResource
+        
+        physicalResourceService -> physicalResource: ChangeOperationalCapacity(dto.OperationalCapacity)
+        activate physicalResource
+        physicalResource --> physicalResourceService: void
+        deactivate physicalResource
+        
+        physicalResourceService -> physicalResource: ChangeSetupTime(dto.SetupTimeMinutes)
+        activate physicalResource
+        physicalResource --> physicalResourceService: void
+        deactivate physicalResource
+        
+        physicalResourceService -> physicalResource: ChangeStatus(dto.Status)
+        activate physicalResource
+        physicalResource --> physicalResourceService: void
+        deactivate physicalResource
+        
+        alt qualification provided
+            physicalResourceService -> physicalResource: ChangeQualification(qualifications)
+            activate physicalResource
+            physicalResource --> physicalResourceService: void
+            deactivate physicalResource
+        end
+        
+        physicalResourceService -> physicalResource: ChangeOperationalWindow(operationalWindow)
+        activate physicalResource
+        physicalResource --> physicalResourceService: void
+        deactivate physicalResource
+        
+        alt assigned area provided
+            alt STS Crane
+                physicalResourceService -> physicalResource: AssignToDock(dto.AssignedArea)
+                activate physicalResource
+                physicalResource --> physicalResourceService: void
+                deactivate physicalResource
+            else Truck
+                physicalResourceService -> physicalResource: AssignToStorageArea(dto.AssignedArea)
+                activate physicalResource
+                physicalResource --> physicalResourceService: void
+                deactivate physicalResource
+            else Mobile Crane
+                physicalResourceService -> physicalResource: RemoveAssignment()
+                activate physicalResource
+                physicalResource --> physicalResourceService: void
+                deactivate physicalResource
+            end
+        end
+        
+        physicalResourceService -> physicalResourceRepository: Update(resource, errorMessages)
+        activate physicalResourceRepository
+        physicalResourceRepository -> physicalResourceRepository: GetPhysicalResourceDataModel(resource.Id)
+        physicalResourceRepository -> physicalResourceMapper: UpdateDataModel(dataModel, resource)
+        activate physicalResourceMapper
+        physicalResourceMapper --> physicalResourceRepository: void
+        deactivate physicalResourceMapper
+        
+        physicalResourceRepository -> physicalResourceRepository: SaveChangesAsync()
+        physicalResourceRepository -> physicalResourceMapper: ToDomain(updatedDataModel)
+        activate physicalResourceMapper
+        physicalResourceMapper --> physicalResourceRepository: updatedResource
+        deactivate physicalResourceMapper
+        physicalResourceRepository --> physicalResourceService: updatedResource
+        deactivate physicalResourceRepository
+        
+        physicalResourceService --> physicalResourceController: true
+        deactivate physicalResourceService
+        
+        physicalResourceController --> logisticsOfficer: 200 OK
+    end
+end
+
+deactivate physicalResourceController
+
+@enduml
