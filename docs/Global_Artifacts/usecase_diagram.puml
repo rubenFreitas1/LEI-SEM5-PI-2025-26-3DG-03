@@ -1,0 +1,124 @@
+@startuml
+
+left to right direction
+skinparam actorStyle awesome
+"Port Authority Officer" as PAO
+"Shipping Agent Representative" as SAR
+"Logistics Operator" as LO
+"Administrator" as Admin
+"Project Manager" as PM
+"System User" as SU
+"Non-Authenticated\nSystem User" as NAU
+
+package UC3.1{
+    usecase "UC3.1.1: Set up the SPA." as UC3_1_1
+    usecase "UC3.1.2: SPA to provide a unified layout." as UC3_1_2
+    usecase "UC3.1.3: SPA to show only the menus relevant to my permissions." as UC3_1_3
+    usecase "UC3.1.4: Receive clear feedback in the SPA." as UC3_1_4
+    usecase "UC3.1.5: SPA to provide suitable pages/forms." as UC3_1_5
+}
+
+PM --> UC3_1_1
+SU --> UC3_1_2
+SU --> UC3_1_3
+SU --> UC3_1_4
+SU --> UC3_1_5
+
+package UC3.2{
+    usecase "UC3.2.1: Authenticate using the external IAM provider." as UC3_2_1
+    usecase "UC3.2.2: Automatically load my internal authorization role." as UC3_2_2
+    usecase "UC3.2.3: Authenticated session to be maintained securely." as UC3_2_3
+    usecase "UC3.2.4: Restrict access to actions and features." as UC3_2_4
+    usecase "UC3.2.5: Assign (or update) the internal role(s)." as UC3_2_5
+    usecase "UC3.2.6: Complete my first access securely through authentication." as UC3_2_6
+}
+
+NAU --> UC3_2_1
+SU --> UC3_2_2
+SU --> UC3_2_3
+SU --> UC3_2_4
+Admin --> UC3_2_5
+SU --> UC3_2_6
+
+package UC3.3{
+    usecase "UC3.3.1: Develop and integrate a 3D visualization module." as UC3_3_1
+    usecase "UC3.3.2: See a 3D representation of the port structure." as UC3_3_2
+    usecase "UC3.3.3: See vessels and major resources." as UC3_3_3
+    usecase "UC3.3.4: 3D models to be rendered." as UC3_3_4
+    usecase "UC3.3.5: 3D scene to have appropriate lighting." as UC3_3_5
+    usecase "UC3.3.6: Control a perspective camera." as UC3_3_6
+}
+
+PM --> UC3_3_1
+SU --> UC3_3_2
+LO --> UC3_3_3
+PAO --> UC3_3_3
+SU --> UC3_3_4
+SU --> UC3_3_5
+SU --> UC3_3_6
+
+package UC3.4{
+    usecase "UC3.4.1: Develop a dedicated back-end module." as UC3_4_1
+    usecase "UC3.4.2: Generate a daily schedule." as UC3_4_2
+    usecase "UC3.4.3: Analyze the computational complexity of the scheduling algorithm." as UC3_4_3
+    usecase "UC3.4.4: Alternative scheduling algorithm." as UC3_4_4
+    usecase "UC3.4.5: Scheduling module to support the use of multiple cranes." as UC3_4_5
+}
+
+PM --> UC3_4_1
+LO --> UC3_4_2
+LO --> UC3_4_3
+LO --> UC3_4_4
+LO --> UC3_4_5
+
+package UC3.5{
+    usecase "UC3.5.1: Systematic and automated deployment process." as UC3_5_1
+    usecase "UC3.5.2: Access to the solution to be restricted." as UC3_5_2
+    usecase "UC3.5.3: List of allowed client endpoints." as UC3_5_3
+    usecase "UC3.5.4: Define a public folder." as UC3_5_4
+    usecase "UC3.5.5: Control and monitor logins." as UC3_5_5
+    usecase "UC3.5.6: Identify and quantify the risks." as UC3_5_6
+    usecase "UC3.5.7: Define the Minimum Business Continuity Objective (MBCO)." as UC3_5_7
+    usecase "UC3.5.8: Backup strategy to be proposed, justified and implemented." as UC3_5_8
+}
+
+Admin --> UC3_5_1
+Admin --> UC3_5_2
+Admin --> UC3_5_3
+Admin --> UC3_5_4
+Admin --> UC3_5_5
+Admin --> UC3_5_6
+Admin --> UC3_5_7
+Admin --> UC3_5_8
+
+package UC3.6{
+    usecase "UC3.6.1: Understand how the project handles personal data." as UC3_6_1
+    usecase "UC3.6.2: Understand how to handle a personal data breach." as UC3_6_2
+}
+
+PM --> UC3_6_1
+PM --> UC3_6_2
+
+package UC3.7{
+    usecase "UC3.7.1: Describe the main management control instruments." as UC3_7_1
+    usecase "UC3.7.2: Identify some KPI." as UC3_7_2
+    usecase "UC3.7.3: Identify whether the organization uses management information systems." as UC3_7_3
+    usecase "UC3.7.4: Analyze the leadership styles." as UC3_7_4
+    usecase "UC3.7.5: Identify motivational practices." as UC3_7_5
+    usecase "UC3.7.6: Document the organization’s HR." as UC3_7_6
+    usecase "UC3.7.7: Identify examples of contributions to the United Nations." as UC3_7_7
+    usecase "UC3.7.8: Examples of practices that promote productivity." as UC3_7_8
+    usecase "UC3.7.9: Identify existing circular economy practices." as UC3_7_9
+}
+
+PM --> UC3_7_1
+PM --> UC3_7_2
+PM --> UC3_7_3  
+PM --> UC3_7_4
+PM --> UC3_7_5
+PM --> UC3_7_6
+PM --> UC3_7_7
+PM --> UC3_7_8
+PM --> UC3_7_9
+
+@enduml
