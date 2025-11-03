@@ -15,6 +15,10 @@ export const routes: Routes = [
         path: 'dashboard',
         loadChildren: () => import('./routing/dashboard.routes').then((m) => m.routes)
       },
+      {
+        path: 'qualification',
+        loadChildren: () => import('./routing/qualification.routes').then((m) => m.routes)
+      }
     ],
   },
   {
@@ -22,6 +26,4 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/login/login').then(m => m.Login),
     data: { title: 'Login Page' }
   }
-
-
 ];

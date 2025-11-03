@@ -1,0 +1,188 @@
+<div class="page-container">
+  <h1 class="page-title">Qualifications</h1>
+
+
+  <div class="top-bar">
+    <div class="search-container">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()"
+        placeholder="Search for qualifications..."
+        class="search-input"
+      >
+      <button
+        *ngIf="searchTerm"
+        (click)="clearSearch()"
+        class="clear-button"
+        title="Clean search"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="action-buttons">
+      <button
+        (click)="onCreateNew()"
+        class="btn btn-primary"
+        title="Create new qualification"
+      >
+        New Qualification
+      </button>
+      <button
+        (click)="onUpdate()"
+        class="btn btn-secondary"
+        [disabled]="!selectedQualification"
+        title="Edit selected qualification"
+      >
+        Edit Qualification
+      </button>
+    </div>
+  </div>
+
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+    <button (click)="errorMessage = ''" class="close-error">✕</button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    Loading Qualifications...
+  </div>
+
+  <div *ngIf="!isLoading" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let qualification of filteredQualifications"
+          [class.selected]="selectedQualification?.id === qualification.id"
+          (click)="selectQualification(qualification)"
+        >
+          <td>{{ qualification.code }}</td>
+          <td>{{ qualification.name }}</td>
+          <td>{{ qualification.description }}</td>
+          <td>
+            <button
+              (click)="selectQualification(qualification); $event.stopPropagation()"
+              class="btn-select"
+              [class.selected]="selectedQualification?.id === qualification.id"
+            >
+              {{ selectedQualification?.id === qualification.id ? 'Unselect' : 'Select' }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Mensagem quando não há resultados -->
+    <div *ngIf="filteredQualifications.length === 0 && !isLoading" class="no-results">
+      <p>{{ searchTerm ? 'No results found for "' + searchTerm + '"' : 'No qualifications found.' }}</p>
+    </div>
+  </div>
+
+  <!-- Informações da qualification selecionada -->
+  <div *ngIf="selectedQualification" class="selected-info">
+    <h3>Selected Qualification:</h3>
+    <div class="info-card">
+      <p><strong>Code:</strong> {{ selectedQualification.code }}</p>
+      <p><strong>Name:</strong> {{ selectedQualification.name }}</p>
+      <p><strong>Description:</strong> {{ selectedQualification.description }}</p>
+    </div>
+  </div>
+</div>
+
+<!-- Create Qualification Modal -->
+<div *ngIf="showCreateModal" class="modal-overlay" (click)="closeCreateModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Create New Qualification</h2>
+      <button class="close-button" (click)="closeCreateModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Error message display -->
+      <div *ngIf="modalErrorMessage" class="alert alert-danger">
+        {{ modalErrorMessage }}
+      </div>
+
+      <form (ngSubmit)="onSaveNewQualification()" #qualificationForm="ngForm">
+        <div class="form-group">
+          <label for="code">Code *</label>
+          <input
+            type="text"
+            id="code"
+            name="code"
+            [(ngModel)]="newQualification.code"
+            required
+            class="form-input"
+            [class.error]="hasFieldError('code')"
+            placeholder="Enter qualification code"
+          >
+          <div *ngIf="hasFieldError('code')" class="field-error">
+            {{ getFieldError('code') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="name">Name *</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            [(ngModel)]="newQualification.name"
+            required
+            class="form-input"
+            [class.error]="hasFieldError('name')"
+            placeholder="Enter qualification name"
+          >
+          <div *ngIf="hasFieldError('name')" class="field-error">
+            {{ getFieldError('name') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description *</label>
+          <textarea
+            id="description"
+            name="description"
+            [(ngModel)]="newQualification.description"
+            required
+            class="form-textarea"
+            [class.error]="hasFieldError('description')"
+            placeholder="Enter qualification description"
+            rows="3"
+          ></textarea>
+          <div *ngIf="hasFieldError('description')" class="field-error">
+            {{ getFieldError('description') }}
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            (click)="closeCreateModal()"
+            class="btn btn-secondary"
+            [disabled]="isCreating"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isCreating || !qualificationForm.form.valid"
+          >
+            {{ isCreating ? 'Creating...' : 'Create Qualification' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
