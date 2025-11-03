@@ -1,0 +1,120 @@
+@use "@coreui/coreui/scss/mixins/transition" as *;
+@use "@coreui/coreui/scss/mixins/color-mode" as *;
+
+body {
+  background-color: var(--cui-tertiary-bg);
+}
+
+.wrapper {
+  width: 100%;
+  padding-inline: var(--cui-sidebar-occupy-start, 0) var(--cui-sidebar-occupy-end, 0);
+  will-change: auto;
+  @include transition(padding .15s);
+}
+
+.header > .container-fluid,
+.sidebar-header {
+  min-height: calc(4rem + 1px);
+}
+
+.sidebar-brand-full {
+  margin-left: 25px;
+}
+
+.sidebar-header {
+  .nav-underline-border {
+    --cui-nav-underline-border-link-padding-x: 1rem;
+    --cui-nav-underline-border-gap: 0;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    min-height: calc(4rem + 1px);
+  }
+}
+
+.sidebar-toggler {
+  margin-inline-start: auto;
+}
+
+.sidebar.sidebar-narrow .nav-link.nav-group-toggle,
+.sidebar-narrow .nav-link.nav-group-toggle,
+.sidebar-narrow-unfoldable:not(:hover) .nav-link.nav-group-toggle,
+c-sidebar.sidebar-narrow .nav-link.nav-group-toggle,
+body.sidebar-narrow .nav-link.nav-group-toggle {
+  text-indent: -9999px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  font-size: 0 !important;
+  color: transparent !important;
+}
+
+.sidebar-narrow,
+.sidebar-narrow-unfoldable:not(:hover) {
+  .sidebar-toggler {
+    margin-inline-end: auto;
+  }
+  .nav-link .nav-title,
+  .nav-link .nav-label,
+  .nav-link .nav-text,
+  .nav-link .nav-name,
+  c-sidebar-nav-link-content,
+  c-sidebar-nav-title {
+    display: none !important;
+    visibility: hidden !important;
+    width:0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+}
+
+
+
+:host ::ng-deep .sidebar .c-sidebar-footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+.nav-img {
+  display: inline-block;
+
+  width: 22px;
+  height: 22px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-right: 2px;
+}
+
+.nav-img-vessel { background-image: url('/assets/icons/vessel-icon.png'); }
+.nav-img-dock { background-image: url('/assets/icons/dock-icon.png'); }
+.nav-img-vvn { background-image: url('/assets/icons/notification-icon.png'); }
+.nav-img-organization { background-image: url('/assets/icons/organization-icon.png'); }
+.nav-img-physicalResource { background-image: url('/assets/icons/physicalResources-icon.png'); }
+.nav-img-qualification { background-image: url('/assets/icons/qualification-icon.png'); }
+.nav-img-representative { background-image: url('/assets/icons/representative-icon.png'); }
+.nav-img-shippingAgent { background-image: url('/assets/icons/shippingAgent-icon.png'); }
+.nav-img-staff { background-image: url('/assets/icons/staff-icon.png'); }
+.nav-img-storage { background-image: url('/assets/icons/storage-icon.png'); }
+.nav-img-dashboard { background-image: url('/assets/icons/dashboard-icon.png'); }
+
+.header > .container-fluid + .container-fluid {
+  min-height: 3rem;
+}
+
+.footer {
+  min-height: calc(3rem + 1px);
+}
+
+@include color-mode(dark) {
+  body {
+    background-color: var(--cui-dark-bg-subtle);
+  }
+
+  .footer {
+    --cui-footer-bg: var(--cui-body-bg);
+  }
+}
