@@ -10,7 +10,7 @@ using ShippingManagement.Domain.Qualifications;
 
 public static class Utilities
 {
-    private static bool _isInitialized = false; 
+    private static bool _isInitialized = false;
     private static readonly object _lock = new object();
 
     public static void InitializeDatabase(WebApplication app)
@@ -22,12 +22,12 @@ public static class Utilities
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<ShippingManagementContext>();
-                
-        
+
+
                 db.Database.EnsureCreated();
-                
-        
-                if (db.Qualifications.Any()) 
+
+
+                if (db.Qualifications.Any())
                 {
                     _isInitialized = true;
                     return;
@@ -36,15 +36,15 @@ public static class Utilities
                 // Seeding
                 db.VesselTypes.AddRange(GetSeedingVesselTypesDataModel());
                 db.SaveChanges();
-                
+
                 var vesselTypes = db.VesselTypes.ToList();
                 db.Docks.AddRange(GetSeedingDocksDataModel(vesselTypes));
                 db.SaveChanges();
-                
+
                 var docks = db.Docks.ToList();
                 db.StorageAreas.AddRange(GetSeedingStorageAreasDataModel(docks));
                 db.SaveChanges();
-                
+
                 var orgsAndReps = GetSeedingOrganizationDataModelsAndRepresentatives();
                 foreach (var (orgDM, repsDM) in orgsAndReps)
                 {
@@ -58,7 +58,7 @@ public static class Utilities
 
                 db.VesselRecords.AddRange(GetSeedingVesselRecordsDataModel(vesselTypes));
                 db.SaveChanges();
-                
+
                 var vesselRecords = db.VesselRecords.ToList();
                 var representatives = db.Representatives.ToList();
                 var storageAreas = db.StorageAreas.ToList();
@@ -74,7 +74,7 @@ public static class Utilities
                 var qualifications = db.Qualifications.ToList();
                 db.PhysicalResources.AddRange(GetSeedingPhysicalResourcesDataModel(qualifications));
                 db.SaveChanges();
-                
+
                 _isInitialized = true;
             }
         }
@@ -186,8 +186,8 @@ public static class Utilities
         var qual2 = qualifications.FirstOrDefault(q => q.Code == "MBLOP");
         if (qual1 == null || qual2 == null)
             throw new InvalidOperationException("Required qualifications not found in seeding data.");
-        
-        
+
+
         return new List<StaffDataModel>()
         {
             new StaffDataModel
@@ -202,7 +202,7 @@ public static class Utilities
             },
             new StaffDataModel
             {
-                Name = "Staff Two", 
+                Name = "Staff Two",
                 Email = "staff2@gmail.com",
                 Phone = "987654322",
                 Qualification = new List<QualificationDataModel> { qual1 },
