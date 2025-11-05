@@ -25,5 +25,11 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () => import('./pages/login/login').then(m => m.Login),
     data: { title: 'Login Page' }
+  },
+
+  {
+    path: 'v',
+    loadComponent: () => import('./components/visualization/visualization').then(m => m.PortVisualizationComponent),
+    data: { title: '3D Port Visualization' }
   }
 ];

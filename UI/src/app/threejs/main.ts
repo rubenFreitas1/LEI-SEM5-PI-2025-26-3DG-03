@@ -15,11 +15,16 @@ export function createScene(){
     renderer.setSize(window!.offsetWidth, window!.offsetHeight)
     window?.appendChild(renderer.domElement)
 
-    function initialize(portStructure: THREE.Group, sea: THREE.Mesh) {
-        scene.clear();
+    function initialize(portStructure: THREE.Group, sea: THREE.Mesh, seaBed: THREE.Mesh) {
+        for (let i = scene.children.length - 1; i >= 0; i--) {
+            const child = scene.children[i];
+            if (!(child instanceof THREE.Light)) {
+                scene.remove(child);
+            }
+        }
 
     
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1);
         scene.add(ambientLight);
 
     
@@ -31,6 +36,8 @@ export function createScene(){
         scene.add(portStructure);
 
         scene.add(sea);
+
+        scene.add(seaBed);
 
     
         camera.position.set(400, 200, 400);

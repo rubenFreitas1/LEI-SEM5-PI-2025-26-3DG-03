@@ -13,10 +13,13 @@ export function createSea(): THREE.Mesh {
         waterNormals: waterNormals,
         sunDirection: new THREE.Vector3(0, 1, 0),
         sunColor: 0xffffff,
-        waterColor: 0x004f7c,
-        distortionScale: 1.2,
+        waterColor: 0x1ca3ec,
+        distortionScale: 1.8,
         fog: false,
     });
+
+    water.material.uniforms['alpha'].value = 0.5;
+    water.material.transparent = true;
 
     water.rotation.x = -Math.PI / 2;
     water.position.y = 0;

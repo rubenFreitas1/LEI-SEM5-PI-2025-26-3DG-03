@@ -1,0 +1,9 @@
+#root-window, #render-target {
+	width: 100vw;
+	height: 100vh;
+	display: block;
+}
+
+#render-target > canvas {
+	display: block;
+}
