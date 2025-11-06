@@ -13,6 +13,9 @@ export function createScene(){
     
     const renderer = new THREE.WebGLRenderer()
     renderer.setSize(window!.offsetWidth, window!.offsetHeight)
+
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     window?.appendChild(renderer.domElement)
 
     function initialize(portStructure: THREE.Group, sea: THREE.Mesh, seaBed: THREE.Mesh) {
@@ -23,22 +26,39 @@ export function createScene(){
             }
         }
 
-    
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-        scene.add(ambientLight);
-
-    
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(200, 200, 200);
-        scene.add(directionalLight);
-
-    
         scene.add(portStructure);
 
         scene.add(sea);
 
-        scene.add(seaBed);
+        const shadowPlaneGeo = new THREE.PlaneGeometry(1200, 1200);
+        const shadowPlaneMat = new THREE.ShadowMaterial({ opacity: 0.2 });
+        const shadowPlane = new THREE.Mesh(shadowPlaneGeo, shadowPlaneMat);
+        shadowPlane.rotation.x = -Math.PI / 2;
+        const seaY = (sea.position && typeof (sea.position.y) === 'number') ? sea.position.y : 0;
+        shadowPlane.position.y = seaY + 0.1;
+        shadowPlane.receiveShadow = true;
+        shadowPlane.castShadow = false;
+        scene.add(shadowPlane);
 
+        scene.add(seaBed);
+        
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        directionalLight.position.set(300, 300, 300);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.set(2048, 2048);
+        directionalLight.shadow.camera.near = 0.5;
+        directionalLight.shadow.camera.far = 2000;
+
+        const d = 800;
+        const sc = directionalLight.shadow.camera as THREE.OrthographicCamera;
+        sc.left = -d; sc.right = d; sc.top = d; sc.bottom = -d;
+        sc.updateProjectionMatrix();
+        directionalLight.shadow.bias = -0.0005;
+
+        directionalLight.target.position.set(0, 0, 0);
+        scene.add(directionalLight.target);
+        scene.add(ambientLight, directionalLight);
     
         camera.position.set(400, 200, 400);
         camera.lookAt(0, 0, 0);

@@ -15,18 +15,24 @@ export function createPortStructure()
     const dockGeometry = new THREE.BoxGeometry(400, 30, 150);
     const dockMesh = new THREE.Mesh(dockGeometry, material);
     dockMesh.position.y = 1; 
+    dockMesh.castShadow = true;
+    dockMesh.receiveShadow = true;
     portStructure.add(dockMesh);
 
     
     const leftDockGeometry = new THREE.BoxGeometry(70, 30, 200);
     const leftDockMesh = new THREE.Mesh(leftDockGeometry, material);
     leftDockMesh.position.set(-100, 1, 100); 
+    leftDockMesh.castShadow = true;
+    leftDockMesh.receiveShadow = true;
     portStructure.add(leftDockMesh);
 
     
     const rightDockGeometry = new THREE.BoxGeometry(70, 30, 200);
     const rightDockMesh = new THREE.Mesh(rightDockGeometry, material);
     rightDockMesh.position.set(150, 1, 100);
+    rightDockMesh.castShadow = true;
+    rightDockMesh.receiveShadow = true;
     portStructure.add(rightDockMesh);
 
     return portStructure;

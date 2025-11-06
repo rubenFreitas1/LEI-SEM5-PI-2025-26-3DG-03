@@ -13,6 +13,8 @@ export function createSeaBed(): THREE.Mesh {
   const seabed = new THREE.Mesh(geometry, material);
   seabed.rotation.x = -Math.PI / 2;
   seabed.position.y = -10; 
+
+  seabed.castShadow = false;
   seabed.receiveShadow = true;
 
   return seabed;

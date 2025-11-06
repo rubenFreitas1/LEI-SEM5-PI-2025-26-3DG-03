@@ -23,6 +23,9 @@ export function createSea(): THREE.Mesh {
 
     water.rotation.x = -Math.PI / 2;
     water.position.y = 0;
+
+    water.castShadow = false;
+    water.receiveShadow = true;
     return water;
 }
 
