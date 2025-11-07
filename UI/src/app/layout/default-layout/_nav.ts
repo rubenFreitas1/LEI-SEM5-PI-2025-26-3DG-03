@@ -13,7 +13,19 @@ export const navItems: INavData[] = [
   {
     name: 'Vessel',
     url: '/vessels',
-    icon: 'nav-img nav-img-vessel'
+    icon: 'nav-img nav-img-vessel',
+    children: [
+    {
+      name: 'Vessel Type',
+      url: '/vesselType',
+      icon: 'nav-img nav-img-vessel',
+    },
+    {
+      name: 'Vessel',
+      url: '/vessel',
+      icon: 'nav-img nav-img-vessel'
+    }
+    ]
   },
   {
     name: 'Docks',

@@ -1,0 +1,395 @@
+<div class="page-container">
+  <h1 class="page-title">Vessel Types</h1>
+
+
+  <div class="top-bar">
+    <div class="search-container">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()"
+        placeholder="Search for vessel types..."
+        class="search-input"
+      >
+      <button
+        *ngIf="searchTerm"
+        (click)="clearSearch()"
+        class="clear-button"
+        title="Clean search"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="action-buttons">
+      <button
+        (click)="onCreateNew()"
+        class="btn btn-primary"
+        title="Create new vessel type"
+      >
+        New Vessel Type
+      </button>
+      <button
+        (click)="onUpdate()"
+        class="btn btn-secondary"
+        [disabled]="!selectedVesselType"
+        title="Edit selected vessel type"
+      >
+        Edit Vessel Type
+      </button>
+    </div>
+  </div>
+
+
+  <div *ngIf="statusMessage" [ngClass]="statusMessageType === 'success' ? 'success-message' : 'error-message'" [class.hiding]="statusHiding">
+    {{ statusMessage }}
+    <button (click)="clearStatusMessage()" class="close-error">✕</button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    Loading Vessel Types...
+  </div>
+
+  <div *ngIf="!isLoading" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Capacity</th>
+          <th>Max Rows</th>
+          <th>Max Bays</th>
+          <th>Max Tiers</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let vesselType of filteredVesselTypes"
+          [class.selected]="selectedVesselType?.id === vesselType.id"
+          (click)="selectVesselType(vesselType)"
+        >
+          <td>{{ vesselType.name }}</td>
+          <td>{{ vesselType.description }}</td>
+          <td>{{ vesselType.capacity }}</td>
+          <td>{{ vesselType.maxRows }}</td>
+          <td>{{ vesselType.maxBays }}</td>
+          <td>{{ vesselType.maxTiers }}</td>
+          <td>
+            <button
+              (click)="selectVesselType(vesselType); $event.stopPropagation()"
+              class="btn-select"
+              [class.selected]="selectedVesselType?.id === vesselType.id"
+            >
+              {{ selectedVesselType?.id === vesselType.id ? 'Unselect' : 'Select' }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Message when no results are found -->
+    <div *ngIf="filteredVesselTypes.length === 0 && !isLoading" class="no-results">
+      <p>{{ searchTerm ? 'No results found for "' + searchTerm + '"' : 'No vessel types found.' }}</p>
+    </div>
+  </div>
+
+  <!-- Information of selected vessel type -->
+  <div *ngIf="selectedVesselType" class="selected-info">
+    <h3>Selected Vessel Type:</h3>
+    <div class="info-card">
+      <p><strong>Name:</strong> {{ selectedVesselType.name }}</p>
+      <p><strong>Description:</strong> {{ selectedVesselType.description }}</p>
+      <p><strong>Capacity:</strong> {{ selectedVesselType.capacity }}</p>
+      <p><strong>Max Rows:</strong> {{ selectedVesselType.maxRows }}</p>
+      <p><strong>Max Bays:</strong> {{ selectedVesselType.maxBays }}</p>
+      <p><strong>Max Tiers:</strong> {{ selectedVesselType.maxTiers }}</p>
+    </div>
+  </div>
+</div>
+
+<!-- Create Vessel Type Modal -->
+<div *ngIf="showCreateModal" class="modal-overlay" (click)="closeCreateModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Create New Vessel Type</h2>
+      <button class="close-button" (click)="closeCreateModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Error message display -->
+      <div *ngIf="modalErrorMessage" class="alert alert-danger">
+        {{ modalErrorMessage }}
+      </div>
+
+      <form (ngSubmit)="onSaveNewVesselType()" #vesselTypeForm="ngForm">
+        <div class="form-group">
+          <label for="name">Name *</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            [(ngModel)]="newVesselType.name"
+            required
+            class="form-input"
+            [class.error]="hasFieldError('name')"
+            placeholder="Enter vessel type name"
+          >
+          <div *ngIf="hasFieldError('name')" class="field-error">
+            {{ getFieldError('name') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description *</label>
+          <textarea
+            id="description"
+            name="description"
+            [(ngModel)]="newVesselType.description"
+            required
+            class="form-textarea"
+            [class.error]="hasFieldError('description')"
+            placeholder="Enter vessel type description"
+            rows="3"
+          ></textarea>
+          <div *ngIf="hasFieldError('description')" class="field-error">
+            {{ getFieldError('description') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="capacity">Capacity *</label>
+          <input
+            type="number"
+            id="capacity"
+            name="capacity"
+            [(ngModel)]="newVesselType.capacity"
+            required
+            min="1"
+            class="form-input"
+            [class.error]="hasFieldError('capacity')"
+            placeholder="Enter vessel capacity"
+          >
+          <div *ngIf="hasFieldError('capacity')" class="field-error">
+            {{ getFieldError('capacity') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="maxRows">Max Rows *</label>
+          <input
+            type="number"
+            id="maxRows"
+            name="maxRows"
+            [(ngModel)]="newVesselType.maxRows"
+            required
+            min="1"
+            class="form-input"
+            [class.error]="hasFieldError('maxRows')"
+            placeholder="Enter maximum rows"
+          >
+          <div *ngIf="hasFieldError('maxRows')" class="field-error">
+            {{ getFieldError('maxRows') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="maxBays">Max Bays *</label>
+          <input
+            type="number"
+            id="maxBays"
+            name="maxBays"
+            [(ngModel)]="newVesselType.maxBays"
+            required
+            min="1"
+            class="form-input"
+            [class.error]="hasFieldError('maxBays')"
+            placeholder="Enter maximum bays"
+          >
+          <div *ngIf="hasFieldError('maxBays')" class="field-error">
+            {{ getFieldError('maxBays') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="maxTiers">Max Tiers *</label>
+          <input
+            type="number"
+            id="maxTiers"
+            name="maxTiers"
+            [(ngModel)]="newVesselType.maxTiers"
+            required
+            min="1"
+            class="form-input"
+            [class.error]="hasFieldError('maxTiers')"
+            placeholder="Enter maximum tiers"
+          >
+          <div *ngIf="hasFieldError('maxTiers')" class="field-error">
+            {{ getFieldError('maxTiers') }}
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            (click)="closeCreateModal()"
+            class="btn btn-secondary"
+            [disabled]="isCreating"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isCreating || !vesselTypeForm.form.valid"
+          >
+            {{ isCreating ? 'Creating...' : 'Create Vessel Type' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Vessel Type Modal -->
+<div *ngIf="showEditModal" class="modal-overlay" (click)="closeEditModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Edit Vessel Type</h2>
+      <button class="close-button" (click)="closeEditModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Error message display -->
+      <div *ngIf="editModalErrorMessage" class="alert alert-danger">
+        {{ editModalErrorMessage }}
+      </div>
+
+      <form (ngSubmit)="onSaveEditVesselType()" #editVesselTypeForm="ngForm">
+        <div class="form-group">
+          <label for="editName">Name *</label>
+          <input
+            type="text"
+            id="editName"
+            name="editName"
+            [(ngModel)]="editVesselType.name"
+            required
+            class="form-input"
+            [class.error]="hasEditFieldError('name')"
+            placeholder="Enter vessel type name"
+          >
+          <div *ngIf="hasEditFieldError('name')" class="field-error">
+            {{ getEditFieldError('name') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editDescription">Description *</label>
+          <textarea
+            id="editDescription"
+            name="editDescription"
+            [(ngModel)]="editVesselType.description"
+            required
+            class="form-textarea"
+            [class.error]="hasEditFieldError('description')"
+            placeholder="Enter vessel type description"
+            rows="3"
+          ></textarea>
+          <div *ngIf="hasEditFieldError('description')" class="field-error">
+            {{ getEditFieldError('description') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editCapacity">Capacity *</label>
+          <input
+            type="number"
+            id="editCapacity"
+            name="editCapacity"
+            [(ngModel)]="editVesselType.capacity"
+            required
+            min="1"
+            class="form-input"
+            [class.error]="hasEditFieldError('capacity')"
+            placeholder="Enter vessel capacity"
+          >
+          <div *ngIf="hasEditFieldError('capacity')" class="field-error">
+            {{ getEditFieldError('capacity') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editMaxRows">Max Rows *</label>
+          <input
+            type="number"
+            id="editMaxRows"
+            name="editMaxRows"
+            [(ngModel)]="editVesselType.maxRows"
+            required
+            min="1"
+            class="form-input"
+            [class.error]="hasEditFieldError('maxRows')"
+            placeholder="Enter maximum rows"
+          >
+          <div *ngIf="hasEditFieldError('maxRows')" class="field-error">
+            {{ getEditFieldError('maxRows') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editMaxBays">Max Bays *</label>
+          <input
+            type="number"
+            id="editMaxBays"
+            name="editMaxBays"
+            [(ngModel)]="editVesselType.maxBays"
+            required
+            min="1"
+            class="form-input"
+            [class.error]="hasEditFieldError('maxBays')"
+            placeholder="Enter maximum bays"
+          >
+          <div *ngIf="hasEditFieldError('maxBays')" class="field-error">
+            {{ getEditFieldError('maxBays') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editMaxTiers">Max Tiers *</label>
+          <input
+            type="number"
+            id="editMaxTiers"
+            name="editMaxTiers"
+            [(ngModel)]="editVesselType.maxTiers"
+            required
+            min="1"
+            class="form-input"
+            [class.error]="hasEditFieldError('maxTiers')"
+            placeholder="Enter maximum tiers"
+          >
+          <div *ngIf="hasEditFieldError('maxTiers')" class="field-error">
+            {{ getEditFieldError('maxTiers') }}
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            (click)="closeEditModal()"
+            class="btn btn-secondary"
+            [disabled]="isEditing"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isEditing || !editVesselTypeForm.form.valid || !isEditDirty()"
+          >
+            {{ isEditing ? 'Updating...' : 'Update Vessel Type' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

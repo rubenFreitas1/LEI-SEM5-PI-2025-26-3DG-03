@@ -26,6 +26,10 @@ export const routes: Routes = [
       {
         path: 'staff',
         loadChildren: () => import('./routing/staff.routes').then((m) => m.routes)
+      },
+      {
+        path: 'vesselType',
+        loadChildren: () => import('./routing/vesselType.routes').then((m) => m.routes)
       }
     ],
   },
