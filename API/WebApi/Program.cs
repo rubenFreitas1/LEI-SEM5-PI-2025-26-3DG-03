@@ -103,11 +103,10 @@ Utilities.InitializeDatabase(app);
 
 
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 app.UseHttpsRedirection();
 
@@ -117,6 +116,8 @@ app.UseCors("AllowSpecificOrigin");
 app.UseAuthorization();
 
 app.MapControllers();
+
+builder.WebHost.UseUrls("http://0.0.0.0:5000");
 
 app.Run();
 
