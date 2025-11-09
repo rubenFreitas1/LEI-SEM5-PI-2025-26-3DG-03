@@ -96,6 +96,8 @@ builder.Services.AddTransient<IPhysicalResourceFactory, PhysicalResourceFactory>
 builder.Services.AddTransient<PhysicalResourceMapper>();
 builder.Services.AddTransient<PhysicalResourceService>();
 
+builder.WebHost.UseUrls("http://0.0.0.0:5000");
+
 
 var app = builder.Build();
 
@@ -108,7 +110,8 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+app.MapGet("/ping", () => "pong");
 
 
 app.UseCors("AllowSpecificOrigin");
@@ -116,8 +119,6 @@ app.UseCors("AllowSpecificOrigin");
 app.UseAuthorization();
 
 app.MapControllers();
-
-builder.WebHost.UseUrls("http://0.0.0.0:5000");
 
 app.Run();
 
