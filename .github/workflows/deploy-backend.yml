@@ -23,5 +23,5 @@ jobs:
           script: |
             echo ">>> Starting remote deploy on Oracle VM... <<<"
             cd /opt/dei-deploy
-            sudo ./deploy.sh
+            ./deploy.sh
             echo ">>> Deploy complete. <<<"
