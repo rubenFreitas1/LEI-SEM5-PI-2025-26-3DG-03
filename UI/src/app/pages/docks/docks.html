@@ -100,10 +100,10 @@
       <p><strong>Depth:</strong> {{ selectedDock.depth }} m</p>
       <p><strong>Max Draft:</strong> {{ selectedDock.maxDraft }} m</p>
       <p><strong>Vessel Types:</strong>
-        <span *ngIf="selectedDock.vesselTypes && selectedDock.vesselTypes.length > 0">
-          {{ selectedDock.vesselTypes.join(', ') }}
+        <span *ngIf="selectedDock.vesselTypesAllowed && selectedDock.vesselTypesAllowed.length > 0">
+          {{ selectedDock.vesselTypesAllowed.join(', ') }}
         </span>
-        <span *ngIf="!selectedDock.vesselTypes || selectedDock.vesselTypes.length === 0">
+        <span *ngIf="!selectedDock.vesselTypesAllowed || selectedDock.vesselTypesAllowed.length === 0">
           None specified
         </span>
       </p>
@@ -217,16 +217,27 @@
         </div>
 
         <div class="form-group">
-          <label for="vesselTypes">Vessel Types (comma-separated)</label>
-          <input
-            type="text"
-            id="vesselTypes"
-            name="vesselTypes"
-            [(ngModel)]="vesselTypesInput"
-            class="form-input"
-            placeholder="e.g., Container Ship, Bulk Carrier"
-          >
-          <small class="form-hint">Enter vessel types separated by commas</small>
+          <label for="vesselTypes">Vessel Types</label>
+          <div class="custom-select-wrapper">
+            <div class="custom-select" [class.open]="isDropdownOpen" (click)="toggleDropdown()">
+              <div class="custom-select-trigger">
+                <span>{{ getVesselTypeDisplayText() }}</span>
+                <div class="arrow"></div>
+              </div>
+              <div class="custom-options" *ngIf="isDropdownOpen">
+                <div
+                  *ngFor="let vesselType of availableVesselTypes"
+                  class="custom-option"
+                  [class.selected]="isVesselTypeSelected(vesselType.name || '')"
+                  (click)="selectVesselType(vesselType.name || '', $event)"
+                >
+                  {{ vesselType.name }} - {{ vesselType.description }}
+                  <span *ngIf="isVesselTypeSelected(vesselType.name || '')" class="checkmark">✓</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <small class="form-hint">Click to toggle selection (multiple selections allowed)</small>
         </div>
 
         <div class="modal-footer">
@@ -357,16 +368,27 @@
         </div>
 
         <div class="form-group">
-          <label for="editVesselTypes">Vessel Types (comma-separated)</label>
-          <input
-            type="text"
-            id="editVesselTypes"
-            name="editVesselTypes"
-            [(ngModel)]="editVesselTypesInput"
-            class="form-input"
-            placeholder="e.g., Container Ship, Bulk Carrier"
-          >
-          <small class="form-hint">Enter vessel types separated by commas</small>
+          <label for="editVesselTypes">Vessel Types</label>
+          <div class="custom-select-wrapper">
+            <div class="custom-select" [class.open]="isEditDropdownOpen" (click)="toggleEditDropdown()">
+              <div class="custom-select-trigger">
+                <span>{{ getEditVesselTypeDisplayText() }}</span>
+                <div class="arrow"></div>
+              </div>
+              <div class="custom-options" *ngIf="isEditDropdownOpen">
+                <div
+                  *ngFor="let vesselType of availableVesselTypes"
+                  class="custom-option"
+                  [class.selected]="isEditVesselTypeSelected(vesselType.name || '')"
+                  (click)="selectEditVesselType(vesselType.name || '', $event)"
+                >
+                  {{ vesselType.name }} - {{ vesselType.description }}
+                  <span *ngIf="isEditVesselTypeSelected(vesselType.name || '')" class="checkmark">✓</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <small class="form-hint">Click to toggle selection (multiple selections allowed)</small>
         </div>
 
         <div class="modal-footer">

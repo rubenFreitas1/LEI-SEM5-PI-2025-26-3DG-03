@@ -378,7 +378,7 @@ input[type="number"] {
 
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none; 
+  -webkit-appearance: none;
   margin: 0;
 }
 
@@ -523,4 +523,405 @@ input[type="number"]::-webkit-inner-spin-button {
   body:not(.sidebar-narrow) :host .form-row .form-group {
     margin-bottom: 20px !important;
   }
+}
+
+/* Vessel types dropdown styles */
+.vessel-types-dropdown {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 8px;
+  background-color: #ffffff;
+}
+
+.vessel-type-checkbox {
+  margin-bottom: 8px;
+}
+
+.vessel-type-checkbox:last-child {
+  margin-bottom: 0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  margin: 0;
+  font-weight: normal;
+}
+
+.checkbox-label:hover {
+  background-color: #f8f9fa;
+}
+
+.checkbox-input {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.checkbox-text {
+  font-size: 14px;
+  color: #333;
+  user-select: none;
+}
+
+.no-vessel-types {
+  color: #6c757d;
+  font-style: italic;
+  text-align: center;
+  padding: 16px;
+}
+
+/* Dark mode styles for vessel types dropdown */
+:host-context([data-coreui-theme="dark"]) .vessel-types-dropdown {
+  background-color: #4a5568;
+  border-color: #718096;
+}
+
+:host-context([data-coreui-theme="dark"]) .checkbox-label:hover {
+  background-color: #2d3748;
+}
+
+:host-context([data-coreui-theme="dark"]) .checkbox-text {
+  color: #e2e8f0;
+}
+
+:host-context([data-coreui-theme="dark"]) .no-vessel-types {
+  color: #a0aec0;
+}
+
+/* Multiple select styling */
+.form-select-multiple {
+  min-height: 120px;
+  background-image: none;
+  background-color: #ffffff;
+  border: 2px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.form-select-multiple:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-select-multiple option {
+  padding: 4px 8px;
+  margin: 2px 0;
+  border-radius: 4px;
+  background-color: #ffffff;
+}
+
+.form-select-multiple option:hover {
+  background-color: #f3f4f6;
+}
+
+.form-select-multiple option:checked {
+  background-color: #3b82f6;
+  color: white;
+}
+
+/* Dark mode styles for select multiple */
+:host-context([data-coreui-theme="dark"]) .form-select-multiple {
+  background-color: #4a5568;
+  border-color: #718096;
+  color: #e2e8f0;
+}
+
+:host-context([data-coreui-theme="dark"]) .form-select-multiple option {
+  background-color: #4a5568;
+  color: #e2e8f0;
+}
+
+:host-context([data-coreui-theme="dark"]) .form-select-multiple option:hover {
+  background-color: #2d3748;
+}
+
+:host-context([data-coreui-theme="dark"]) .form-select-multiple option:checked {
+  background-color: #3182ce;
+  color: white;
+}
+
+/* Custom dropdown styles */
+.custom-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.dropdown-toggle {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  box-sizing: border-box;
+}
+
+.dropdown-toggle:hover {
+  border-color: #adb5bd;
+}
+
+.custom-dropdown.open .dropdown-toggle {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.dropdown-text {
+  flex-grow: 1;
+  text-align: left;
+  color: #495057;
+}
+
+.dropdown-arrow {
+  margin-left: 8px;
+  transition: transform 0.2s ease;
+  color: #6c757d;
+}
+
+.custom-dropdown.open .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ced4da;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 9999;
+}
+
+.dropdown-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover:not(.disabled) {
+  background-color: #f8f9fa;
+}
+
+.dropdown-item.disabled {
+  color: #6c757d;
+  cursor: not-allowed;
+  font-style: italic;
+  justify-content: center;
+}
+
+.dropdown-checkbox {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.dropdown-label {
+  flex-grow: 1;
+  font-size: 14px;
+  color: #495057;
+  user-select: none;
+}
+
+/* Dark mode styles for custom dropdown */
+:host-context([data-coreui-theme="dark"]) .dropdown-toggle {
+  background-color: #4a5568;
+  border-color: #718096;
+  color: #e2e8f0;
+}
+
+:host-context([data-coreui-theme="dark"]) .dropdown-toggle:hover {
+  border-color: #a0aec0;
+}
+
+:host-context([data-coreui-theme="dark"]) .custom-dropdown.open .dropdown-toggle {
+  border-color: #0d6efd;
+  background-color: #4a5568;
+}
+
+:host-context([data-coreui-theme="dark"]) .dropdown-text {
+  color: #e2e8f0;
+}
+
+:host-context([data-coreui-theme="dark"]) .dropdown-arrow {
+  color: #a0aec0;
+}
+
+:host-context([data-coreui-theme="dark"]) .dropdown-menu {
+  background-color: #4a5568;
+  border-color: #718096;
+}
+
+:host-context([data-coreui-theme="dark"]) .dropdown-item {
+  border-bottom-color: #2d3748;
+}
+
+:host-context([data-coreui-theme="dark"]) .dropdown-item:hover:not(.disabled) {
+  background-color: #2d3748;
+}
+
+:host-context([data-coreui-theme="dark"]) .dropdown-item.disabled {
+  color: #a0aec0;
+}
+
+:host-context([data-coreui-theme="dark"]) .dropdown-label {
+  color: #e2e8f0;
+}
+
+/* Custom Select Styling - identical to vessel record */
+.custom-select-wrapper {
+  position: relative;
+}
+
+.custom-select {
+  position: relative;
+}
+
+.custom-select-trigger {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  box-sizing: border-box;
+  color: #495057;
+}
+
+.custom-select-trigger:hover {
+  border-color: #adb5bd;
+}
+
+.custom-select.open .custom-select-trigger {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.arrow {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid #6c757d;
+  transition: transform 0.2s ease;
+}
+
+.custom-select.open .arrow {
+  transform: rotate(180deg);
+}
+
+.custom-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ced4da;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 9999;
+}
+
+.custom-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #f8f9fa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #495057;
+}
+
+.custom-option:last-child {
+  border-bottom: none;
+}
+
+.custom-option:hover {
+  background-color: #f8f9fa;
+}
+
+.custom-option.selected {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.checkmark {
+  color: #0d6efd;
+  font-weight: bold;
+}
+
+/* Dark mode styles */
+:host-context([data-coreui-theme="dark"]) .custom-select-trigger {
+  background-color: #4a5568;
+  border-color: #718096;
+  color: #e2e8f0;
+}
+
+:host-context([data-coreui-theme="dark"]) .custom-select-trigger:hover {
+  border-color: #a0aec0;
+}
+
+:host-context([data-coreui-theme="dark"]) .custom-select.open .custom-select-trigger {
+  border-color: #0d6efd;
+  background-color: #4a5568;
+}
+
+:host-context([data-coreui-theme="dark"]) .arrow {
+  border-top-color: #a0aec0;
+}
+
+:host-context([data-coreui-theme="dark"]) .custom-options {
+  background-color: #4a5568;
+  border-color: #718096;
+}
+
+:host-context([data-coreui-theme="dark"]) .custom-option {
+  color: #e2e8f0;
+  border-bottom-color: #2d3748;
+}
+
+:host-context([data-coreui-theme="dark"]) .custom-option:hover {
+  background-color: #2d3748;
+}
+
+:host-context([data-coreui-theme="dark"]) .custom-option.selected {
+  background-color: #2b6cb0;
+  color: #bee3f8;
+}
+
+:host-context([data-coreui-theme="dark"]) .checkmark {
+  color: #90cdf4;
 }

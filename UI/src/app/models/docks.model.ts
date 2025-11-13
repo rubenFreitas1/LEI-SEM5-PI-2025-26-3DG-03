@@ -5,5 +5,5 @@ export interface DocksModel {
   length?: number;
   depth?: number;
   maxDraft?: number;
-  vesselTypes?: string[];
+  vesselTypesAllowed?: string[];
 }

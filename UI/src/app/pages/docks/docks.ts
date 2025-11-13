@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged, timeout } from 'rxjs';
 import { DocksService } from '../../services/docks.service';
 import { DocksModel } from '../../models/docks.model';
+import { VesselTypeService } from '../../services/vesselType.service';
+import { VesselTypeModel } from '../../models/vesselType.model';
 
 @Component({
   selector: 'app-docks',
@@ -18,7 +20,7 @@ export class Docks implements OnInit, OnDestroy {
   selectedDock: DocksModel | null = null;
   searchTerm: string = '';
   isLoading: boolean = false;
-  
+
   statusMessage: string = '';
   statusMessageType: 'success' | 'error' | '' = '';
   statusHiding: boolean = false;
@@ -31,7 +33,7 @@ export class Docks implements OnInit, OnDestroy {
     length: 0,
     depth: 0,
     maxDraft: 0,
-    vesselTypes: []
+    vesselTypesAllowed: []
   };
   modalErrorMessage: string = '';
   fieldErrors: { [key: string]: string } = {};
@@ -45,7 +47,7 @@ export class Docks implements OnInit, OnDestroy {
     length: 0,
     depth: 0,
     maxDraft: 0,
-    vesselTypes: []
+    vesselTypesAllowed: []
   };
   editModalErrorMessage: string = '';
   editFieldErrors: { [key: string]: string } = {};
@@ -56,18 +58,34 @@ export class Docks implements OnInit, OnDestroy {
   vesselTypesInput: string = '';
   editVesselTypesInput: string = '';
 
+  // Available vessel types for dropdown
+  availableVesselTypes: VesselTypeModel[] = [];
+  selectedVesselTypes: string[] = [];
+  editSelectedVesselTypes: string[] = [];
+
+  // Display properties for the dropdowns
+  selectedVesselTypeDisplay: string = '';
+  selectedEditVesselTypeDisplay: string = '';
+
+  // Dropdown state
+  isDropdownOpen: boolean = false;
+  isEditDropdownOpen: boolean = false;
+
   private destroy$ = new Subject<void>();
   private searchSubject$ = new Subject<string>();
-  
+
 
   constructor(
     private docksService: DocksService,
+    private vesselTypeService: VesselTypeService,
     private router: Router
   ) {}
 
   ngOnInit() {
     this.loadDocks();
+    this.loadVesselTypes();
     this.setupSearch();
+    this.setupClickOutsideListener();
   }
 
   ngOnDestroy() {
@@ -100,11 +118,34 @@ export class Docks implements OnInit, OnDestroy {
         error: (error) => {
           this.statusHiding = false;
           this.statusMessage = 'Error loading docks. Please check your connection.';
-          this.statusMessageType = 'error';  
+          this.statusMessageType = 'error';
           console.error('Error loading docks:', error);
           this.isLoading = false;
         }
       });
+  }
+
+  loadVesselTypes() {
+    this.vesselTypeService.getAllVesselTypes()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (vesselTypes) => {
+          this.availableVesselTypes = vesselTypes;
+        },
+        error: (error) => {
+          console.error('Error loading vessel types:', error);
+        }
+      });
+  }
+
+  private setupClickOutsideListener() {
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.custom-select-wrapper')) {
+        this.isDropdownOpen = false;
+        this.isEditDropdownOpen = false;
+      }
+    });
   }
 
   onSearch() {
@@ -156,7 +197,7 @@ export class Docks implements OnInit, OnDestroy {
         error: (error) => {
           this.statusHiding = false;
           this.statusMessage = 'Error searching for docks. Please try again.';
-          this.statusMessageType = 'error';   
+          this.statusMessageType = 'error';
           console.error('Error searching docks:', error);
           this.filteredDocks = [];
           this.isLoading = false;
@@ -199,8 +240,11 @@ export class Docks implements OnInit, OnDestroy {
       this.showEditModal = true;
       this.resetEditDock();
       this.editDock = { ...this.selectedDock };
-      // Set vessel types input for editing
-      this.editVesselTypesInput = this.selectedDock.vesselTypes?.join(', ') || '';
+      this.originalEditDock = { ...this.selectedDock }; // Store original values for comparison
+      // Set vessel types selection for editing
+      this.editVesselTypesInput = this.selectedDock.vesselTypesAllowed?.join(', ') || '';
+      this.editSelectedVesselTypes = this.selectedDock.vesselTypesAllowed ? [...this.selectedDock.vesselTypesAllowed] : [];
+      this.selectedEditVesselTypeDisplay = '';
       console.log('Opening edit dock modal for:', this.selectedDock);
     } else {
       alert('Please select a dock to update.');
@@ -221,9 +265,11 @@ export class Docks implements OnInit, OnDestroy {
       length: 0,
       depth: 0,
       maxDraft: 0,
-      vesselTypes: []
+      vesselTypesAllowed: []
     };
-    this.vesselTypesInput = '';
+    this.selectedVesselTypes = [];
+    this.selectedVesselTypeDisplay = '';
+    this.isDropdownOpen = false;
     this.modalErrorMessage = '';
     this.fieldErrors = {};
   }
@@ -234,18 +280,48 @@ export class Docks implements OnInit, OnDestroy {
     this.isCreating = false;
   }
 
+  // Vessel type selection methods
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  selectVesselType(vesselTypeName: string, event: Event) {
+    event.stopPropagation();
+
+    if (this.selectedVesselTypes.includes(vesselTypeName)) {
+      // Se já está selecionado, remover
+      this.selectedVesselTypes = this.selectedVesselTypes.filter(vt => vt !== vesselTypeName);
+    } else {
+      // Se não está selecionado, adicionar
+      this.selectedVesselTypes.push(vesselTypeName);
+    }
+  }
+
+  isVesselTypeSelected(vesselTypeName: string): boolean {
+    return this.selectedVesselTypes.includes(vesselTypeName);
+  }
+
+  getVesselTypeDisplayText(): string {
+    if (this.selectedVesselTypes.length === 0) {
+      return 'Select vessel types';
+    } else if (this.selectedVesselTypes.length === 1) {
+      return this.selectedVesselTypes[0];
+    } else {
+      return `${this.selectedVesselTypes.length} vessel types selected`;
+    }
+  }
+
   onSaveNewDock() {
     this.modalErrorMessage = '';
     this.fieldErrors = {};
 
-    // Process vessel types input
-    if (this.vesselTypesInput.trim()) {
-      this.newDock.vesselTypes = this.vesselTypesInput
-        .split(',')
-        .map(type => type.trim())
-        .filter(type => type.length > 0);
-    } else {
-      this.newDock.vesselTypes = [];
+    // Assign selected vessel type names to the dock
+    this.newDock.vesselTypesAllowed = [...this.selectedVesselTypes];
+
+    // Validate vessel types selection
+    if (this.selectedVesselTypes.length === 0) {
+      this.modalErrorMessage = 'At least one vessel type must be selected.';
+      return;
     }
 
     if (!this.isValidDock()) {
@@ -254,11 +330,12 @@ export class Docks implements OnInit, OnDestroy {
     }
 
     this.isCreating = true;
+
+    console.log('� About to call API with payload:', this.newDock);
     this.docksService.createDock(this.newDock)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (createdDock) => {
-          console.log('Dock created successfully:', createdDock);
           this.closeCreateModal();
           this.loadDocks();
         },
@@ -344,9 +421,12 @@ export class Docks implements OnInit, OnDestroy {
       length: 0,
       depth: 0,
       maxDraft: 0,
-      vesselTypes: []
+      vesselTypesAllowed: []
     };
     this.editVesselTypesInput = '';
+    this.editSelectedVesselTypes = [];
+    this.selectedEditVesselTypeDisplay = '';
+    this.isEditDropdownOpen = false;
     this.editModalErrorMessage = '';
     this.editFieldErrors = {};
   }
@@ -354,21 +434,50 @@ export class Docks implements OnInit, OnDestroy {
   closeEditModal() {
     this.showEditModal = false;
     this.resetEditDock();
+    this.originalEditDock = null; // Clear original data
     this.isEditing = false;
   }
+
+  // Edit vessel type selection methods
+  toggleEditDropdown() {
+    this.isEditDropdownOpen = !this.isEditDropdownOpen;
+  }
+
+  selectEditVesselType(vesselTypeName: string, event: Event) {
+    event.stopPropagation(); // Prevenir que o dropdown feche
+
+    if (this.editSelectedVesselTypes.includes(vesselTypeName)) {
+      // Se já está selecionado, remover
+      this.editSelectedVesselTypes = this.editSelectedVesselTypes.filter(vt => vt !== vesselTypeName);
+    } else {
+      // Se não está selecionado, adicionar
+      this.editSelectedVesselTypes.push(vesselTypeName);
+    }
+
+    // Sync with editDock.vesselTypesAllowed for dirty detection
+    this.editDock.vesselTypesAllowed = [...this.editSelectedVesselTypes];
+  }
+
+  isEditVesselTypeSelected(vesselTypeName: string): boolean {
+    return this.editSelectedVesselTypes.includes(vesselTypeName);
+  }
+
+  getEditVesselTypeDisplayText(): string {
+    if (this.editSelectedVesselTypes.length === 0) {
+      return 'Select vessel types';
+    } else if (this.editSelectedVesselTypes.length === 1) {
+      return this.editSelectedVesselTypes[0];
+    } else {
+      return `${this.editSelectedVesselTypes.length} vessel types selected`;
+    }
+  }
+
   onSaveEditDock() {
     this.editModalErrorMessage = '';
     this.editFieldErrors = {};
 
-    // Process vessel types input
-    if (this.editVesselTypesInput.trim()) {
-      this.editDock.vesselTypes = this.editVesselTypesInput
-        .split(',')
-        .map(type => type.trim())
-        .filter(type => type.length > 0);
-    } else {
-      this.editDock.vesselTypes = [];
-    }
+    // Process vessel types from dropdown selection
+    this.editDock.vesselTypesAllowed = [...this.editSelectedVesselTypes];
 
     if (!this.isValidEditDock()) {
       this.editModalErrorMessage = 'Please fill in all required fields (name, location, length, depth, maxDraft).';
@@ -470,8 +579,8 @@ export class Docks implements OnInit, OnDestroy {
     const lengthChanged = (orig.length || 0) !== (curr.length || 0);
     const depthChanged = (orig.depth || 0) !== (curr.depth || 0);
     const maxDraftChanged = (orig.maxDraft || 0) !== (curr.maxDraft || 0);
-    const vesselTypesOrig = (orig.vesselTypes || []).slice().sort().join(',');
-    const vesselTypesCurr = (curr.vesselTypes || []).slice().sort().join(',');
+    const vesselTypesOrig = (orig.vesselTypesAllowed || []).slice().sort().join(',');
+    const vesselTypesCurr = (curr.vesselTypesAllowed || []).slice().sort().join(',');
     const vesselTypesChanged = vesselTypesOrig !== vesselTypesCurr;
     return nameChanged || locationChanged || lengthChanged || depthChanged || maxDraftChanged || vesselTypesChanged;
   }
