@@ -1,4 +1,5 @@
 namespace DataModel.Model;
+
 using System.ComponentModel.DataAnnotations;
 
 using Domain.Model;

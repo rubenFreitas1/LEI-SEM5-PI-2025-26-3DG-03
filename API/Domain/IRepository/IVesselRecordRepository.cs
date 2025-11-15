@@ -1,4 +1,5 @@
 namespace Domain.IRepository;
+
 using Domain.Model;
 
 public interface IVesselRecordRepository : IGenericRepository<VesselRecord>

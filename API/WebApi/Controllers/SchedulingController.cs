@@ -24,7 +24,8 @@ public class SchedulingController : ControllerBase
     public async Task<ActionResult<SchedulingDTO>> GetSchedullingForTargetDay(DateTime targetDay)
     {
         SchedulingDTO? notifications = await _schedulingService.GetSchedulingForTargetDay(targetDay, _errorMessages);
-        if(_errorMessages.Count > 0){
+        if (_errorMessages.Count > 0)
+        {
             return BadRequest(_errorMessages);
         }
         return Ok(notifications);
