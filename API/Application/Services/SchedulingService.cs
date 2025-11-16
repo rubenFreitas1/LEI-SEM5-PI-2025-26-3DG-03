@@ -106,7 +106,7 @@ public class SchedulingService
                 DateTime startTime = targetDay.AddHours(startHours);
                 DateTime endTime = targetDay.AddHours(endHours);
                 string vesselName = GetVesselNameByIMO(vesselIMO).Result;
-                List<string> assignedCranes = [fastestCrane.Name];
+                var assignedCranes = new List<string> { fastestCrane.Name };
                 List<string> staffNames = await GetAvailableStaffNames();
 
                 var schedulingEntryDTO = new SchedulingEntryDTO(vesselName, startTime, endTime, assignedCranes, staffNames);
@@ -118,8 +118,9 @@ public class SchedulingService
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
+            errorMessages.Add(ex.Message);
+            return null;
         }
-        return null;
     }
     private async Task<List<String>> GetAvailableStaffNames()
     {

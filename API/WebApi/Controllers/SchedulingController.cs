@@ -26,7 +26,16 @@ public class SchedulingController : ControllerBase
         SchedulingDTO? notifications = await _schedulingService.GetSchedulingForTargetDay(targetDay, _errorMessages);
         if (_errorMessages.Count > 0)
         {
-            return BadRequest(_errorMessages);
+            var msg = string.Join("; ", _errorMessages);
+            if (_errorMessages.Any(m => m.Contains("No vessel visit notifications found", StringComparison.OrdinalIgnoreCase)))
+            {
+                return NotFound(new { message = "Vessel Visit Notification not found" });
+            }
+            if (_errorMessages.Any(m => m.Contains("No available STS Crane found", StringComparison.OrdinalIgnoreCase)))
+            {
+                return Conflict(new { message = msg });
+            }
+            return BadRequest(new { message = msg });
         }
         return Ok(notifications);
     }
