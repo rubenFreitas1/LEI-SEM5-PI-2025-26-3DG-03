@@ -33,8 +33,8 @@ export class PortLayoutService {
       );
 
       // 2️⃣ Buscar dados reais do backend
-      const docks = (await firstValueFrom(this.docksService.getAllDocks())).reverse();
-      const storageAreas = (await firstValueFrom(this.storageAreaService.getAllStorageAreas())).reverse();
+      const docks = (await firstValueFrom(this.docksService.getAllDocks()));
+      const storageAreas = (await firstValueFrom(this.storageAreaService.getAllStorageAreas()));
 
       // 3️⃣ DOCAS → mapear até ao limite dos slots
       const dockPositions = layout.dockSlots
