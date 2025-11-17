@@ -21,10 +21,7 @@ export async function createWarehouse(): Promise<THREE.Group> {
             // Keep neutral transform; the caller sets position
             object.scale.set(50, 50, 50);
 
-            object.position.x = -70;
-            object.position.z = -120;
-
-            object.position.y = 35;
+            
             object.rotation.y = Math.PI;
 
             

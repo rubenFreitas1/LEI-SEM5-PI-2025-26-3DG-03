@@ -1,38 +1,68 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
 
 export async function createYard(): Promise<THREE.Object3D> {
   return new Promise((resolve, reject) => {
-    const loader = new GLTFLoader();
+    const objLoader = new OBJLoader();
+    const mtlLoader = new MTLLoader();
 
-    loader.load(
-      'assets/models/yard.glb',
-      (gltf) => {
-        const yard = gltf.scene;
+    mtlLoader.setPath('assets/models/');
+    mtlLoader.load(
+      'yard.mtl',
+      (materials) => {
+        materials.preload();
+        objLoader.setMaterials(materials);
+        objLoader.setPath('assets/models/');
 
-        // MESMA escala e estilo que o warehouse
-        yard.scale.set(1, 1, 1);
-        yard.position.set(0, 0, 0);
-        yard.rotation.y = 0;
+        objLoader.load(
+          'yard.obj',
+          (object) => {
+            // Mantém transform similar ao warehouse; caller pode ajustar se necessário
+            object.scale.set(100, 50, 50);
+            
 
-        yard.traverse((child: any) => {
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
+            
+            object.rotation.y = Math.PI;
 
-            if (child.material) {
-              child.material.metalness = 0.1;
-              child.material.roughness = 0.8;
+            object.traverse((child: any) => {
+              if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+
+                const mats = Array.isArray(child.material) ? child.material : [child.material];
+                mats.forEach((mat: any) => {
+                  if (!mat) return;
+                  if (typeof mat.transparent === 'boolean') mat.transparent = false;
+                  if (typeof mat.opacity === 'number') mat.opacity = 1;
+                  mat.side = THREE.DoubleSide;
+                  mat.needsUpdate = true;
+                  if ('metalness' in mat) mat.metalness = mat.metalness ?? 0.1;
+                  if ('roughness' in mat) mat.roughness = mat.roughness ?? 0.8;
+                });
+
+                child.geometry?.computeVertexNormals?.();
+              }
+            });
+
+            resolve(object as THREE.Object3D);
+          },
+          (xhr) => {
+            if (xhr && xhr.total) {
+              console.log(`Yard ${(xhr.loaded / xhr.total) * 100}% loaded`);
             }
-
-            child.geometry?.computeVertexNormals?.();
+          },
+          (error) => {
+            console.error('Erro ao carregar o modelo do yard:', error);
+            reject(error);
           }
-        });
-
-        resolve(yard);
+        );
       },
       undefined,
-      (err) => reject(err)
+      (err) => {
+        console.error('Erro ao carregar o MTL do yard:', err);
+        reject(err);
+      }
     );
   });
 }

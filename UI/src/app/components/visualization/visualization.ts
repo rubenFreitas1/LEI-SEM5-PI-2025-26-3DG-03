@@ -44,9 +44,10 @@ export class PortVisualizationComponent implements AfterViewInit, OnDestroy {
           mesh = await createWarehouse();
         } else {
           mesh = await createYard();
+          area.y += 0.5;
         }
 
-        //mesh.position.set(area.x, area.y, area.z);
+        mesh.position.set(area.x, area.y, area.z);
         return mesh;
       })
     );
