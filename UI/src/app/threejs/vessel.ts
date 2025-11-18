@@ -6,14 +6,16 @@ export async function createVessel(): Promise<THREE.Group> {
   return new Promise((resolve, reject) => {
     const objLoader = new OBJLoader();
 
+    const CDN_PATH = 'http://141.253.198.138/assets/models/ships/';
+
 
     // ⚙️ (opcional) Se tiveres materiais .mtl
     const mtlLoader = new MTLLoader();
-    mtlLoader.setPath('assets/models/');
+    mtlLoader.setPath(CDN_PATH);
     mtlLoader.load('ship-cargo-a.mtl', (materials) => {
       materials.preload();
       objLoader.setMaterials(materials);
-      objLoader.setPath('assets/models/');
+      objLoader.setPath(CDN_PATH);
       objLoader.load(
         'ship-cargo-a.obj',
         (object) => {
@@ -29,7 +31,7 @@ export async function createVessel(): Promise<THREE.Group> {
           reject(error);
         }
       );
-      
+
     });
   });
 }

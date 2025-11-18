@@ -9,31 +9,33 @@ export async function createWarehouse(labelText: string): Promise<THREE.Group> {
     const objLoader = new OBJLoader();
     const mtlLoader = new MTLLoader();
 
-    mtlLoader.setPath('assets/models/');
+    const CDN_PATH = 'http://141.253.198.138/assets/models/warehouse/';
+
+
+    mtlLoader.setPath(CDN_PATH);
     mtlLoader.load(
       'warehouse.mtl',
       (materials) => {
         materials.preload();
         objLoader.setMaterials(materials);
-        objLoader.setPath('assets/models/');
+        objLoader.setPath(CDN_PATH);
 
         objLoader.load(
           'warehouse.obj',
           (object) => {
-            // Keep neutral transform; the caller sets position
             object.scale.set(50, 50, 50);
 
-            
+
             object.rotation.y = Math.PI;
 
-            
+
 
             object.traverse((child: any) => {
               if (child.isMesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
 
-                
+
                 const mats = Array.isArray(child.material) ? child.material : [child.material];
                 mats.forEach((mat: any) => {
                   if (!mat) return;
@@ -48,11 +50,11 @@ export async function createWarehouse(labelText: string): Promise<THREE.Group> {
                 child.geometry?.computeVertexNormals?.();
               }
             });
- 
-            
+
+
 
             const label = createStorageAreaLabel(labelText);
-            
+
             object.add(label);
 
             resolve(object as THREE.Group);

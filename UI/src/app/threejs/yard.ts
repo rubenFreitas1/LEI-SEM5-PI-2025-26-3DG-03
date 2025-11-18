@@ -9,18 +9,20 @@ export async function createYard(labelText: string): Promise<THREE.Object3D> {
     const objLoader = new OBJLoader();
     const mtlLoader = new MTLLoader();
 
-    mtlLoader.setPath('assets/models/');
+    const CDN_PATH = 'http://141.253.198.138/assets/models/yard/';
+
+
+    mtlLoader.setPath(CDN_PATH);
     mtlLoader.load(
       'yard.mtl',
       (materials) => {
         materials.preload();
         objLoader.setMaterials(materials);
-        objLoader.setPath('assets/models/');
+        objLoader.setPath(CDN_PATH);
 
         objLoader.load(
           'yard.obj',
           (object) => {
-            // Mantém transform similar ao warehouse; caller pode ajustar se necessário
             object.scale.set(100, 50, 50);
 
             object.rotation.y = Math.PI;
@@ -48,7 +50,7 @@ export async function createYard(labelText: string): Promise<THREE.Object3D> {
             const label = createStorageAreaLabel(labelText);
             label.scale.x *= 0.5
             object.add(label);
-            
+
             resolve(object as THREE.Group);
 
           },
