@@ -11,7 +11,6 @@ import { createYard } from '../../threejs/yard';
 import { PortLayoutService } from '../../services/portLayout.service';
 import { TextureService } from '../../services/texture.service';
 import { TextureModel } from '../../models/texture.model';
-import { label } from 'three/src/nodes/TSL.js';
 
 @Component({
   selector: 'app-visualization',
