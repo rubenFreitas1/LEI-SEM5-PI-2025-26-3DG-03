@@ -26,7 +26,7 @@ services:
       KC_HOSTNAME: 141.253.198.138
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME_STRICT_HTTPS: "false"
-      KC_PROXY: edge
+      KC_PROXY: "none"
     ports:
       - "8080:8080"
     depends_on:
