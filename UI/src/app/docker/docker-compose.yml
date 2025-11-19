@@ -16,7 +16,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.4.2
     container_name: keycloak
-    command: start --import-realm --spi-import-export-strategy=IGNORE_EXISTING
+    command: start --http-enabled=true --hostname-strict=false --hostname-strict-https=false --proxy=none --hostname=http://141.253.198.138:8080 --import-realm --spi-import-export-strategy=IGNORE_EXISTING
     environment:
       KC_DB: postgres
       KC_DB_URL_HOST: postgres
@@ -25,6 +25,8 @@ services:
       KC_DB_PASSWORD: keycloak
       KC_HOSTNAME: 141.253.198.138
       KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_PROXY: "none"
     ports:
       - "8080:8080"
     depends_on:
