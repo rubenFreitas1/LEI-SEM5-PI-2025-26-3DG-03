@@ -1,95 +1,46 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { ApiService } from './api.service';
 import { ShippingAgentOrganizationModel, ShippingAgentOrganizationWithRepresentativeModel, RepresentativeModel } from '../models/organization.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrganizationService {
-  private apiUrl = 'http://141.253.198.138:5000/api/ShippingAgentOrganization';
+  private resource = '/ShippingAgentOrganization';
 
-  constructor(private http: HttpClient) { }
+  constructor(private apiService: ApiService) { }
 
   getAllOrganizations(): Observable<ShippingAgentOrganizationWithRepresentativeModel[]> {
-    return this.http.get<ShippingAgentOrganizationWithRepresentativeModel[]>(this.apiUrl)
-      .pipe(
-        catchError(this.handleError)
-      );
+    return this.apiService.get<ShippingAgentOrganizationWithRepresentativeModel[]>(this.resource);
   }
 
   getOrganizationById(id: number): Observable<ShippingAgentOrganizationWithRepresentativeModel> {
-    return this.http.get<ShippingAgentOrganizationWithRepresentativeModel>(`${this.apiUrl}/${id}`)
-      .pipe(
-        catchError(this.handleError)
-      );
+    return this.apiService.get<ShippingAgentOrganizationWithRepresentativeModel>(`${this.resource}/${id}`);
   }
 
   createOrganization(organization: ShippingAgentOrganizationWithRepresentativeModel): Observable<ShippingAgentOrganizationWithRepresentativeModel> {
-    return this.http.post<ShippingAgentOrganizationWithRepresentativeModel>(this.apiUrl, organization)
-      .pipe(
-        catchError(this.handleError)
-      );
+    return this.apiService.post<ShippingAgentOrganizationWithRepresentativeModel>(this.resource, organization);
   }
 
   updateOrganization(id: number, organization: ShippingAgentOrganizationModel): Observable<any> {
-    return this.http.put(`${this.apiUrl}/Update/${id}`, organization)
-      .pipe(
-        catchError(this.handleError)
-      );
+    return this.apiService.put<any>(`${this.resource}/Update/${id}`, organization);
   }
 
   deleteOrganization(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`)
-      .pipe(
-        catchError(this.handleError)
-      );
+    return this.apiService.delete<any>(`${this.resource}/${id}`);
   }
 
   // Representative management
   addRepresentativeToOrganization(organizationId: number, representative: RepresentativeModel): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${organizationId}/representatives`, representative)
-      .pipe(
-        catchError(this.handleError)
-      );
+    return this.apiService.post<any>(`${this.resource}/${organizationId}/representatives`, representative);
   }
 
   updateRepresentative(organizationId: number, representative: RepresentativeModel): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${organizationId}/representatives`, representative)
-      .pipe(
-        catchError(this.handleError)
-      );
+    return this.apiService.put<any>(`${this.resource}/${organizationId}/representatives`, representative);
   }
 
   removeRepresentativeFromOrganization(organizationId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${organizationId}/representatives`)
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
-  private handleError(error: HttpErrorResponse) {
-    let errorMessage = 'An unknown error occurred!';
-
-    if (error.error instanceof ErrorEvent) {
-      // Client-side error
-      errorMessage = `Error: ${error.error.message}`;
-    } else {
-      // Server-side error
-      if (error.status === 400) {
-        errorMessage = error.error?.message || 'Bad request';
-      } else if (error.status === 404) {
-        errorMessage = 'Organization not found';
-      } else if (error.status === 409) {
-        errorMessage = error.error?.message || 'Conflict occurred';
-      } else if (error.status === 500) {
-        errorMessage = 'Internal server error occurred';
-      } else {
-        errorMessage = `Server returned code: ${error.status}, error message is: ${error.message}`;
-      }
-    }
-
-    return throwError(() => new Error(errorMessage));
+    return this.apiService.delete<any>(`${this.resource}/${organizationId}/representatives`);
   }
 }

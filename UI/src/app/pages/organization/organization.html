@@ -105,7 +105,23 @@
         <p><strong>Last Modified:</strong> {{ selectedOrganization.lastModifiedAt | date:'short' }}</p>
       </div>
 
-      <div class="info-section" *ngIf="selectedOrganization.representativeName">
+      <!-- If API returns a list of representatives for the selected organization, show the list -->
+      <div class="info-section" *ngIf="selectedOrganizationRepresentatives && selectedOrganizationRepresentatives.length > 0">
+        <h4>Representatives</h4>
+        <ul class="representative-list">
+          <li *ngFor="let rep of selectedOrganizationRepresentatives">
+            <p><strong>Name:</strong> {{ rep.name }}</p>
+            <p><strong>Citizen ID:</strong> {{ rep.citizenId }}</p>
+            <p><strong>Nationality:</strong> {{ rep.nationality }}</p>
+            <p><strong>Email:</strong> {{ rep.email }}</p>
+            <p><strong>Phone:</strong> {{ rep.phoneNumber }}</p>
+            <hr />
+          </li>
+        </ul>
+      </div>
+
+      <!-- Fallback: single representative fields (older API shape) -->
+      <div class="info-section" *ngIf="(!selectedOrganizationRepresentatives || selectedOrganizationRepresentatives.length === 0) && selectedOrganization.representativeName">
         <h4>Representative Details</h4>
         <p><strong>Name:</strong> {{ selectedOrganization.representativeName }}</p>
         <p><strong>Citizen ID:</strong> {{ selectedOrganization.representativeCitizenId }}</p>
@@ -114,7 +130,7 @@
         <p><strong>Phone:</strong> {{ selectedOrganization.representativePhoneNumber }}</p>
       </div>
 
-      <div class="info-section" *ngIf="!selectedOrganization.representativeName">
+      <div class="info-section" *ngIf="(!selectedOrganizationRepresentatives || selectedOrganizationRepresentatives.length === 0) && !selectedOrganization.representativeName">
         <h4>Representative</h4>
         <p><em>No representative assigned</em></p>
       </div>

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged, timeout } from 'rxjs';
 import { OrganizationService } from '../../services/organization.service';
+import { RepresentativeService } from '../../services/representative.service';
 import { ShippingAgentOrganizationModel, ShippingAgentOrganizationWithRepresentativeModel, RepresentativeModel } from '../../models/organization.model';
 
 @Component({
@@ -16,6 +17,7 @@ export class Organization implements OnInit, OnDestroy {
   organizations: ShippingAgentOrganizationWithRepresentativeModel[] = [];
   filteredOrganizations: ShippingAgentOrganizationWithRepresentativeModel[] = [];
   selectedOrganization: ShippingAgentOrganizationWithRepresentativeModel | null = null;
+  selectedOrganizationRepresentatives: RepresentativeModel[] = [];
   searchTerm: string = '';
   isLoading: boolean = false;
 
@@ -271,6 +273,7 @@ export class Organization implements OnInit, OnDestroy {
 
   constructor(
     private organizationService: OrganizationService,
+    private representativeService: RepresentativeService,
     private router: Router
   ) {}
 
@@ -390,8 +393,26 @@ export class Organization implements OnInit, OnDestroy {
   selectOrganization(organization: ShippingAgentOrganizationWithRepresentativeModel) {
     if (this.selectedOrganization?.id === organization.id) {
       this.selectedOrganization = null;
+      this.selectedOrganizationRepresentatives = [];
     } else {
       this.selectedOrganization = organization;
+      this.selectedOrganizationRepresentatives = [];
+
+      // load representatives for the selected organization by its legal name
+      const orgName = organization.legalName || organization.alternativeName || organization.code;
+      if (orgName) {
+        this.representativeService.getRepresentativesByOrganization(orgName)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (reps) => {
+              this.selectedOrganizationRepresentatives = reps || [];
+            },
+            error: (err) => {
+              console.error('Error loading representatives for organization', orgName, err);
+              this.selectedOrganizationRepresentatives = [];
+            }
+          });
+      }
     }
   }
 
