@@ -42,9 +42,11 @@ namespace WebApi.Controllers
         public async Task<ActionResult<IEnumerable<PhysicalResourceDTO>>> GetByDescription(string description)
         {
             var result = await _service.GetByDescription(description);
-            if (result == null) return NotFound($"No physical resources found with description containing '{description}'.");
+            if (result == null || !result.Any()) return NotFound($"No physical resources found with description containing '{description}'.");
             return Ok(result);
         }
+
+
 
         [HttpGet("ByKind/{kind}")]
         public async Task<ActionResult<IEnumerable<PhysicalResourceDTO>>> GetByKind(PhysicalResourceKind kind)

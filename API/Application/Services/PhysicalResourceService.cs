@@ -50,6 +50,8 @@ namespace Application.Services
             return r.Select(x => PhysicalResourceDTO.ToDTO(x)).ToList();
         }
 
+
+
         public async Task<IEnumerable<PhysicalResourceDTO>> GetByKind(PhysicalResourceKind kind)
         {
             var r = (await _repo.GetPhysicalResourceByKindAsync(kind)) ?? Enumerable.Empty<PhysicalResource>();
@@ -93,10 +95,10 @@ namespace Application.Services
                 var operationalWindow = OperationalWindowDTO.ToDomain(dto.OperationalWindow!);
                 var resource = _factory.NewPhysicalResource(dto.Code, dto.Name, dto.Description, dto.Kind, qualifications, dto.OperationalCapacity, operationalWindow, dto.SetupTimeMinutes == 0 ? null : (int?)dto.SetupTimeMinutes);
 
-                foreach (var qual in resource.Qualification){ }
+                foreach (var qual in resource.Qualification) { }
 
-                
-                
+
+
                 if (!string.IsNullOrWhiteSpace(dto.AssignedArea))
                 {
                     if (dto.Kind == PhysicalResourceKind.STSCrane)

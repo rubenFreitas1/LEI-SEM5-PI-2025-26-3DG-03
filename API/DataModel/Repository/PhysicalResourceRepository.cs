@@ -42,14 +42,21 @@ namespace DataModel.Repository
 
         public async Task<IEnumerable<PhysicalResource>> GetPhysicalResourceByDescriptionAsync(string description)
         {
+            if (string.IsNullOrWhiteSpace(description)) return Enumerable.Empty<PhysicalResource>();
+
+            var search = description.Trim().ToLowerInvariant();
+
             var list = await _context.Set<PhysicalResourceDataModel>()
                 .Include(p => p.QualificationRequirements)
-                .Where(p => p.Description == description)
+                .Where(p => p.Description != null && p.Description.ToLower().Contains(search))
                 .AsNoTracking()
                 .ToListAsync();
+
             var mappedList = list.Select(dm => _mapper.ToDomain(dm)).Where(r => r != null).Select(r => r!).ToList();
             return mappedList;
         }
+
+
 
         public async Task<IEnumerable<PhysicalResource>> GetPhysicalResourceByKindAsync(PhysicalResourceKind kind)
         {
@@ -72,13 +79,13 @@ namespace DataModel.Repository
             var mappedStatus = list.Select(dm => _mapper.ToDomain(dm)).Where(r => r != null).Select(r => r!).ToList();
             return mappedStatus;
         }
-        
+
         public async Task<PhysicalResource> AddPhysicalResource(PhysicalResource resource)
         {
             var dm = _mapper.ToDataModel(resource);
-            
-            
-            
+
+
+
             if (dm.QualificationRequirements is IEnumerable<QualificationDataModel> qColl)
             {
                 var qList = qColl.ToList();
