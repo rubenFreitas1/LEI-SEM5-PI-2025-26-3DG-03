@@ -53,7 +53,9 @@ public class SchedulingService
         string assignedDockName = dockAssigned?.Name ?? string.Empty;
 
 
-        IEnumerable<PhysicalResource> physicalResources = await _physicalResourceRepository.SearchAsync(kind: PhysicalResourceKind.STSCrane, assignedDock: assignedDockName, status: ResourceStatus.Available);
+        var cranesByKind = await _physicalResourceRepository.GetPhysicalResourceByKindAsync(PhysicalResourceKind.STSCrane);
+        IEnumerable<PhysicalResource> physicalResources = (cranesByKind ?? Enumerable.Empty<PhysicalResource>())
+            .Where(p => (p.PhysicalResourceAssignedDockName ?? string.Empty) == assignedDockName && p.Status == ResourceStatus.Available);
         PhysicalResource? fastestCrane = (physicalResources ?? Enumerable.Empty<PhysicalResource>())
             .OrderByDescending(c => c.PhysicalResourceOperationalCapacity)
             .FirstOrDefault();

@@ -28,17 +28,8 @@ namespace Application.Services
 
         public async Task<IEnumerable<PhysicalResourceDTO>> GetAll()
         {
-            try
-            {
-                var resources = await _repo.GetAllPhysicalResourcesAsync();
-                return resources.Select(r => PhysicalResourceDTO.ToDTO(r));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in PhysicalResourceService.GetAll: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                throw;
-            }
+            var resources = (await _repo.GetAllPhysicalResourcesAsync()) ?? Enumerable.Empty<PhysicalResource>();
+            return resources.Select(r => PhysicalResourceDTO.ToDTO(r)).ToList();
         }
 
         public async Task<PhysicalResourceDTO?> GetById(long id)
@@ -53,10 +44,22 @@ namespace Application.Services
             return r == null ? null : PhysicalResourceDTO.ToDTO(r);
         }
 
-        public async Task<IEnumerable<PhysicalResourceDTO>> Search(string? code = null, string? name = null, string? description = null, PhysicalResourceKind? kind = null, ResourceStatus? status = null)
+        public async Task<IEnumerable<PhysicalResourceDTO>> GetByDescription(string description)
         {
-            var result = await _repo.SearchAsync(code, name, description, kind, status);
-            return result.Select(r => PhysicalResourceDTO.ToDTO(r));
+            var r = (await _repo.GetPhysicalResourceByDescriptionAsync(description)) ?? Enumerable.Empty<PhysicalResource>();
+            return r.Select(x => PhysicalResourceDTO.ToDTO(x)).ToList();
+        }
+
+        public async Task<IEnumerable<PhysicalResourceDTO>> GetByKind(PhysicalResourceKind kind)
+        {
+            var r = (await _repo.GetPhysicalResourceByKindAsync(kind)) ?? Enumerable.Empty<PhysicalResource>();
+            return r.Select(x => PhysicalResourceDTO.ToDTO(x)).ToList();
+        }
+
+        public async Task<IEnumerable<PhysicalResourceDTO>> GetByStatus(ResourceStatus status)
+        {
+            var r = (await _repo.GetPhysicalResourceByStatusAsync(status)) ?? Enumerable.Empty<PhysicalResource>();
+            return r.Select(x => PhysicalResourceDTO.ToDTO(x)).ToList();
         }
 
         public async Task<PhysicalResourceDTO?> Add(PhysicalResourceDTO dto, List<string> errorMessages)
@@ -79,12 +82,10 @@ namespace Application.Services
             if (!string.IsNullOrWhiteSpace(dto.QualificationCode))
             {
                 var qualification = await _qualificationRepository.GetQualificationByCodeAsync(dto.QualificationCode);
-                if (qualification == null)
+                if (qualification != null)
                 {
-                    errorMessages.Add($"Qualification with code '{dto.QualificationCode}' does not exist.");
-                    return null;
+                    qualifications = new List<Qualification> { qualification };
                 }
-                qualifications = new List<Qualification> { qualification };
             }
 
             try
@@ -92,7 +93,10 @@ namespace Application.Services
                 var operationalWindow = OperationalWindowDTO.ToDomain(dto.OperationalWindow!);
                 var resource = _factory.NewPhysicalResource(dto.Code, dto.Name, dto.Description, dto.Kind, qualifications, dto.OperationalCapacity, operationalWindow, dto.SetupTimeMinutes == 0 ? null : (int?)dto.SetupTimeMinutes);
 
+                foreach (var qual in resource.Qualification){ }
 
+                
+                
                 if (!string.IsNullOrWhiteSpace(dto.AssignedArea))
                 {
                     if (dto.Kind == PhysicalResourceKind.STSCrane)
@@ -101,6 +105,11 @@ namespace Application.Services
                         resource.AssignToStorageArea(dto.AssignedArea);
                 }
                 var saved = await _repo.AddPhysicalResource(resource);
+                if (saved == null)
+                {
+                    errorMessages.Add("Error mapping saved resource to domain.");
+                    return null;
+                }
                 return PhysicalResourceDTO.ToDTO(saved);
             }
             catch (Exception ex)
@@ -161,12 +170,10 @@ namespace Application.Services
                 if (!string.IsNullOrWhiteSpace(dto.QualificationCode))
                 {
                     var qualification = await _qualificationRepository.GetQualificationByCodeAsync(dto.QualificationCode);
-                    if (qualification == null)
+                    if (qualification != null)
                     {
-                        errorMessages.Add($"Qualification with code '{dto.QualificationCode}' does not exist.");
-                        return false;
+                        resource.ChangeQualifications(new List<Qualification> { qualification });
                     }
-                    resource.ChangeQualifications(new List<Qualification> { qualification });
                 }
 
 
@@ -179,7 +186,12 @@ namespace Application.Services
 
                 resource.ChangeStatus(dto.Status);
 
-                await _repo.Update(resource, errorMessages);
+                var updated = await _repo.Update(resource, errorMessages);
+                if (updated == null)
+                {
+                    errorMessages.Add("Error mapping updated resource to domain.");
+                    return false;
+                }
                 return true;
             }
             catch (Exception ex)
@@ -200,11 +212,7 @@ namespace Application.Services
         public async Task<IEnumerable<string>> GetAvailableStorageAreas()
         {
             var storageAreas = await _storageAreaRepository.GetStorageAreasAsync();
-            // Filter for Warehouse and Yard types only (for Trucks)
-            return storageAreas
-                .Where(sa => sa.Type == Domain.Model.StorageAreaType.Warehouse || sa.Type == Domain.Model.StorageAreaType.Yard)
-                .Select(sa => sa.Code)
-                .Where(code => !string.IsNullOrEmpty(code))!;
+            return storageAreas.Select(sa => sa.Code).Where(code => !string.IsNullOrEmpty(code))!;
         }
 
         private async Task<bool> ValidateAssignmentArea(PhysicalResourceKind kind, string? assignedArea, List<string> errorMessages)

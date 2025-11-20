@@ -22,40 +22,63 @@ namespace DataModel.Repository
         public async Task<IEnumerable<PhysicalResource>> GetAllPhysicalResourcesAsync()
         {
             var list = await _context.Set<PhysicalResourceDataModel>().Include(p => p.QualificationRequirements).AsNoTracking().ToListAsync();
-            return list.Select(dm => _mapper.ToDomain(dm));
+            var mappedList = list.Select(dm => _mapper.ToDomain(dm)).Where(r => r != null).Select(r => r!).ToList();
+            return mappedList;
         }
 
         public async Task<PhysicalResource?> GetPhysicalResourceByIdAsync(long id)
         {
             var dm = await _context.Set<PhysicalResourceDataModel>().Include(p => p.QualificationRequirements).SingleOrDefaultAsync(p => p.Id == id);
-            return dm == null ? null : _mapper.ToDomain(dm);
+            if (dm == null) return null;
+            return _mapper.ToDomain(dm);
         }
 
         public async Task<PhysicalResource?> GetPhysicalResourceByCodeAsync(string code)
         {
             var dm = await _context.Set<PhysicalResourceDataModel>().Include(p => p.QualificationRequirements).SingleOrDefaultAsync(p => p.Code == code);
-            return dm == null ? null : _mapper.ToDomain(dm);
+            if (dm == null) return null;
+            return _mapper.ToDomain(dm);
         }
 
-        public async Task<IEnumerable<PhysicalResource>> SearchAsync(string? code = null, string? name = null, string? description = null, PhysicalResourceKind? kind = null, ResourceStatus? status = null, string? assignedDock = null)
+        public async Task<IEnumerable<PhysicalResource>> GetPhysicalResourceByDescriptionAsync(string description)
         {
-            var query = _context.Set<PhysicalResourceDataModel>().AsQueryable();
-            if (!string.IsNullOrWhiteSpace(code)) query = query.Where(p => p.Code!.Contains(code));
-            if (!string.IsNullOrWhiteSpace(name)) query = query.Where(p => p.Name!.Contains(name));
-            if (!string.IsNullOrWhiteSpace(description)) query = query.Where(p => p.Description!.Contains(description));
-            if (!string.IsNullOrWhiteSpace(assignedDock)) query = query.Where(p => p.AssignedDockName!.Contains(assignedDock));
-            if (kind.HasValue) query = query.Where(p => p.Kind == kind.Value);
-            if (status.HasValue)
-            {
-                query = query.Where(p => p.Status == status.Value);
-            }
-            var list = await query.Include(p => p.QualificationRequirements).AsNoTracking().ToListAsync();
-            return list.Select(dm => _mapper.ToDomain(dm));
+            var list = await _context.Set<PhysicalResourceDataModel>()
+                .Include(p => p.QualificationRequirements)
+                .Where(p => p.Description == description)
+                .AsNoTracking()
+                .ToListAsync();
+            var mappedList = list.Select(dm => _mapper.ToDomain(dm)).Where(r => r != null).Select(r => r!).ToList();
+            return mappedList;
         }
 
+        public async Task<IEnumerable<PhysicalResource>> GetPhysicalResourceByKindAsync(PhysicalResourceKind kind)
+        {
+            var list = await _context.Set<PhysicalResourceDataModel>()
+                .Include(p => p.QualificationRequirements)
+                .Where(p => p.Kind == kind)
+                .AsNoTracking()
+                .ToListAsync();
+            var mappedKind = list.Select(dm => _mapper.ToDomain(dm)).Where(r => r != null).Select(r => r!).ToList();
+            return mappedKind;
+        }
+
+        public async Task<IEnumerable<PhysicalResource>> GetPhysicalResourceByStatusAsync(ResourceStatus status)
+        {
+            var list = await _context.Set<PhysicalResourceDataModel>()
+                .Include(p => p.QualificationRequirements)
+                .Where(p => p.Status == status)
+                .AsNoTracking()
+                .ToListAsync();
+            var mappedStatus = list.Select(dm => _mapper.ToDomain(dm)).Where(r => r != null).Select(r => r!).ToList();
+            return mappedStatus;
+        }
+        
         public async Task<PhysicalResource> AddPhysicalResource(PhysicalResource resource)
         {
             var dm = _mapper.ToDataModel(resource);
+            
+            
+            
             if (dm.QualificationRequirements is IEnumerable<QualificationDataModel> qColl)
             {
                 var qList = qColl.ToList();
@@ -72,7 +95,7 @@ namespace DataModel.Repository
             }
             EntityEntry<PhysicalResourceDataModel> ee = _context.Set<PhysicalResourceDataModel>().Add(dm);
             await _context.SaveChangesAsync();
-            return _mapper.ToDomain(ee.Entity);
+            return _mapper.ToDomain(ee.Entity)!;
         }
 
         public async Task<PhysicalResource?> Update(PhysicalResource resource, List<string> errorMessages)

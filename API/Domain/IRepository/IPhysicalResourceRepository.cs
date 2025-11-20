@@ -9,7 +9,9 @@ namespace Domain.IRepository
         Task<IEnumerable<PhysicalResource>> GetAllPhysicalResourcesAsync();
         Task<PhysicalResource?> GetPhysicalResourceByIdAsync(long id);
         Task<PhysicalResource?> GetPhysicalResourceByCodeAsync(string code);
-        Task<IEnumerable<PhysicalResource>> SearchAsync(string? code = null, string? name = null, string? description = null, PhysicalResourceKind? kind = null, ResourceStatus? status = null, string? assignedDock = null);
+        Task<IEnumerable<PhysicalResource>> GetPhysicalResourceByDescriptionAsync(string description);
+        Task<IEnumerable<PhysicalResource>> GetPhysicalResourceByKindAsync(PhysicalResourceKind kind);
+        Task<IEnumerable<PhysicalResource>> GetPhysicalResourceByStatusAsync(ResourceStatus status);
         Task<PhysicalResource> AddPhysicalResource(PhysicalResource resource);
         Task<PhysicalResource?> Update(PhysicalResource resource, List<string> errorMessages);
     }

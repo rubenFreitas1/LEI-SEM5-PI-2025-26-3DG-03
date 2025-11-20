@@ -25,23 +25,9 @@ namespace WebApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PhysicalResourceDTO>>> GetAll()
         {
-            try
-            {
-                var list = await _service.GetAll();
-                if (list == null || !list.Any()) return NotFound("No physical resources found.");
-                return Ok(list);
-            }
-            catch (Exception ex)
-            {
-                // Log the detailed error for debugging
-                Console.WriteLine($"Error in GetAll: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
-                }
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            var list = await _service.GetAll();
+            if (list == null || !list.Any()) return NotFound("No physical resources found.");
+            return Ok(list);
         }
 
         [HttpGet("ByCode/{code}")]
@@ -55,24 +41,24 @@ namespace WebApi.Controllers
         [HttpGet("ByDescription/{description}")]
         public async Task<ActionResult<IEnumerable<PhysicalResourceDTO>>> GetByDescription(string description)
         {
-            var result = await _service.Search(null, null, description, null, null);
-            if (result == null || !result.Any()) return NotFound($"No physical resources found with description containing '{description}'.");
+            var result = await _service.GetByDescription(description);
+            if (result == null) return NotFound($"No physical resources found with description containing '{description}'.");
             return Ok(result);
         }
 
         [HttpGet("ByKind/{kind}")]
         public async Task<ActionResult<IEnumerable<PhysicalResourceDTO>>> GetByKind(PhysicalResourceKind kind)
         {
-            var result = await _service.Search(null, null, null, kind, null);
-            if (result == null || !result.Any()) return NotFound($"No physical resources found with kind '{kind}'.");
+            var result = await _service.GetByKind(kind);
+            if (result == null) return NotFound($"No physical resources found with kind '{kind}'.");
             return Ok(result);
         }
 
         [HttpGet("ByStatus/{status}")]
         public async Task<ActionResult<IEnumerable<PhysicalResourceDTO>>> GetByStatus(ResourceStatus status)
         {
-            var result = await _service.Search(null, null, null, null, status);
-            if (result == null || !result.Any()) return NotFound($"No physical resources found with status '{status}'.");
+            var result = await _service.GetByStatus(status);
+            if (result == null) return NotFound($"No physical resources found with status '{status}'.");
             return Ok(result);
         }
 
@@ -113,36 +99,6 @@ namespace WebApi.Controllers
                 return BadRequest(_errorMessages);
             }
             return Ok();
-        }
-
-        [HttpGet("AvailableDocks")]
-        public async Task<ActionResult<IEnumerable<string>>> GetAvailableDocks()
-        {
-            try
-            {
-                var docks = await _service.GetAvailableDocks();
-                return Ok(docks);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error getting available docks: {ex.Message}");
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        [HttpGet("AvailableStorageAreas")]
-        public async Task<ActionResult<IEnumerable<string>>> GetAvailableStorageAreas()
-        {
-            try
-            {
-                var storageAreas = await _service.GetAvailableStorageAreas();
-                return Ok(storageAreas);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error getting available storage areas: {ex.Message}");
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
         }
     }
 }

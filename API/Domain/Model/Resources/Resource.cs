@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using ShippingManagement.Domain.Qualifications;
 
@@ -84,8 +86,7 @@ namespace Domain.Model
         private static void ValidateQualification(IEnumerable<Qualification> qualification)
         {
             if (qualification == null || !qualification.Any())
-                //throw new ArgumentNullException(nameof(qualification), "At least one valid QualificationCode must be provided to update a Staff.");
-                Console.WriteLine("Rebenta Aqui!");
+                throw new ArgumentException("At least one Qualification must be provided.", nameof(qualification));
         }
 
         private static void ValidateOperationalWindow(OperationalWindow operationalWindow)

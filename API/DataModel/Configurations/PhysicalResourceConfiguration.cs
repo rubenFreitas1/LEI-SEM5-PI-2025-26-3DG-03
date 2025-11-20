@@ -19,7 +19,9 @@ namespace DataModel.Configurations
             builder.Property(p => p.EndDay).IsRequired();
             builder.Property(p => p.StartTime).IsRequired();
             builder.Property(p => p.EndTime).IsRequired();
-            builder.HasMany(p => p.QualificationRequirements);
+                 builder.HasMany(p => p.QualificationRequirements)
+                     .WithMany()
+                     .UsingEntity(j => j.ToTable("PhysicalResourceQualifications"));
         }
     }
 }
