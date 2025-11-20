@@ -18,7 +18,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideKeycloak({
       config: {
-        url: 'https://lapr5-frontend.duckdns.org/auth',
+        url: 'https://lapr5-frontend.duckdns.org',
         realm: 'lapr5-realm',
         clientId: 'lapr5-frontend'
       },

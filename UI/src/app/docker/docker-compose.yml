@@ -17,12 +17,15 @@ services:
     image: quay.io/keycloak/keycloak:26.4.2
     container_name: keycloak
     command: >
-      start --http-enabled=true
-            --hostname=https://lapr5-frontend.duckdns.org
-            --hostname-strict=false
-            --proxy-headers=xforwarded
-            --import-realm
-            --spi-import-export-strategy=IGNORE_EXISTING
+      start
+      --http-enabled=true
+      --hostname=lapr5-frontend.duckdns.org
+      --hostname-admin=lapr5-frontend.duckdns.org
+      --hostname-strict=false
+      --proxy-headers=xforwarded
+      --http-relative-path=/auth
+      --import-realm
+      --spi-import-export-strategy=IGNORE_EXISTING
     environment:
       KC_DB: postgres
       KC_DB_URL_HOST: postgres
