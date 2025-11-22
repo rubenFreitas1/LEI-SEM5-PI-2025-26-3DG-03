@@ -103,7 +103,7 @@ public class SystemUser
     {
         Role = systemRole;
     }
-    
+
     public void ChangeUsername(string username)
     {
         ValidateUsername(username);
