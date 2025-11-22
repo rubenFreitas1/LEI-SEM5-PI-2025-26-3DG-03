@@ -172,7 +172,7 @@ public class SystemUserService
     }
     public async Task<bool> SendActivationEmail(SystemUserDTO user)
     {
-        string activationLink = GenerateActivationLink(user.Code); 
+        string activationLink = GenerateActivationLink(user.Code);
 
         await _emailService.SendEmailAsync(user.Email!, "Ative sua conta",
             $"Clique aqui para ativar sua conta: <a href='{activationLink}'>Ativar</a>");
