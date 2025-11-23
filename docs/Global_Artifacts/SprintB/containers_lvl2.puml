@@ -1,0 +1,60 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+
+title C4 Model V2 - System Context View (LAPR5 Port Management System)
+
+
+Person(POA, "Port Authority Officer", "System user responsible for managing docks")
+Person(SAR, "Shipping Agent Representative", "System user responsible for managing shipping operations")
+Person(CREW, "Crew", "System user responsible for ship operations")
+Person(LO, "Logistics Operator", "System user responsible for logistics operations")
+Person(STAFF, "Staff", "System user responsible for general operations")
+Person(admin, "Admin", "Manages User System.")
+
+System_Boundary(SMS, "Shipping Management System") {
+    Container(webApp, "Web Application (SPA)", "Angular", "Provides a responsive web interface for all users.")
+    Container(api, "Backend API", ".NET", "Implements core business logic and exposes REST APIs for vessel visits, resources, and storage areas.")
+    ContainerDb(mySql, "Database","MySQL", "Persists domain data: vessel visits, cargo manifests, dock/storage allocations, scheduling, users (app metadata), audit logs.")
+    Container(swiProlog, "Backend Intelligent Algorithm","Swi-Prolog", "Handles complex scheduling and resource allocation logic based on predefined rules and constraints.")
+    Container(treeJs, "3D Visualization","ThreeJs, WebGL", "Renders 3D models of the port, docks, and vessels for better visualization and planning.")
+}
+
+webApp --> treeJs : Renders 3D port and vessel models
+
+api --> swiProlog : Calls for scheduling and resource allocation decisions
+
+System_Ext(Auth, "Auth0 IAM", "Central Identity & Access Management (OIDC/OAuth2, RBAC).")
+System_Ext(googleIdP, "Google Identity Provider", "External OIDC provider used for federated authentication.")
+
+POA --> Auth : Initiates login (redirect)
+SAR --> Auth : Initiates login (redirect)
+CREW --> Auth : Initiates login (redirect)
+LO --> Auth : Initiates login (redirect)
+STAFF --> Auth : Initiates login (redirect)
+admin --> Auth : Initiates login (redirect)
+
+Auth --> webApp : retrive access
+
+POA --> webApp : Uses to manage docks, storage areas, and vessel approvals
+SAR --> webApp : Uses to submit vessel visits and cargo manifests
+LO --> webApp : Uses to plan logistics operations
+STAFF --> webApp : Uses for general operations
+CREW --> webApp : Uses for ship operations
+admin --> webApp : Uses for user management
+
+webApp --> api : Sends REST requests (CRUD operations, approvals, notifications)
+
+api --> mySql : Persist Data
+api <-- mySql : Retrived Data
+
+api --> Auth : Get Information
+Auth --> api : Retrievid Information
+    
+Auth --> googleIdP : OIDC Authorization Code + PKCE
+googleIdP --> Auth : ID token / user info
+
+
+@enduml

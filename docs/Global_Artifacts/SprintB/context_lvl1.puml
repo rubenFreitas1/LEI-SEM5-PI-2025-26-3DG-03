@@ -1,0 +1,39 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+
+title C4 Model V1 - System Context View (LAPR5 Port Management System)
+
+Person(POA, "Port Authority Officer", "System user responsible for managing docks")
+System(SMS, "Shipping  Management System", "Manages all operations and related data")
+Person(SAR, "Shipping Agent Representative", "System user responsible for managing shipping operations")
+Person(CREW, "Crew", "System user responsible for ship operations")
+Person(LO, "Logistics Operator", "System user responsible for logistics operations")
+Person(STAFF, "Staff", "System user responsible for general operations")
+Person(admin, "Admin", "Manages User System.")
+
+
+System_Ext(Auth, "Auth0 IAM", "Central Identity & Access Management (OIDC/OAuth2, RBAC).")
+System_Ext(googleIdP, "Google Identity Provider", "External OIDC provider used for federated authentication.")
+
+STAFF --> Auth : Initiates login (redirect)
+CREW --> Auth : Initiates login (redirect)
+POA --> Auth : Initiates login (redirect)
+SAR --> Auth : Initiates login (redirect)
+LO --> Auth : Initiates login (redirect)
+admin --> Auth : Initiates login (redirect)
+
+Auth --> googleIdP : OIDC Authorization Code + PKCE
+googleIdP --> Auth : ID token / user info
+SMS --> Auth : Validates JWT (signature, issuer, audience) / obtains claims
+    
+LO --> SMS : Calls API (Bearer access token)
+SAR --> SMS : Calls API (Bearer access token)
+POA --> SMS : Calls API (Bearer access token)
+CREW --> SMS : Calls API (Bearer access token)
+STAFF --> SMS : Calls API (Bearer access token)
+admin --> SMS : Calls API (Bearer access token)
+
+@enduml
