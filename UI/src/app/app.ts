@@ -112,10 +112,32 @@ export class App implements OnInit {
         this.#permissions.setRole(data.role);
         this.roleLoading = false;
       },
-      error: () => {
+      error: (err: any) => {
         this.roleLoading = false;
-        alert('Your account does not have permissions to access this system.');
-        try { this.#auth.logout(); } catch { }
+        // If server forbids access (403) assume the account is Deactivated and
+        // redirect to activation-sent. This avoids extra API calls that may
+        // themselves fail due to token/claim differences.
+        if (err && err.status === 403) {
+          try {
+            this.#router.navigate(['/activation-sent']);
+          } catch { }
+          return;
+        }
+
+        this.#api.get('/SystemUser/MyIsFirstTime').subscribe({
+          next: (data: any) => {
+            if (data?.isFirstTime) {
+              try { this.#router.navigate(['/activation-sent'], { queryParams: { email: data?.email } }); } catch { }
+              return;
+            }
+            try { alert('Your account does not have permissions to access this system.'); } catch { }
+            try { this.#auth.logout(); } catch { }
+          },
+          error: () => {
+            try { alert('Your account does not have permissions to access this system.'); } catch { }
+            try { this.#auth.logout(); } catch { }
+          }
+        });
       }
     });
   }

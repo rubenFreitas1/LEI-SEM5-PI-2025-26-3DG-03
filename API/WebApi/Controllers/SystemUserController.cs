@@ -115,22 +115,29 @@ public class SystemUserController : ControllerBase
     [HttpGet("MyIsFirstTime")]
     public async Task<ActionResult> GetMyIsFirstTime()
     {
+        var userId = User.FindFirst("sub")?.Value ?? User.FindFirst("user_id")?.Value;
         var email =
                 User.FindFirst("https://lapr5/email")?.Value ??
                 User.FindFirst("email")?.Value;
+        var name = User.FindFirst("name")?.Value;
+
         Console.WriteLine("AUTH0 EMAIL = " + email);
+        Console.WriteLine("AUTH0 USERID = " + userId);
+        Console.WriteLine("AUTH0 NAME = " + name);
+
         if (string.IsNullOrEmpty(email))
         {
             return Unauthorized("No email claim found in Auth0 token.");
         }
+
         SystemUserDTO? user = await _systemUserService.GetSystemUserByEmail(email);
         if (user == null)
         {
             return NotFound("User not found.");
         }
-        // Log and return email/code so frontend can present it to the user
+
         Console.WriteLine($"MyIsFirstTime -> user.Code={user.Code}, IsFirstTime={user.IsFirstTime}");
-        return Ok(new { isFirstTime = user.IsFirstTime, email = user.Email, code = user.Code });
+        return Ok(new { userId, name, isFirstTime = user.IsFirstTime, email = user.Email, code = user.Code });
     }
 
     //[Authorize]
