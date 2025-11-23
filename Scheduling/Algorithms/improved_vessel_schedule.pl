@@ -219,3 +219,18 @@ convert_triplets_to_quadruplets([[V, TIU, TEL]|T], N, [[V, TIU, TEL, N]|Q]) :-
 extract_cranes_list([], []).
 extract_cranes_list([[_, _, _, NC]|T], [NC|L]) :-
     extract_cranes_list(T, L).
+
+
+vessel(va, 6, 63, 10, 16,1).
+vessel(vb, 23, 50, 9, 7,1).
+vessel(vc, 8, 40, 5, 12,1).
+vessel(vd, 27, 40, 0, 8,1).
+vessel(ve, 36, 70, 12, 0,1).
+vessel(vf, 40, 60, 8, 6,1).
+vessel(vg, 52, 80, 9, 10,1).
+vessel(vi, 61, 90, 13, 8,1).
+vessel(vj, 74, 100, 7, 7,1).
+vessel(vk, 81, 110, 6, 8,1).
+vessel(vl, 90, 140, 22, 18,1).
+vessel(vm, 112, 140, 8, 7,1).
+vessel(vn, 82, 135, 13, 12,1).
