@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 
 import { StorageArea } from './storageArea';
@@ -24,7 +25,7 @@ describe('StorageArea', () => {
     docksSpy.getAllDocks.and.returnValue(of([]));
 
     await TestBed.configureTestingModule({
-      imports: [StorageArea, RouterTestingModule, HttpClientTestingModule],
+      imports: [StorageArea, RouterTestingModule, TranslateModule.forRoot(), HttpClientTestingModule],
       providers: [
         { provide: StorageAreaService, useValue: storageAreaSpy },
         { provide: DocksService, useValue: docksSpy }

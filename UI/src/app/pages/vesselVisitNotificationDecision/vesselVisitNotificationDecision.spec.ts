@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 
 import { VesselVisitNotificationDecision } from './vesselVisitNotificationDecision';
@@ -27,7 +28,7 @@ describe('VesselVisitNotificationDecision', () => {
 		docksSpy.getAllDocks.and.returnValue(of([]));
 
 		await TestBed.configureTestingModule({
-			imports: [VesselVisitNotificationDecision, RouterTestingModule, HttpClientTestingModule],
+			imports: [VesselVisitNotificationDecision, RouterTestingModule, TranslateModule.forRoot(), HttpClientTestingModule],
 			providers: [
 				{ provide: VesselVisitNotificationDecisionService, useValue: decisionSpy },
 				{ provide: VesselVisitNotificationService, useValue: notificationSpy },

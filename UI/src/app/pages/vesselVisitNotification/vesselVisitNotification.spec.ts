@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 
 import { VesselVisitNotification } from './vesselVisitNotification';
@@ -28,7 +29,7 @@ describe('VesselVisitNotification', () => {
     repSpy.getAllRepresentatives.and.returnValue(of([]));
 
     await TestBed.configureTestingModule({
-      imports: [VesselVisitNotification, RouterTestingModule, HttpClientTestingModule],
+      imports: [VesselVisitNotification, RouterTestingModule, TranslateModule.forRoot(), HttpClientTestingModule],
       providers: [
         { provide: VesselVisitNotificationService, useValue: vvnServiceSpy },
         { provide: VesselService, useValue: vesselSpy },

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 
 import { Vessel } from './vessel';
@@ -24,7 +25,7 @@ describe('Vessel', () => {
     vtSpy.getAllVesselTypes.and.returnValue(of([]));
 
     await TestBed.configureTestingModule({
-      imports: [Vessel, RouterTestingModule, HttpClientTestingModule],
+      imports: [Vessel, RouterTestingModule, TranslateModule.forRoot(), HttpClientTestingModule],
       providers: [
         { provide: VesselService, useValue: vesselSpy },
         { provide: VesselTypeService, useValue: vtSpy }
