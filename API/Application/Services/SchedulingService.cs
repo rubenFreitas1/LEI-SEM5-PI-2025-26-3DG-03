@@ -74,7 +74,9 @@ public class SchedulingService
             return null;
         }
 
-        DataScheduleDTO dataScheduleDTO = new DataScheduleDTO(notificationDTOs.ToList(), fastestCraneDTO);
+        // compute number of available STS cranes for the dock and pass as maxCranes
+        int availableCranes = (physicalResources ?? Enumerable.Empty<PhysicalResource>()).Count();
+        DataScheduleDTO dataScheduleDTO = new DataScheduleDTO(notificationDTOs.ToList(), fastestCraneDTO, availableCranes);
 
 
         string configured = _configuration["Scheduling:Endpoint"] ?? "http://localhost:6000/";
@@ -114,27 +116,42 @@ public class SchedulingService
             Console.WriteLine("Received scheduling response from Prolog:");
             Console.WriteLine(responseJson);
             var doc = JsonDocument.Parse(responseJson);
-
-            var scheduleArray = doc.RootElement
-                .GetProperty("schedule")
+            var scheduleRoot = doc.RootElement.GetProperty("schedule");
+            var scheduleArray = scheduleRoot
                 .GetProperty("schedule")
                 .EnumerateArray();
 
-            int totalDelay = doc.RootElement
-                .GetProperty("schedule")
+            int totalDelay = scheduleRoot
                 .GetProperty("totalDelay")
                 .GetInt32();
-            double executionTime = doc.RootElement
-                .GetProperty("schedule")
+            double executionTime = scheduleRoot
                 .GetProperty("executionTime")
                 .GetDouble();
+
+            // Extract messages if present
+            var messages = new List<string>();
+            if (scheduleRoot.TryGetProperty("messages", out var messagesEl) && messagesEl.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var me in messagesEl.EnumerateArray())
+                {
+                    if (me.ValueKind == JsonValueKind.String) messages.Add(me.GetString() ?? string.Empty);
+                    else messages.Add(me.ToString());
+                }
+            }
             var entries = new List<SchedulingEntryDTO>();
             foreach (var item in scheduleArray)
             {
                 string vesselIMO = item.GetProperty("vessel").GetString() ?? string.Empty;
 
-                int startHours = item.GetProperty("start").GetInt32();
-                int endHours = item.GetProperty("end").GetInt32();
+                // parse start (may be number, string, or array) — extract first integer, supporting nested arrays
+                int startHours;
+                var startEl = item.GetProperty("start");
+                if (!TryExtractFirstInt(startEl, out startHours)) { errorMessages.Add("Invalid 'start' element in schedule entry"); return null; }
+
+                // parse end (may be number, string, or array) — extract first integer, supporting nested arrays
+                int endHours;
+                var endEl = item.GetProperty("end");
+                if (!TryExtractFirstInt(endEl, out endHours)) { errorMessages.Add("Invalid 'end' element in schedule entry"); return null; }
                 DateTime startTime = targetDay.AddHours(startHours);
                 DateTime endTime = targetDay.AddHours(endHours);
                 string vesselName = GetVesselNameByIMO(vesselIMO).Result;
@@ -144,7 +161,7 @@ public class SchedulingService
                 var schedulingEntryDTO = new SchedulingEntryDTO(vesselName, startTime, endTime, assignedCranes, staffNames);
                 entries.Add(schedulingEntryDTO);
             }
-            var schedulingDTO = new SchedulingDTO(entries, totalDelay, executionTime);
+            var schedulingDTO = new SchedulingDTO(entries, totalDelay, executionTime, messages);
             return schedulingDTO;
         }
         catch (Exception ex)
@@ -168,6 +185,43 @@ public class SchedulingService
             Console.WriteLine($"VesselRecord not found for IMO: {imo}");
         }
         return vesselRecord!.VesselName!;
+    }
+
+    // Tries to extract the first integer value from a JsonElement.
+    // Supports Number, String (parseable), Array (including nested arrays).
+    private bool TryExtractFirstInt(JsonElement el, out int value)
+    {
+        value = 0;
+        try
+        {
+            if (el.ValueKind == JsonValueKind.Number)
+            {
+                value = el.GetInt32();
+                return true;
+            }
+            if (el.ValueKind == JsonValueKind.String)
+            {
+                if (int.TryParse(el.GetString(), out var v)) { value = v; return true; }
+                return false;
+            }
+            if (el.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var e in el.EnumerateArray())
+                {
+                    if (e.ValueKind == JsonValueKind.Number) { value = e.GetInt32(); return true; }
+                    if (e.ValueKind == JsonValueKind.String && int.TryParse(e.GetString(), out var v2)) { value = v2; return true; }
+                    if (e.ValueKind == JsonValueKind.Array)
+                    {
+                        if (TryExtractFirstInt(e, out var nested)) { value = nested; return true; }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // ignore and return false below
+        }
+        return false;
     }
 
 }

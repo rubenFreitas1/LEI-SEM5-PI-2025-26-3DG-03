@@ -188,6 +188,7 @@ export class Schedule implements OnInit, OnDestroy {
 
           const totalDelay = normalized.totalDelay ?? normalized.TotalDelay ?? normalized.schedule?.totalDelay ?? 0;
           const executionTime = normalized.executionTime ?? normalized.ExecutionTime ?? normalized.schedule?.executionTime ?? 0;
+          const messages = normalized.messages ?? normalized.Messages ?? normalized.schedule?.messages ?? [];
           const algorithmLabel = this.isImproved ? 'Improved algorithm' : 'Default algorithm';
 
           if (!entries || entries.length === 0) {
@@ -202,7 +203,7 @@ export class Schedule implements OnInit, OnDestroy {
             return;
           }
 
-          this.scheduleModel = { scheduleEntries: entries, totalDelay: totalDelay, executionTime: executionTime, algorithm: algorithmLabel } as any;
+          this.scheduleModel = { scheduleEntries: entries, totalDelay: totalDelay, executionTime: executionTime, algorithm: algorithmLabel, messages: messages } as any;
           this.showScheduleModal = true;
           this.isLoading = false;
         },

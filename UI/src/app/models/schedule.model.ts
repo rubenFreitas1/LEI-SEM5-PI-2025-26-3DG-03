@@ -21,4 +21,5 @@ export interface ScheduleModel {
   scheduleEntries?: ScheduleEntryModel[];
   algorithm?: string;
   executionTime?: number;
+  messages?: string[];
 }

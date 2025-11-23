@@ -66,8 +66,17 @@
             </div>
           </div>
           <div class="schedule-summary" *ngIf="scheduleModel">
-            <p><strong>{{ 'SCHEDULE.MODAL.TOTAL_DELAY' | translate }}:</strong> {{ scheduleModel.totalDelay || 0 }} {{ 'SCHEDULE.MODAL.HOURS' | translate }}</p>
-            <p><strong>{{ 'SCHEDULE.MODAL.EXECUTION_TIME' | translate }}:</strong> {{ scheduleModel.executionTime || 0 }} {{ 'SCHEDULE.MODAL.SECONDS' | translate }}</p>
+            <ng-container *ngIf="!(scheduleModel.messages && scheduleModel.messages.length > 0)">
+              <p><strong>{{ 'SCHEDULE.MODAL.TOTAL_DELAY' | translate }}:</strong> {{ scheduleModel.totalDelay || 0 }} {{ 'SCHEDULE.MODAL.HOURS' | translate }}</p>
+              <p><strong>{{ 'SCHEDULE.MODAL.EXECUTION_TIME' | translate }}:</strong> {{ scheduleModel.executionTime || 0 }} {{ 'SCHEDULE.MODAL.SECONDS' | translate }}</p>
+            </ng-container>
+
+            <div *ngIf="scheduleModel.messages && scheduleModel.messages.length > 0" class="schedule-log">
+              <h4>Details</h4>
+              <div class="log-lines">
+                <p *ngFor="let line of scheduleModel.messages">{{ line }}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

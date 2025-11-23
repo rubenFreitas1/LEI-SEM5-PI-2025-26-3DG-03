@@ -9,11 +9,14 @@ public class SchedulingDTO
 
     public double ExecutionTime { get; set; }
 
-    public SchedulingDTO(List<SchedulingEntryDTO> entries, int totalDelay, double executionTime)
+        public List<string> Messages { get; set; }
+
+    public SchedulingDTO(List<SchedulingEntryDTO> entries, int totalDelay, double executionTime, List<string>? messages = null)
     {
         Entries = entries;
         TotalDelay = totalDelay;
         ExecutionTime = executionTime;
+        Messages = messages ?? new List<string>();
     }
 
 }
