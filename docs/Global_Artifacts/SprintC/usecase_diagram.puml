@@ -1,0 +1,131 @@
+@startuml
+
+left to right direction
+skinparam actorStyle awesome
+"Port Authority Officer" as PAO
+"Shipping Agent Representative" as SAR
+"Logistics Operator" as LO
+"Administrator" as Admin
+"Project Manager" as PM
+"System User" as SU
+"Non-Authenticated\nSystem User" as NAU
+"Port Operations Supervisor" as POS
+
+package UC4.1{
+    usecase "UC4.1.1: Develop Operations & Execution \nManagement (OEM) module." as UC4_1_1
+    usecase "UC4.1.2: Automatically generate and store \nOperation Plans for all Vessel Visit Notifications." as UC4_1_2
+    usecase "UC4.1.3: Search and list Operation Plans for \na given day or period." as UC4_1_3
+    usecase "UC4.1.4: Update the Operation Plan of a given VVN." as UC4_1_4
+    usecase "UC4.1.5: Identify Vessel Visit Notifications \n(VVNs) that do not yet have an Operation Plan." as UC4_1_5
+    usecase "UC4.1.7: Create a Vessel Visit Execution (VVE) \nrecord when a vessel arrives at the port." as UC4_1_7
+    usecase "UC4.1.8: Update an in progress VVE with the \nactual berth time and dock used." as UC4_1_8
+    usecase "UC4.1.9: Update an in progress VVE with \nexecuted operations." as UC4_1_9
+    usecase "UC4.1.10: Search and list VVEs over a given \nperiod or for a specific vessel." as UC4_1_10
+    usecase "UC4.1.12: Manage the catalog of Incident Types." as UC4_1_12
+    usecase "UC4.1.13: Record and manage incidents that \naffect the execution of port operations." as UC4_1_13
+    usecase "UC4.1.14: Manage the catalog of Complementary \nTask Categories." as UC4_1_14
+    usecase "UC4.1.15: Record and manage Complementary \nTasks performed during vessel visits." as UC4_1_15
+}
+
+PM --> UC4_1_1
+LO --> UC4_1_2
+LO --> UC4_1_3
+LO --> UC4_1_4
+LO --> UC4_1_5
+LO --> UC4_1_7
+LO --> UC4_1_8
+LO --> UC4_1_9
+LO --> UC4_1_10
+PAO --> UC4_1_12
+LO --> UC4_1_13
+POS --> UC4_1_14
+LO --> UC4_1_15
+
+package UC4.2{
+    usecase "UC4.2.1: Select a port facility by left-clicking \non its 3D representation (object picking)." as UC4_2_1
+    usecase "UC4.2.2: Want to select vessels and major operational \nresources by left-clicking on their 3D representations." as UC4_2_2
+    usecase "UC4.2.3: Whenever I press the “i” key, I want to toggle \nan information overlay showing updated information." as UC4_2_3
+    usecase "UC4.2.4: Want to see the current operational status \nof vessels (e.g., waiting, loading, unloading)." as UC4_2_4
+    usecase "UC4.2.5: Want a dynamic spotlight to follow the camera \nand illuminate the selected element’s center point." as UC4_2_5
+}
+
+SU --> UC4_2_1
+LO --> UC4_2_2
+PAO --> UC4_2_2
+SU --> UC4_2_3
+LO --> UC4_2_4
+SU --> UC4_2_5
+
+package UC4.3{
+    usecase "UC4.3.1: Want the scheduling module to include a genetic \nalgorithm–based approach to generate optimized \ndaily operation plans." as UC4_3_1
+    usecase "UC4.3.2: Want the system to automatically select the most \nsuitable scheduling algorithm (optimal, \nheuristic, or genetic)." as UC4_3_2
+    usecase "UC4.3.3: Want the system to rebalance the distribution of \napproved Vessel Visit Notifications across available \ndocks for a given day." as UC4_3_3
+    usecase "UC4.3.4: Want the team to study the state of the art and \npotential applications of Robotics and Computer Vision \nin port logistics and administration." as UC4_3_4
+    usecase "UC4.3.5: Want the team to produce a short explanatory \nvideo that illustrates how the developed system schedules \nand sequences vessel loading and unloading operations \nat port docks." as UC4_3_5
+}
+
+LO --> UC4_3_1
+LO --> UC4_3_2
+PAO --> UC4_3_3
+PM --> UC4_3_4
+PM --> UC4_3_5
+
+package UC4.4{
+    usecase "UC4.4.1: Want the team to create a Disaster Recovery \n(DR) plan that meets the Minimum Business Continuity \nObjective (MBCO) defined in Sprint B." as UC4_4_1
+    usecase "UC4.4.2: Want the team to document and justify the \ninfrastructure requirements (and adjustments)." as UC4_4_2
+    usecase "UC4.4.3: Want the team to perform and present a Business \nImpact Analysis (BIA) of the final solution." as UC4_4_3
+    usecase "UC4.4.4: Want access management to be validated and adjusted \nto comply with the security policies." as UC4_4_4
+    usecase "UC4.4.5: Want the team to implement a justified clustering \nor load-balancing solution for the SPA deployment." as UC4_4_5
+    usecase "UC4.4.6: Want to create an automated script that generates \nbackup copies of the database(s) to a \ncloud environment." as UC4_4_6
+    usecase "UC4.4.7: Want an automated script to manage database backup \nfile retention." as UC4_4_7
+    usecase "UC4.4.8: Want the database backup process to log all events \nin the Linux system logs and trigger \nan alert message." as UC4_4_8
+    usecase "UC4.4.9: Want automatic deletion of daily backup copies older \nthan seven days." as UC4_4_9
+    usecase "UC4.4.10: Want SSH access to the virtual machine to be allowed \nonly via certificate-based authentication \nand never via password." as UC4_4_10
+    usecase "UC4.4.11: Want to configure a shared network directory using \nSMB/CIFS or NFS." as UC4_4_11
+    usecase "UC4.4.12: Want to automate the restoration and validation \nof database backups to ensure their \nintegrity and usability." as UC4_4_12
+}
+
+PM --> UC4_4_1
+PM --> UC4_4_2
+PM --> UC4_4_3
+Admin --> UC4_4_4
+PM --> UC4_4_5
+Admin --> UC4_4_6
+Admin --> UC4_4_7
+Admin --> UC4_4_8
+Admin --> UC4_4_9
+Admin --> UC4_4_10
+Admin --> UC4_4_11
+Admin --> UC4_4_12
+
+package UC4.5{
+    usecase "UC4.5.1: Want to publish and manage the system’s \nPrivacy Policy." as UC4_5_1
+    usecase "UC4.5.2: Want to have clear and accessible information about \nwhat personal data is collected." as UC4_5_2
+    usecase "UC4.5.3: Want to request access, rectification, or deletion \nof my personal data." as UC4_5_3
+    usecase "UC4.5.4: Want to know how to request access, rectification, \nor deletion of my personal data." as UC4_5_4
+}
+
+Admin --> UC4_5_1
+SU --> UC4_5_2
+SU --> UC4_5_3
+NAU --> UC4_5_4
+
+package UC4.6{
+    usecase "UC4.6.1: Want the team to identify the market segment(s) \nfor one of the organization’s products." as UC4_6_1
+    usecase "UC4.6.2: Want the team to develop the marketing-mix for \nthe previously selected product." as UC4_6_2
+    usecase "UC4.6.3: Want the team to obtain and analyze the organization’s \nBalance Sheet (BS) and Income Statement (IS)." as UC4_6_3
+    usecase "UC4.6.4: Want the team to assess the organization’s financial \nperformance using ratio analysis." as UC4_6_4
+    usecase "UC4.6.5: Want the team to identify the main elements of the \norganization’s supply chain." as UC4_6_5
+    usecase "UC4.6.6: Want the team to characterize the production system \nof one of the organization’s goods or services." as UC4_6_6
+    usecase "UC4.6.7: Want the team to prepare a final summary of the \norganization’s analysis and present improvement recommendations." as UC4_6_7
+}
+
+PM --> UC4_6_1
+PM --> UC4_6_2
+PM --> UC4_6_3
+PM --> UC4_6_4
+PM --> UC4_6_5
+PM --> UC4_6_6
+PM --> UC4_6_7
+
+@enduml
