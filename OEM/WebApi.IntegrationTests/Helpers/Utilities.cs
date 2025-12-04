@@ -18,11 +18,14 @@ public static class Utilities
         db.IncidentTypes.AddRange(GetSeedingIncidentTypesChildren(db));
         db.SaveChanges();
 
+        db.OperationPlans.AddRange(GetSeedingOperationPlans());
+        db.SaveChanges();
     }
 
     public static void ReinitializeDbForTests(OEMContext db)
     {
         db.Database.EnsureCreated();
+        db.OperationPlans.RemoveRange(db.OperationPlans);
         db.IncidentTypes.RemoveRange(db.IncidentTypes);
 
 
@@ -96,5 +99,83 @@ public static class Utilities
             }
         };
         return incidentTypes;
+    }
+
+    public static List<DataModel.Model.OperationPlanDataModel> GetSeedingOperationPlans()
+    {
+        var today = DateTime.UtcNow.Date;
+        var tomorrow = today.AddDays(1);
+        var dayAfterTomorrow = today.AddDays(2);
+
+        var operationPlans = new List<DataModel.Model.OperationPlanDataModel>
+        {
+            new DataModel.Model.OperationPlanDataModel
+            {
+                TargetDay = today,
+                Author = "Admin User",
+                Algorithm = "Greedy Algorithm",
+                CreatedAt = DateTime.UtcNow.AddHours(-2),
+                LastModifiedAt = DateTime.UtcNow.AddHours(-2),
+                OperationList = new List<DataModel.Model.OperationEntryDataModel>
+                {
+                    new DataModel.Model.OperationEntryDataModel
+                    {
+                        VesselName = "Vessel Alpha",
+                        ArrivalTime = DateTime.UtcNow.AddHours(1),
+                        DepartureTime = DateTime.UtcNow.AddHours(5),
+                        Cranes = new List<string> { "Crane A1", "Crane A2" },
+                        StaffMembers = new List<string> { "Staff1", "Staff2", "Staff3" }
+                    },
+                    new DataModel.Model.OperationEntryDataModel
+                    {
+                        VesselName = "Vessel Beta",
+                        ArrivalTime = DateTime.UtcNow.AddHours(6),
+                        DepartureTime = DateTime.UtcNow.AddHours(10),
+                        Cranes = new List<string> { "Crane B1" },
+                        StaffMembers = new List<string> { "Staff4", "Staff5" }
+                    }
+                }
+            },
+            new DataModel.Model.OperationPlanDataModel
+            {
+                TargetDay = tomorrow,
+                Author = "Admin User",
+                Algorithm = "Heuristic Algorithm",
+                CreatedAt = DateTime.UtcNow.AddHours(-1),
+                LastModifiedAt = DateTime.UtcNow.AddHours(-1),
+                OperationList = new List<DataModel.Model.OperationEntryDataModel>
+                {
+                    new DataModel.Model.OperationEntryDataModel
+                    {
+                        VesselName = "Vessel Gamma",
+                        ArrivalTime = tomorrow.AddHours(8),
+                        DepartureTime = tomorrow.AddHours(12),
+                        Cranes = new List<string> { "Crane C1", "Crane C2" },
+                        StaffMembers = new List<string> { "Staff6", "Staff7" }
+                    }
+                }
+            },
+            new DataModel.Model.OperationPlanDataModel
+            {
+                TargetDay = dayAfterTomorrow,
+                Author = "Planner User",
+                Algorithm = "Greedy Algorithm",
+                CreatedAt = DateTime.UtcNow,
+                LastModifiedAt = DateTime.UtcNow,
+                OperationList = new List<DataModel.Model.OperationEntryDataModel>
+                {
+                    new DataModel.Model.OperationEntryDataModel
+                    {
+                        VesselName = "Vessel Delta",
+                        ArrivalTime = dayAfterTomorrow.AddHours(9),
+                        DepartureTime = dayAfterTomorrow.AddHours(14),
+                        Cranes = new List<string> { "Crane D1" },
+                        StaffMembers = new List<string> { "Staff8", "Staff9", "Staff10" }
+                    }
+                }
+            }
+        };
+
+        return operationPlans;
     }
 }

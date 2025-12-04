@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace WebApi.IntegrationTests;
 
@@ -25,6 +26,10 @@ public class IntegrationTestsWebApplicationFactory<Program>
         // based on https://stackoverflow.com/questions/72679169/override-host-configuration-in-integration-testing-using-asp-net-core-6-minimal
         var configurationValues = new Dictionary<string, string?>
         {
+            ["Logging:LogLevel:Default"] = "Warning",
+            ["Logging:LogLevel:Microsoft"] = "Warning",
+            ["Logging:LogLevel:Microsoft.EntityFrameworkCore"] = "Warning",
+            ["Logging:LogLevel:Microsoft.EntityFrameworkCore.Database.Command"] = "None"
         };
 
         var configuration = new ConfigurationBuilder()
@@ -40,6 +45,13 @@ public class IntegrationTestsWebApplicationFactory<Program>
                 // This overrides configuration settings that were added as part 
                 // of building the Host (e.g. calling WebApplication.CreateBuilder(args)).
                 configurationBuilder.AddInMemoryCollection(configurationValues);
+            })
+            .ConfigureLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.SetMinimumLevel(LogLevel.Warning);
+                logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.None);
+                logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
             });
 
 
