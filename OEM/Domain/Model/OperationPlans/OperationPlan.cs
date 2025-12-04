@@ -35,54 +35,59 @@ public class OperationPlan
         LastModifiedAt = DateTime.UtcNow;
     }
 
-    public void ValidateAuthor(string author)
+    public void ValidateAuthor(string author, string paramName = "author")
     {
         if (string.IsNullOrWhiteSpace(author))
         {
-            throw new ArgumentException("Author cannot be null or empty.", nameof(author));
+            throw new ArgumentException("Author cannot be null or empty.", paramName);
         }
     }
 
-    public void ValidateAlgorithm(string algorithm)
+    public void ValidateAlgorithm(string algorithm, string paramName = "algorithm")
     {
         if (string.IsNullOrWhiteSpace(algorithm))
         {
-            throw new ArgumentException("Algorithm cannot be null or empty.", nameof(algorithm));
+            throw new ArgumentException("Algorithm cannot be null or empty.", paramName);
         }
     }
 
-    public void validateList(List<OperationEntry> list)
+    public void validateList(List<OperationEntry> list, string paramName = "list")
     {
         if (list == null || list.Count == 0)
         {
-            throw new ArgumentException("Operation list cannot be null or empty.", nameof(list));
+            throw new ArgumentException("Operation list cannot be null or empty.", paramName);
         }
     }
 
     public void ChangeAlgorithm(string newAlgorithm)
     {
-        ValidateAlgorithm(newAlgorithm);
+        ValidateAlgorithm(newAlgorithm, "newAlgorithm");
         Algorithm = newAlgorithm;
         LastModifiedAt = DateTime.UtcNow;
     }
 
     public void ChangeAuthor(string newAuthor)
     {
-        ValidateAuthor(newAuthor);
+        ValidateAuthor(newAuthor, "newAuthor");
         Author = newAuthor;
         LastModifiedAt = DateTime.UtcNow;
     }
 
     public void ChangeOperationList(List<OperationEntry> newList)
     {
-        validateList(newList);
+        validateList(newList, "newList");
         OperationList = newList;
         LastModifiedAt = DateTime.UtcNow;
     }
 
-    public void ChangeTargetDay(DateTime newTargetDay)
+    public void ChangeTargetDay(DateTime? newTargetDay)
     {
-        TargetDay = newTargetDay;
+        if (!newTargetDay.HasValue)
+        {
+            throw new ArgumentException("Target day cannot be null.", "newTargetDay");
+        }
+
+        TargetDay = newTargetDay.Value;
         LastModifiedAt = DateTime.UtcNow;
     }
 
