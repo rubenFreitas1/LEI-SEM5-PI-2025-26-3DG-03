@@ -32,7 +32,8 @@ namespace Domain.Tests
                 CargoType.Container,
                 1000,
                 CreateValidCrew(),
-                10
+                10,
+                new List<DockReassignmentLog>()
             );
         }
 
