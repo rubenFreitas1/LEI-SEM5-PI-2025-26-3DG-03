@@ -17,6 +17,8 @@ Person(admin, "Admin", "Manages User System.")
 System_Boundary(SMS, "Shipping Management System") {
     Container(webApp, "Web Application (SPA)", "Angular", "Provides a responsive web interface for all users.")
     Container(api, "Backend API", ".NET", "Implements core business logic and exposes REST APIs for vessel visits, resources, and storage areas.")
+    Container(oemapi, "OEM API", "Node.js", "Integrates with third-party systems for additional functionalities.")
+    ContainerDb(oemDb, "OEM Database","MongoDB", "Stores data from third-party systems integrated via the OEM API.")
     ContainerDb(mySql, "Database","MySQL", "Persists domain data: vessel visits, cargo manifests, dock/storage allocations, scheduling, users (app metadata), audit logs.")
     Container(swiProlog, "Backend Intelligent Algorithm","Swi-Prolog", "Handles complex scheduling and resource allocation logic based on predefined rules and constraints.")
     Container(treeJs, "3D Visualization","ThreeJs, WebGL", "Renders 3D models of the port, docks, and vessels for better visualization and planning.")
@@ -46,9 +48,15 @@ CREW --> webApp : Uses for ship operations
 admin --> webApp : Uses for user management
 
 webApp --> api : Sends REST requests (CRUD operations, approvals, notifications)
+webApp --> oemapi : Sends REST requests (third-party integrations)
 
 api --> mySql : Persist Data
 api <-- mySql : Retrived Data
+oemapi --> oemDb : Persist Data
+oemapi <-- oemDb : Retrived Data
+
+oemapi -> api : Requests Data
+api <-- oemapi : Provides Data
 
 api --> Auth : Get Information
 Auth --> api : Retrievid Information
