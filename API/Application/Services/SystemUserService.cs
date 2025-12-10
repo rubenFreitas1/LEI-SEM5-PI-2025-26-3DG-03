@@ -203,4 +203,18 @@ public class SystemUserService
     {
         return await _systemUserRepository.SystemUserExistsByEmail(email);
     }
+
+    public async Task<bool> AcceptPrivacyPolicyByEmail(string email)
+    {
+        SystemUser? user = await _systemUserRepository.GetSystemUserByEmailAsync(email);
+        if (user == null)
+        {
+            return false;
+        }
+
+        user.AcceptPrivacyPolicy();
+        var errorMessages = new List<string>();
+        await _systemUserRepository.Update(user, errorMessages);
+        return true;
+    }
 }

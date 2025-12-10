@@ -25,6 +25,10 @@ public class SystemUserMapper
         var parsedStatus = Enum.Parse<SystemUserStatus>(systemUserDataModel.Status!);
         systemUserDomain.ChangeUserStatus(parsedStatus);
         systemUserDomain.ChangeBooleanIsFirstTime(systemUserDataModel.IsFirstTime);
+        if (systemUserDataModel.AcceptedCurrentPrivacyPolicy)
+        {
+            systemUserDomain.AcceptPrivacyPolicy();
+        }
         return systemUserDomain;
     }
 
@@ -54,6 +58,7 @@ public class SystemUserMapper
         systemUserDataModel.Role = systemUser.Role.ToString();
         systemUserDataModel.IsFirstTime = systemUser.IsFirstTime;
         systemUserDataModel.Status = systemUser.Status.ToString();
+        systemUserDataModel.AcceptedCurrentPrivacyPolicy = systemUser.AcceptedCurrentPrivacyPolicy;
     }
 
 }

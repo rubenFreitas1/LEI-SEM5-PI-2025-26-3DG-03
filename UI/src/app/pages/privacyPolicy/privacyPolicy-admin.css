@@ -1,0 +1,32 @@
+.privacy-policy-admin {
+  padding: 20px;
+}
+
+.policy-content {
+  padding: 15px;
+  background: var(--cui-tertiary-bg, #fff);
+  color: var(--cui-body-color, #222);
+  border-radius: 5px;
+  margin-top: 10px;
+  line-height: 1.6;
+}
+
+.policy-preview {
+  max-width: 600px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+textarea {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.text-muted {
+  color: #6c757d;
+}

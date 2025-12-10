@@ -33,6 +33,8 @@ public class SystemUser
 
     public bool IsFirstTime { get; private set; }
 
+    public bool AcceptedCurrentPrivacyPolicy { get; private set; }
+
     private SystemUser() { }
 
     public SystemUser(string code, string username, string email, SystemRole role)
@@ -108,6 +110,16 @@ public class SystemUser
     {
         ValidateUsername(username);
         Username = username.Trim();
+    }
+
+    public void AcceptPrivacyPolicy()
+    {
+        AcceptedCurrentPrivacyPolicy = true;
+    }
+
+    public void ResetPrivacyPolicyAcceptance()
+    {
+        AcceptedCurrentPrivacyPolicy = false;
     }
 
 }

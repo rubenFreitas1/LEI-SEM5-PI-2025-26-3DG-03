@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { NgScrollbar } from 'ngx-scrollbar';
 import { PermissionService } from '../../services/permission.service';
+import { PrivacyPolicyService, PrivacyPolicyDTO } from '../../services/privacyPolicy.service';
+import { PrivacyPolicyModalComponent } from '../../components/privacy-policy-modal/privacy-policy-modal';
 import { filterNavItems } from './_nav_filter';
 import {
   ContainerComponent,
@@ -44,13 +46,20 @@ function isOverflown(element: HTMLElement) {
     RouterOutlet,
     RouterLink,
     ShadowOnScrollDirective,
-    TranslateModule
+    TranslateModule,
+    PrivacyPolicyModalComponent
   ]
 })
 export class DefaultLayout {
   public filteredNav: any[] = [];
+  public showPrivacyModal: boolean = false;
+  public privacyPolicy: PrivacyPolicyDTO | null = null;
 
-  constructor(private permissions: PermissionService, private translate: TranslateService) {}
+  constructor(
+    private permissions: PermissionService,
+    private translate: TranslateService,
+    private privacyPolicyService: PrivacyPolicyService
+  ) {}
 
   ngOnInit(): void {
     this.permissions.loadRoleFromStorage().then(() => {
@@ -70,6 +79,9 @@ export class DefaultLayout {
       this.translate.onLangChange.subscribe(() => {
         computeAndTranslate();
       });
+
+      // Check for privacy policy updates
+      this.checkPrivacyPolicyUpdate();
     });
   }
 
@@ -79,5 +91,43 @@ export class DefaultLayout {
       name: this.translate.instant(item.name),
       children: item.children ? this.translateNav(item.children) : undefined
     }));
+  }
+
+  private checkPrivacyPolicyUpdate(): void {
+    console.log('[Privacy Policy] Checking for updates...');
+    this.privacyPolicyService.checkPrivacyPolicyUpdate().subscribe({
+      next: (response) => {
+        console.log('[Privacy Policy] Response:', response);
+        console.log('[Privacy Policy] hasNewPolicy:', response.hasNewPolicy);
+        console.log('[Privacy Policy] currentPolicy:', response.currentPolicy);
+        if (response.hasNewPolicy && response.currentPolicy) {
+          console.log('[Privacy Policy] New policy detected, showing modal');
+          this.privacyPolicy = response.currentPolicy;
+          this.showPrivacyModal = true;
+          console.log('[Privacy Policy] showPrivacyModal:', this.showPrivacyModal);
+          console.log('[Privacy Policy] privacyPolicy:', this.privacyPolicy);
+        } else {
+          console.log('[Privacy Policy] No new policy to accept');
+        }
+      },
+      error: (err) => {
+        console.error('[Privacy Policy] Error checking privacy policy update:', err);
+      }
+    });
+  }
+
+  onAcceptPrivacyPolicy(): void {
+    console.log('[Privacy Policy] User accepting policy...');
+    this.privacyPolicyService.acceptPrivacyPolicy().subscribe({
+      next: (response) => {
+        console.log('[Privacy Policy] Policy accepted successfully:', response);
+        this.showPrivacyModal = false;
+      },
+      error: (err) => {
+        console.error('[Privacy Policy] Error accepting privacy policy:', err);
+        // Still close the modal even if there's an error
+        this.showPrivacyModal = false;
+      }
+    });
   }
 }

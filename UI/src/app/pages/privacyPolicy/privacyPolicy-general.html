@@ -1,0 +1,10 @@
+<div class="privacy-policy">
+  <h2>Privacy Policy</h2>
+  <div *ngIf="policyContent; else loading">
+    <p><strong>Effective Date:</strong> {{ policyDate | date:'longDate' }}</p>
+    <div [innerHTML]="policyContent"></div>
+  </div>
+  <ng-template #loading>
+    <p>Loading privacy policy...</p>
+  </ng-template>
+</div>

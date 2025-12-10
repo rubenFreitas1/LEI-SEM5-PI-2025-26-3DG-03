@@ -208,4 +208,25 @@ public class SystemUserController : ControllerBase
         }
     }
 
+    [HttpPost("AcceptPrivacyPolicy")]
+    public async Task<IActionResult> AcceptPrivacyPolicy()
+    {
+        var email =
+                User.FindFirst("https://lapr5/email")?.Value ??
+                User.FindFirst("email")?.Value;
+
+        if (string.IsNullOrEmpty(email))
+        {
+            return Unauthorized("No email claim found in token.");
+        }
+
+        bool success = await _systemUserService.AcceptPrivacyPolicyByEmail(email);
+        if (!success)
+        {
+            return NotFound("User not found or could not accept privacy policy.");
+        }
+
+        return Ok("Privacy policy accepted.");
+    }
+
 }

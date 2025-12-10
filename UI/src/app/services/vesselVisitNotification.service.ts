@@ -3,80 +3,80 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { VesselVisitNotificationModel, VisitStatus } from '../models/vesselVisitNotification.model';
+import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VesselVisitNotificationService {
-  private apiUrl = 'https://lapr5-frontend.duckdns.org/api/VesselVisitNotification';
 
-  constructor(private http: HttpClient) { }
+  constructor(private apiService: ApiService) {}
 
   getAllVesselVisitNotifications(): Observable<VesselVisitNotificationModel[]> {
-    return this.http.get<VesselVisitNotificationModel[]>(this.apiUrl)
+    return this.apiService.get<VesselVisitNotificationModel[]>('/VesselVisitNotification')
       .pipe(
         catchError(this.handleError)
       );
   }
 
   getVesselVisitNotificationById(id: number): Observable<VesselVisitNotificationModel> {
-    return this.http.get<VesselVisitNotificationModel>(`${this.apiUrl}/ById/${id}`)
+    return this.apiService.get<VesselVisitNotificationModel>(`/VesselVisitNotification/ById/${id}`)
       .pipe(
         catchError(this.handleError)
       );
   }
 
   getVesselVisitNotificationByCode(code: string): Observable<VesselVisitNotificationModel> {
-    return this.http.get<VesselVisitNotificationModel>(`${this.apiUrl}/ByCode/${code}`)
+    return this.apiService.get<VesselVisitNotificationModel>(`/VesselVisitNotification/ByCode/${code}`)
       .pipe(
         catchError(this.handleError)
       );
   }
 
   getVesselVisitNotificationsByOrg(orgCode: string): Observable<VesselVisitNotificationModel[]> {
-    return this.http.get<VesselVisitNotificationModel[]>(`${this.apiUrl}/ByOrg/${orgCode}`)
+    return this.apiService.get<VesselVisitNotificationModel[]>(`/VesselVisitNotification/ByOrg/${orgCode}`)
       .pipe(
         catchError(this.handleError)
       );
   }
 
   getVesselVisitNotificationsByVesselIMO_Org(vesselIMO: string, orgCode: string): Observable<VesselVisitNotificationModel[]> {
-    return this.http.get<VesselVisitNotificationModel[]>(`${this.apiUrl}/ByVesselIMO_Org/${vesselIMO}/${orgCode}`)
+    return this.apiService.get<VesselVisitNotificationModel[]>(`/VesselVisitNotification/ByVesselIMO_Org/${vesselIMO}/${orgCode}`)
       .pipe(
         catchError(this.handleError)
       );
   }
 
   getVesselVisitNotificationsByDateRange_Org(startDate: string, endDate: string, orgCode: string): Observable<VesselVisitNotificationModel[]> {
-    return this.http.get<VesselVisitNotificationModel[]>(`${this.apiUrl}/ByDateRange_Org/${startDate}/${endDate}/${orgCode}`)
+    return this.apiService.get<VesselVisitNotificationModel[]>(`/VesselVisitNotification/ByDateRange_Org/${startDate}/${endDate}/${orgCode}`)
       .pipe(
         catchError(this.handleError)
       );
   }
 
   getVesselVisitNotificationsByRepresentative(citizenId: string): Observable<VesselVisitNotificationModel[]> {
-    return this.http.get<VesselVisitNotificationModel[]>(`${this.apiUrl}/ByRepresentative/${citizenId}`)
+    return this.apiService.get<VesselVisitNotificationModel[]>(`/VesselVisitNotification/ByRepresentative/${citizenId}`)
       .pipe(
         catchError(this.handleError)
       );
   }
 
   getVesselVisitNotificationsByStatus_Org(status: VisitStatus, orgCode: string): Observable<VesselVisitNotificationModel[]> {
-    return this.http.get<VesselVisitNotificationModel[]>(`${this.apiUrl}/ByStatus_Org/${status}/${orgCode}`)
+    return this.apiService.get<VesselVisitNotificationModel[]>(`/VesselVisitNotification/ByStatus_Org/${status}/${orgCode}`)
       .pipe(
         catchError(this.handleError)
       );
   }
 
   createVesselVisitNotification(notification: VesselVisitNotificationModel): Observable<VesselVisitNotificationModel> {
-    return this.http.post<VesselVisitNotificationModel>(this.apiUrl, notification)
+    return this.apiService.post<VesselVisitNotificationModel>('/VesselVisitNotification', notification)
       .pipe(
         catchError(this.handleError)
       );
   }
 
   updateVesselVisitNotification(visitCode: string, notification: VesselVisitNotificationModel): Observable<any> {
-    return this.http.put(`${this.apiUrl}/Update/${visitCode}`, notification)
+    return this.apiService.put(`/VesselVisitNotification/Update/${visitCode}`, notification)
       .pipe(
         catchError(this.handleError)
       );

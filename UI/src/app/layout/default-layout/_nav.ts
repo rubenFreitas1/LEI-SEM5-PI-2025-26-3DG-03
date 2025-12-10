@@ -119,5 +119,11 @@ export const navItems: IExtendedNavData[] = [
     url: '/user',
     icon: 'nav-img nav-img-systemuser',
     roles: ['Admin']
+  },
+  {
+    name: 'NAV.PRIVACY_POLICY',
+    url: '/privacy-policy/admin',
+    icon: 'nav-img nav-img-qualification',
+    roles: ['Admin']
   }
 ];

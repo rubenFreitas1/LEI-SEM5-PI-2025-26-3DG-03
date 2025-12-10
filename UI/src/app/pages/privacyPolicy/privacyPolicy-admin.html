@@ -1,0 +1,95 @@
+<div class="privacy-policy-admin">
+  <h2>Privacy Policy Management</h2>
+
+  <!-- Success/Error Messages -->
+  <c-alert *ngIf="successMessage" color="success" [dismissible]="true" (click)="clearMessages()">
+    {{ successMessage }}
+  </c-alert>
+  <c-alert *ngIf="errorMessage" color="danger" [dismissible]="true" (click)="clearMessages()">
+    {{ errorMessage }}
+  </c-alert>
+
+  <!-- Current Policy Section -->
+  <c-card class="mb-4">
+    <c-card-header>
+      <strong>Current Active Policy</strong>
+    </c-card-header>
+    <c-card-body>
+      <div *ngIf="currentPolicy; else noCurrentPolicy">
+        <p><strong>Effective Date:</strong> {{ currentPolicy.createdAt | date:'long' }}</p>
+        <div class="policy-content" [innerHTML]="currentPolicy.content"></div>
+      </div>
+      <ng-template #noCurrentPolicy>
+        <p class="text-muted">No active privacy policy found.</p>
+      </ng-template>
+    </c-card-body>
+  </c-card>
+
+  <!-- Create New Policy Section -->
+  <c-card class="mb-4">
+    <c-card-header>
+      <strong>Create New Privacy Policy</strong>
+    </c-card-header>
+    <c-card-body>
+      <div class="mb-3">
+        <label cLabel for="policyContent">Policy Content</label>
+        <quill-editor
+          [(ngModel)]="newPolicyContent"
+          [modules]="quillModules"
+          [placeholder]="'Enter the new privacy policy content...'"
+          [disabled]="loading"
+          [styles]="{height: '300px'}"
+        ></quill-editor>
+        <small class="form-text text-muted">
+          Use the toolbar above to format your text. This will replace the current active policy.
+        </small>
+      </div>
+      <button
+        cButton
+        color="primary"
+        (click)="createNewPolicy()"
+        [disabled]="loading || !newPolicyContent.trim()">
+        <span *ngIf="loading">Creating...</span>
+        <span *ngIf="!loading">Publish New Policy</span>
+      </button>
+    </c-card-body>
+  </c-card>
+
+  <!-- Policy History Section -->
+  <c-card>
+    <c-card-header>
+      <strong>Policy History</strong>
+    </c-card-header>
+    <c-card-body>
+      <div *ngIf="loading && policyHistory.length === 0" class="text-center">
+        <p>Loading policy history...</p>
+      </div>
+      <div *ngIf="!loading && policyHistory.length === 0" class="text-muted">
+        <p>No policy history available.</p>
+      </div>
+      <div *ngIf="policyHistory.length > 0">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Created At</th>
+                <th>Preview</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let policy of policyHistory">
+                <td>{{ policy.id }}</td>
+                <td>{{ policy.createdAt | date:'medium' }}</td>
+                <td>
+                  <div class="policy-preview" [innerHTML]="policy.content | slice:0:100"></div>
+                  <small class="text-muted" *ngIf="policy.content.length > 100">...</small>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </c-card-body>
+  </c-card>
+</div>

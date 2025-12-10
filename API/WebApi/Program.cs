@@ -163,6 +163,11 @@ builder.Services.AddTransient<SystemUserMapper>();
 builder.Services.AddTransient<SystemUserService>();
 builder.Services.AddTransient<IEmailService, EmailService>();
 
+builder.Services.AddTransient<IPrivacyPolicyRepository, PrivacyPolicyRepository>();
+builder.Services.AddTransient<IPrivacyPolicyFactory, PrivacyPolicyFactory>();
+builder.Services.AddTransient<PrivacyPolicyMapper>();
+builder.Services.AddTransient<PrivacyPolicyService>();
+
 builder.WebHost.UseUrls("http://0.0.0.0:5000");
 
 var app = builder.Build();

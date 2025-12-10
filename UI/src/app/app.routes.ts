@@ -87,6 +87,12 @@ export const routes: Routes = [
         data: { title: 'System User', breadcrumb: 'System User'},
         loadChildren: () => import('./routing/systemUser.routes').then((m) => m.routes)
       }
+      ,
+      {
+        path: 'privacy-policy',
+        data: { title: 'Privacy Policy', breadcrumb: 'Privacy Policy' },
+        loadChildren: () => import('./routing/privacyPolicy.routes').then((m) => m.privacyPolicyRoutes)
+      }
     ],
   },
   {
@@ -104,5 +110,6 @@ export const routes: Routes = [
     path: 'unauthorized',
     loadComponent: () => import('./pages/unauthorized/unauthorized').then(m => m.Unauthorized),
     data: { title: 'Unauthorized' }
-  }
+  },
+
 ];

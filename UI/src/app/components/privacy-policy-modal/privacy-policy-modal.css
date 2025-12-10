@@ -1,0 +1,22 @@
+/* Corrige fundo e cor do texto dos campos do modal para modo claro/escuro */
+.c-modal-body input,
+.c-modal-body textarea,
+.c-modal-body .policy-content {
+  background: var(--cui-tertiary-bg, #fff);
+  color: var(--cui-body-color, #222);
+  border: 1px solid var(--cui-border-color, #eee);
+}
+.policy-content {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 15px;
+  background: var(--cui-tertiary-bg, #fff);
+  color: var(--cui-body-color, #222);
+  border-radius: 5px;
+  margin-top: 10px;
+  line-height: 1.6;
+}
+
+.alert-info {
+  margin-bottom: 15px;
+}

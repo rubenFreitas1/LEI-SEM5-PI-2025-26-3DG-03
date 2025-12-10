@@ -37,3 +37,11 @@
   </div>
   <app-default-footer />
 </div>
+
+<!-- Privacy Policy Modal -->
+<app-privacy-policy-modal
+  [visible]="showPrivacyModal"
+  [policy]="privacyPolicy"
+  (accept)="onAcceptPrivacyPolicy()"
+  (visibleChange)="showPrivacyModal = $event">
+</app-privacy-policy-modal>

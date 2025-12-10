@@ -4,6 +4,7 @@ using DataModel.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataModel.Migrations
 {
     [DbContext(typeof(ShippingManagementContext))]
-    partial class ShippingManagementContextModelSnapshot : ModelSnapshot
+    [Migration("20251210173142_AddPrivacyPolicyTable")]
+    partial class AddPrivacyPolicyTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -524,9 +527,6 @@ namespace DataModel.Migrations
                         .HasColumnType("bigint");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<bool>("AcceptedCurrentPrivacyPolicy")
-                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Code")
                         .HasColumnType("longtext");

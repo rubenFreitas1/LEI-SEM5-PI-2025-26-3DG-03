@@ -209,4 +209,21 @@ public class SystemUserRepository : GenericRepository<SystemUser>, ISystemUserRe
         }
     }
 
+    public async Task ResetAllUsersPrivacyPolicyAcceptanceAsync()
+    {
+        try
+        {
+            var allUsers = await _context.Set<SystemUserDataModel>().ToListAsync();
+            foreach (var user in allUsers)
+            {
+                user.AcceptedCurrentPrivacyPolicy = false;
+            }
+            await _context.SaveChangesAsync();
+        }
+        catch
+        {
+            throw;
+        }
+    }
+
 }

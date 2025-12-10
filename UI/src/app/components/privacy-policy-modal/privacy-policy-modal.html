@@ -1,0 +1,21 @@
+<c-modal
+  [visible]="visible"
+  backdrop="static"
+  [keyboard]="false"
+  size="lg">
+  <c-modal-header>
+    <h5 cModalTitle>Privacy Policy Update</h5>
+  </c-modal-header>
+  <c-modal-body *ngIf="policy">
+    <div class="alert alert-info">
+      <strong>Important:</strong> Our Privacy Policy has been updated. Please review the changes below.
+    </div>
+    <p><strong>Effective Date:</strong> {{ policy.createdAt | date:'long' }}</p>
+    <div class="policy-content" [innerHTML]="policy.content"></div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="primary" (click)="onAccept()">
+      I Accept
+    </button>
+  </c-modal-footer>
+</c-modal>

@@ -11,6 +11,7 @@ public class SystemUserDataModel
     public string? Role { get; set; }
     public string? Status { get; set; }
     public bool IsFirstTime { get; set; }
+    public bool AcceptedCurrentPrivacyPolicy { get; set; }
 
     public SystemUserDataModel() { }
 
@@ -23,6 +24,7 @@ public class SystemUserDataModel
         Role = systemUser.Role.ToString();
         IsFirstTime = systemUser.IsFirstTime;
         Status = systemUser.Status.ToString();
+        AcceptedCurrentPrivacyPolicy = systemUser.AcceptedCurrentPrivacyPolicy;
     }
 
 }

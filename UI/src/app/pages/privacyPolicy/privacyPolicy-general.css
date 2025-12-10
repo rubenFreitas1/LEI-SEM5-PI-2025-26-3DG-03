@@ -1,0 +1,14 @@
+.privacy-policy {
+  max-width: 800px;
+  margin: 2em auto;
+  padding: 2em;
+  background: var(--cui-tertiary-bg, #fff);
+  color: var(--cui-body-color, #222);
+  border-radius: 8px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+  border: 1px solid var(--cui-border-color, #eee);
+}
+.privacy-policy h2 {
+  margin-bottom: 1em;
+  color: var(--cui-body-color, #222);
+}

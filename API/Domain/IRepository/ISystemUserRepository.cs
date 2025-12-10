@@ -25,4 +25,6 @@ public interface ISystemUserRepository : IGenericRepository<SystemUser>
     Task<bool> SystemUserExistsByEmail(string email);
 
     Task<bool> SystemUserExistsByCode(string code);
+
+    Task ResetAllUsersPrivacyPolicyAcceptanceAsync();
 }
