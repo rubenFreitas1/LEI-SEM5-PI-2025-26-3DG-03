@@ -16,27 +16,41 @@ export default class IncidentTypeService implements IIncidentTypeService {
         @Inject('logger') private logger: any
     ){}
 
-    private async getParentCode(parentId?: string): Promise<string | undefined> {
+    private async resolveParentCodes(incidentTypes: IncidentType[]): Promise<Map<string, string>> {
+        const parentIds = [...new Set(
+            incidentTypes.map(i => i.parentIncidentTypeId)
+            .filter((id): id is string => id !== undefined)
+        )];
+        if (parentIds.length === 0) {
+            return new Map<string, string>();
+        }
+        const parents = await this.incidentTypeRepo.findByIds(parentIds);
+        return new Map<string, string>(parents.map((p: IncidentType) => [p.id, p.code]));
+    }
+
+    private async getSingleParentCode(parentId?: string): Promise<string | undefined> {
         if (!parentId) return undefined;
+
         const parent = await this.incidentTypeRepo.findById(parentId);
         return parent ? parent.code : undefined;
     }
 
     public async getAllIncidentTypes(): Promise<Result<IncidentTypeDTO[]>> {
-        try{
+        try {
             const incidentTypes = await this.incidentTypeRepo.findAll();
-            const dtos = await Promise.all(
-                incidentTypes.map(async (incidentType) => {
-                    const parentCode = await this.getParentCode(incidentType.parentIncidentTypeId);
-                    return IncidentTypeMap.toDTO(incidentType, parentCode);
-                })
-            );
-            return Result.ok<IncidentTypeDTO[]>(dtos);
-        }catch(err){
+            const parentMap = await this.resolveParentCodes(incidentTypes);
+            const dtos = incidentTypes.map(i => {
+                const parentCode = i.parentIncidentTypeId
+                    ? parentMap.get(i.parentIncidentTypeId)
+                    : undefined;
+
+                return IncidentTypeMap.toDTO(i, parentCode);
+            });
+            return Result.ok(dtos);
+        } catch (err) {
             this.logger.error(err);
-            return Result.fail<IncidentTypeDTO[]>("Error getting all incident types");
+            return Result.fail("Error getting all incident types");
         }
-    
     }
 
     public async getIncidentTypeById(id: string): Promise<Result<IncidentTypeDTO>> {
@@ -45,7 +59,7 @@ export default class IncidentTypeService implements IIncidentTypeService {
             if(!incidentType){
                 return Result.fail<IncidentTypeDTO>("Incident type not found");
             }
-            const parentCode = await this.getParentCode(incidentType.parentIncidentTypeId);
+            const parentCode = await this.getSingleParentCode(incidentType.parentIncidentTypeId);
             const dto = IncidentTypeMap.toDTO(incidentType, parentCode);
             return Result.ok<IncidentTypeDTO>(dto);
         }catch(err){
@@ -60,7 +74,7 @@ export default class IncidentTypeService implements IIncidentTypeService {
             if(!incidentType){
                 return Result.fail<IncidentTypeDTO>("Incident type not found");
             }
-            const parentCode = await this.getParentCode(incidentType.parentIncidentTypeId);
+            const parentCode = await this.getSingleParentCode(incidentType.parentIncidentTypeId);
             const dto = IncidentTypeMap.toDTO(incidentType, parentCode);
             return Result.ok<IncidentTypeDTO>(dto);
         }catch(err){
@@ -75,7 +89,7 @@ export default class IncidentTypeService implements IIncidentTypeService {
             if(!incidentType){
                 return Result.fail<IncidentTypeDTO>("Incident type not found");
             }
-            const parentCode = await this.getParentCode(incidentType.parentIncidentTypeId);
+            const parentCode = await this.getSingleParentCode(incidentType.parentIncidentTypeId);
             const dto = IncidentTypeMap.toDTO(incidentType, parentCode);
             return Result.ok<IncidentTypeDTO>(dto);
         }catch(err){
@@ -86,61 +100,57 @@ export default class IncidentTypeService implements IIncidentTypeService {
 
 
     public async getIncidentTypesWithParent(hasParent: boolean): Promise<Result<IncidentTypeDTO[]>> {
-        try{
+        try {
             const incidentTypes = await this.incidentTypeRepo.findWithParent(hasParent);
-            const dtos = await Promise.all(
-                incidentTypes.map(async (incidentType) => {
-                    const parentCode = await this.getParentCode(incidentType.parentIncidentTypeId);
-                    return IncidentTypeMap.toDTO(incidentType, parentCode);
-                })
-            );
-            return Result.ok<IncidentTypeDTO[]>(dtos);
-        }catch(err){
+            const parentMap = await this.resolveParentCodes(incidentTypes);
+            const dtos = incidentTypes.map(i => {
+                const parentCode = i.parentIncidentTypeId
+                    ? parentMap.get(i.parentIncidentTypeId)
+                    : undefined;
+                return IncidentTypeMap.toDTO(i, parentCode);
+            });
+            return Result.ok(dtos);
+        } catch (err) {
             this.logger.error(err);
-            return Result.fail<IncidentTypeDTO[]>("Error getting incident types with parent filter");
+            return Result.fail("Error getting incident types with parent filter");
         }
     }
 
     public async getIncidentTypesByClassification(classification: string): Promise<Result<IncidentTypeDTO[]>> {
-        try{
+        try {
             const enumValue = IncidentClassification[classification as keyof typeof IncidentClassification];
-
-            if(enumValue === undefined){
-                return Result.fail<IncidentTypeDTO[]>("Invalid classification value");
+            if (enumValue === undefined) {
+                return Result.fail("Invalid classification value");
             }
             const incidentTypes = await this.incidentTypeRepo.findByClassification(enumValue);
-            const dtos = await Promise.all(
-                incidentTypes.map(async (incidentType) => {
-                    const parentCode = await this.getParentCode(incidentType.parentIncidentTypeId);
-                    return IncidentTypeMap.toDTO(incidentType, parentCode);
-                })
-            );
-            return Result.ok<IncidentTypeDTO[]>(dtos);
-        }catch(err){
+            const parentMap = await this.resolveParentCodes(incidentTypes);
+            const dtos = incidentTypes.map(i => {
+                const parentCode = i.parentIncidentTypeId
+                    ? parentMap.get(i.parentIncidentTypeId)
+                    : undefined;
+                return IncidentTypeMap.toDTO(i, parentCode);
+            });
+            return Result.ok(dtos);
+        } catch (err) {
             this.logger.error(err);
-            return Result.fail<IncidentTypeDTO[]>("Error getting incident types by classification");
+            return Result.fail("Error getting incident types by classification");
         }
     }
 
     public async getIncidentTypesByParent(parentCode: string): Promise<Result<IncidentTypeDTO[]>> {
-        try{
-            // First find the parent by code to get its ID
+        try {
             const parent = await this.incidentTypeRepo.findByCode(parentCode);
             if (!parent) {
-                return Result.fail<IncidentTypeDTO[]>("Parent incident type not found");
+                return Result.fail("Parent incident type not found");
             }
-            
             const incidentTypes = await this.incidentTypeRepo.findByParent(parent.id);
-            const dtos = await Promise.all(
-                incidentTypes.map(async (incidentType) => {
-                    const parentCode = await this.getParentCode(incidentType.parentIncidentTypeId);
-                    return IncidentTypeMap.toDTO(incidentType, parentCode);
-                })
+            const dtos = incidentTypes.map(i =>
+                IncidentTypeMap.toDTO(i, parent.code)
             );
-            return Result.ok<IncidentTypeDTO[]>(dtos);
-        }catch(err){
+            return Result.ok(dtos);
+        } catch (err) {
             this.logger.error(err);
-            return Result.fail<IncidentTypeDTO[]>("Error getting incident types by parent code");
+            return Result.fail("Error getting incident types by parent code");
         }
     }
 
@@ -181,7 +191,6 @@ export default class IncidentTypeService implements IIncidentTypeService {
             return Result.ok(dtoResult);
         } catch (e: any) {
             this.logger.error('Error in create service:', e);
-            console.error('Full create error:', e.message, e.stack);
             return Result.fail("Unexpected error creating IncidentType: " + e.message);
         }
     }
@@ -195,10 +204,7 @@ export default class IncidentTypeService implements IIncidentTypeService {
             }
 
             if(dto.code !== code){
-                const conflictWithCode = await this.incidentTypeRepo.findByCode(dto.code);
-                if (conflictWithCode && conflictWithCode.id !== existing.id) {
-                    return Result.fail<IncidentTypeDTO>(`It is not possible to update the Incident Type code.`);
-                }         
+                return Result.fail("IncidentType code cannot be changed.");        
             }
 
             const conflictWithName = await this.incidentTypeRepo.findByName(dto.name);

@@ -20,7 +20,8 @@ export default class IncidentTypeController  implements IIncidentTypeController 
             if (result.isSuccess) {
                 res.status(200).json(result.getValue());
             } else {
-                res.status(404).json({ error: result.error });
+                // Erro genérico do serviço
+                res.status(500).json({ error: result.error });
             }
         } catch (e) {
             this.logger.error(e);
@@ -76,7 +77,7 @@ export default class IncidentTypeController  implements IIncidentTypeController 
     public async getIncidentTypesWithParent(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             this.logger.silly('Getting incident types with parent filter');
-            const hasParent = req.query.hasParent === 'true';
+            const hasParent = req.params.value === 'true';
             const result = await this.incidentTypeService.getIncidentTypesWithParent(hasParent);
             if (result.isSuccess) {
                 res.status(200).json(result.getValue());
@@ -133,12 +134,7 @@ export default class IncidentTypeController  implements IIncidentTypeController 
             }
         } catch (e: any) {
             this.logger.error('Error creating incident type:', e);
-            console.error('Full error:', e);
-            res.status(500).json({ 
-                error: 'Internal Server Error',
-                message: e.message,
-                details: e.stack
-            });
+            res.status(500).json({ error: 'Internal Server Error' });
         }
     }
 
@@ -151,7 +147,8 @@ export default class IncidentTypeController  implements IIncidentTypeController 
             if (result.isSuccess) {
                 res.status(200).json(result.getValue());
             } else {
-                res.status(400).json({ error: result.error });
+                const statusCode = result.error && typeof result.error === 'string' && result.error.includes('not found') ? 404 : 400;
+                res.status(statusCode).json({ error: result.error });
             }
         } catch (e) {
             this.logger.error(e);

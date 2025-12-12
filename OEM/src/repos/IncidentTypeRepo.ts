@@ -32,6 +32,11 @@ export default class IncidentTypeRepo implements IIncidentTypeRepo {
     }
   }
 
+  async findByIds(ids: string[]): Promise<IncidentType[]> {
+    const models = await this.incidentTypeSchema.find({ _id: { $in: ids } });
+    return models.map(m => IncidentTypeMap.toDomain(m));
+  }
+
   async findAll(): Promise<IncidentType[]> {
     const records = await this.incidentTypeSchema.find();
     return records.map(record => IncidentTypeMap.toDomain(record));

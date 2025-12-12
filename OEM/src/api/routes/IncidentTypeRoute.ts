@@ -72,7 +72,7 @@ export default (app: Router) => {
    *         description: Incident Type not found
    */
   route.put(
-    'update/:code',
+    '/update/:code',
     celebrate({
       body: Joi.object({
         code: Joi.string().required(),

@@ -19,4 +19,6 @@ export default interface IIncidentTypeRepo extends Repo<IncidentType> {
   findByParent(parentId: string): Promise<IncidentType[]>;
 
   update(incidentType: IncidentType): Promise<boolean>;
+
+  findByIds(ids: string[]): Promise<IncidentType[]>;
 }
