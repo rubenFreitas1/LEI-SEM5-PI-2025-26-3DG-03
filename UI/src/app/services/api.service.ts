@@ -7,7 +7,7 @@ import { catchError, retry } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'http://localhost:5000/api';
+  private baseUrl = 'https://lapr5-frontend.duckdns.org/api';
   private httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'
