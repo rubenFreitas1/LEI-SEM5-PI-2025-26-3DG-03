@@ -56,6 +56,8 @@ public class IntegrationTestsWebApplicationFactory<Program>
             {
                 var conn = provider.GetRequiredService<DbConnection>();
                 options.UseSqlite(conn);
+                options.UseLoggerFactory(LoggerFactory.Create(builder => builder.SetMinimumLevel(LogLevel.None)));
+                options.EnableSensitiveDataLogging(false);
             });
 
             //
@@ -100,7 +102,11 @@ public class IntegrationTestsWebApplicationFactory<Program>
         builder.ConfigureLogging(logging =>
         {
             logging.ClearProviders();
-            logging.SetMinimumLevel(LogLevel.Warning);
+            logging.AddConsole();
+            logging.SetMinimumLevel(LogLevel.Critical);
+            logging.AddFilter("Microsoft", LogLevel.None);
+            logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
+            logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.None);
         });
     }
 }

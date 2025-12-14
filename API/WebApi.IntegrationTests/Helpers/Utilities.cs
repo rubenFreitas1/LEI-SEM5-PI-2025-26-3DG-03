@@ -70,6 +70,9 @@ public static class Utilities
         db.Decisions.AddRange(GetSeedingDecisionDataModel(vesselVisitNotifications));
         db.SaveChanges();
 
+        db.DataRequests.AddRange(GetSeedingDataRequestsDataModel());
+        db.SaveChanges();
+
     }
 
     public static void ReinitializeDbForTests(ShippingManagementContext db)
@@ -94,6 +97,7 @@ public static class Utilities
         db.VesselTypes.RemoveRange(db.VesselTypes);
         db.ShippingAgentOrganizations.RemoveRange(db.ShippingAgentOrganizations);
         db.SystemUsers.RemoveRange(db.SystemUsers);
+        db.DataRequests.RemoveRange(db.DataRequests);
 
         db.SaveChanges();
 
@@ -140,6 +144,36 @@ public static class Utilities
                 Role = SystemRole.PortAuthorityOfficer.ToString(),
                 IsFirstTime = false,
                 Status = SystemUserStatus.Active.ToString()
+            }
+        };
+    }
+
+    public static List<DataRequestDataModel> GetSeedingDataRequestsDataModel()
+    {
+        return new List<DataRequestDataModel>()
+        {
+            new DataRequestDataModel
+            {
+                RequestType = DataRequestType.Access.ToString(),
+                SystemUserEmail = "admin.teste@example.com",
+                Details = "Requesting access to the system.",
+                RequestedAt = DateTime.UtcNow,
+                RequestStatus = DataRequestStatus.Pending.ToString()
+            },
+            new DataRequestDataModel
+            {
+                RequestType = DataRequestType.Deletion.ToString(),
+                SystemUserEmail = "operator.teste@example.com",
+                Details = "Requesting deletion of data.",
+                RequestedAt = DateTime.UtcNow.AddDays(-1),
+                RequestStatus = DataRequestStatus.Completed.ToString()
+            },
+            new DataRequestDataModel
+            {
+                RequestType = DataRequestType.Rectification.ToString(),
+                SystemUserEmail = "portofficer.teste@example.com",
+                RequestedAt = DateTime.UtcNow.AddDays(-2),
+                RequestStatus = DataRequestStatus.Rejected.ToString()
             }
         };
     }

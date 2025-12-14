@@ -22,6 +22,10 @@ export class SystemUserService {
 		return this.api.get<any>(`/SystemUser/ByCode/${encodeURIComponent(code)}`);
 	}
 
+	getMyRole(): Observable<{ role: string }> {
+		return this.api.get<{ role: string }>('/SystemUser/MyRole');
+	}
+
 	addSystemUser(user: any): Observable<any> {
 		return this.api.post<any>('/SystemUser', user);
 	}

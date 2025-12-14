@@ -30,6 +30,7 @@ public class ShippingManagementContext : DbContext
     public virtual DbSet<CrewMemberDataModel> CrewMembers { get; set; } = null!;
     public virtual DbSet<PhysicalResourceDataModel> PhysicalResources { get; set; } = null!;
     public virtual DbSet<DecisionDataModel> Decisions { get; set; } = null!;
+    public virtual DbSet<DataRequestDataModel> DataRequests { get; set; } = null!;
 
     public virtual DbSet<SystemUserDataModel> SystemUsers { get; set; } = null!;
     public virtual DbSet<PrivacyPolicyDataModel> PrivacyPolicies { get; set; } = null!;
@@ -52,6 +53,7 @@ public class ShippingManagementContext : DbContext
         modelBuilder.ApplyConfiguration(new DecisionConfiguration());
         modelBuilder.ApplyConfiguration(new SystemUserConfiguration());
         modelBuilder.ApplyConfiguration(new PrivacyPolicyConfiguration());
+        modelBuilder.ApplyConfiguration(new DataRequestConfiguration());
 
         // necessário se Domain.Model.Colaborator fosse usado para persistência, e se pretendesse que os atributos/propriedades fossem privadas
 

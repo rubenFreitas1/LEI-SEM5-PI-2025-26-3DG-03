@@ -47,7 +47,7 @@
       </li>
       <li></li>
       <li>
-        <a cDropdownItem routerLink="">
+        <a cDropdownItem (click)="openProfileModal()">
           <svg cIcon class="me-2" name="cilUser"></svg>
           {{ 'SETTINGS.PROFILE' | translate }}
         </a>
@@ -121,3 +121,160 @@
     </div>
   </c-dropdown>
 </ng-template>
+
+<!-- PROFILE MODAL -->
+@if (showProfileModal()) {
+  <div class="modal-overlay" (click)="closeProfileModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ 'SETTINGS.PROFILE' | translate }}</h5>
+        <button type="button" class="btn-close" (click)="closeProfileModal()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- User Information Section -->
+        <div class="profile-section">
+          <h6 class="section-title">{{ 'SETTINGS.USER_INFORMATION' | translate }}</h6>
+          <div class="user-info">
+            <div class="info-row">
+              <strong>{{ 'SETTINGS.NAME' | translate }}:</strong>
+              <span>{{ userName }}</span>
+            </div>
+            <div class="info-row">
+              <strong>Email:</strong>
+              <span>{{ userEmail }}</span>
+            </div>
+            <div class="info-row">
+              <strong>{{ 'SETTINGS.ROLE' | translate }}:</strong>
+              <span>{{ userRole }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Rights Section -->
+        <div class="profile-section">
+          <h6 class="section-title">{{ 'SETTINGS.DATA_RIGHTS' | translate }}</h6>
+          <p class="section-description">{{ 'SETTINGS.DATA_RIGHTS_DESCRIPTION' | translate }}</p>
+          <div class="data-rights-actions">
+            <button type="button" class="btn btn-outline-primary" (click)="downloadUserData()">
+              <svg cIcon class="me-2" name="cilCloudDownload"></svg>
+              {{ 'SETTINGS.DOWNLOAD_DATA' | translate }}
+            </button>
+            <button type="button" class="btn btn-outline-danger" (click)="openDataRequestModal()">
+              <svg cIcon class="me-2" name="cilEnvelopeClosed"></svg>
+              {{ 'SETTINGS.REQUEST_DATA' | translate }}
+            </button>
+          </div>
+
+          <!-- Data Requests History -->
+          <div class="mt-4">
+            <h6 class="section-subtitle">{{ 'SETTINGS.DATA_REQUESTS_HISTORY' | translate }}</h6>
+            @if (loadingDataRequests()) {
+              <div class="text-center py-3">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span class="ms-2">{{ 'SETTINGS.LOADING' | translate }}</span>
+              </div>
+            } @else if (userDataRequests().length === 0) {
+              <p class="text-muted small">{{ 'SETTINGS.NO_DATA_REQUESTS' | translate }}</p>
+            } @else {
+              <div class="data-requests-list">
+                @for (request of userDataRequests(); track request.id) {
+                  <div class="data-request-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2">
+                          <strong class="request-type">{{ 'SETTINGS.REQUEST_TYPE_' + request.requestType?.toUpperCase() | translate }}</strong>
+                          <span class="badge" [ngClass]="{
+                            'bg-warning': request.status === 'Pending',
+                            'bg-success': request.status === 'Completed',
+                            'bg-danger': request.status === 'Rejected'
+                          }">
+                            {{ 'SETTINGS.STATUS_' + request.status?.toUpperCase() | translate }}
+                          </span>
+                        </div>
+                        @if (request.details) {
+                          <p class="small text-muted mb-1 mt-1">{{ request.details }}</p>
+                        }
+                        <small class="text-muted">{{ request.requestedAt | date:'short' }}</small>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeProfileModal()">
+          {{ 'SETTINGS.CLOSE' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- DATA REQUEST MODAL -->
+@if (showDataRequestModal()) {
+  <div class="modal-overlay" (click)="closeDataRequestModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ 'SETTINGS.DATA_REQUEST_TITLE' | translate }}</h5>
+        <button type="button" class="btn-close" (click)="closeDataRequestModal()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (requestSuccess()) {
+          <div class="alert alert-success" role="alert">
+            <svg cIcon class="me-2" name="cilCheckCircle"></svg>
+            {{ 'SETTINGS.DATA_REQUEST_SUCCESS' | translate }}
+          </div>
+        } @else {
+          <p class="mb-3">{{ 'SETTINGS.DATA_REQUEST_DESCRIPTION' | translate }}</p>
+
+          <!-- Request Type Selection -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">{{ 'SETTINGS.REQUEST_TYPE' | translate }} *</label>
+            <select class="form-select" [(ngModel)]="selectedRequestType" [value]="selectedRequestType()" (change)="selectedRequestType.set($any($event.target).value)">
+              <option value="">{{ 'SETTINGS.SELECT_REQUEST_TYPE' | translate }}</option>
+              <option value="Access">{{ 'SETTINGS.REQUEST_TYPE_ACCESS' | translate }}</option>
+              <option value="Rectification">{{ 'SETTINGS.REQUEST_TYPE_RECTIFICATION' | translate }}</option>
+              <option value="Deletion">{{ 'SETTINGS.REQUEST_TYPE_DELETION' | translate }}</option>
+            </select>
+          </div>
+
+          <!-- Request Details -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">{{ 'SETTINGS.REQUEST_DETAILS' | translate }}</label>
+            <textarea
+              class="form-control"
+              rows="4"
+              maxlength="500"
+              [value]="requestDetails()"
+              (input)="requestDetails.set($any($event.target).value)"
+              placeholder="{{ 'SETTINGS.REQUEST_DETAILS_PLACEHOLDER' | translate }}"
+            ></textarea>
+            <small class="text-muted">{{ requestDetails().length }}/500</small>
+          </div>
+
+          @if (requestError()) {
+            <div class="alert alert-danger" role="alert">
+              {{ requestError() }}
+            </div>
+          }
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDataRequestModal()" [disabled]="requestSubmitting()">
+          {{ 'SETTINGS.CANCEL' | translate }}
+        </button>
+        @if (!requestSuccess()) {
+          <button type="button" class="btn btn-primary" (click)="submitDataRequest()" [disabled]="requestSubmitting() || !selectedRequestType()">
+            @if (requestSubmitting()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            }
+            {{ 'SETTINGS.SUBMIT_REQUEST' | translate }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}

@@ -168,6 +168,11 @@ builder.Services.AddTransient<IPrivacyPolicyFactory, PrivacyPolicyFactory>();
 builder.Services.AddTransient<PrivacyPolicyMapper>();
 builder.Services.AddTransient<PrivacyPolicyService>();
 
+builder.Services.AddTransient<IDataRequestRepository, DataRequestRepository>();
+builder.Services.AddTransient<IDataRequestFactory, DataRequestFactory>();
+builder.Services.AddTransient<DataRequestMapper>();
+builder.Services.AddTransient<DataRequestService>();
+
 builder.WebHost.UseUrls("http://0.0.0.0:5000");
 
 var app = builder.Build();
