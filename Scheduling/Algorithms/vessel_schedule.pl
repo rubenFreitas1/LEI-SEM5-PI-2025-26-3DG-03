@@ -232,7 +232,7 @@ sequence_temporization_multi([(V, TIn, _TEnd, _ExecBase)|VTs], [N|NCs], [(V, TIn
     vessel(V, _, _, TUnload, TLoad, _),
     Total is TUnload + TLoad,
     ExecTimeRaw is (Total + N - 1) // N, % ceil division
-    % Garantir que ExecTime seja pelo menos 1 (mínimo de 1 hora de operação)
+    % Garantir que ExecTime seja pelo menos 1 (minimo de 1 hora de operação)
     (ExecTimeRaw < 1 -> ExecTime = 1 ; ExecTime = ExecTimeRaw),
     TInUnload is TIn,
     TEndLoad is TInUnload + ExecTime - 1,
@@ -313,16 +313,16 @@ safe_log('--- End of global test ---~n', []).
 
 % Fatos `vessel`: vessel(Nome, TIn, TDep, TUnload, TLoad, maxCranes)
 
-vessel(va, 6, 63, 10, 16,11).
-vessel(vb, 23, 50, 9, 7,11).
-vessel(vc, 8, 40, 5, 12,11).
-vessel(vd, 27, 40, 0, 8,11).
-vessel(ve, 36, 70, 12, 0,11).
-vessel(vf, 40, 60, 8, 6,11).
-vessel(vg, 52, 80, 9, 10,11).
-vessel(vi, 61, 90, 13, 8,11).
-%vessel(vj, 74, 100, 7, 7,5).
-%vessel(vk, 81, 110, 6, 8,5).
+vessel(va, 6, 63, 10, 16,3).
+vessel(vb, 23, 50, 9, 7,3).
+vessel(vc, 8, 40, 5, 12,3).
+vessel(vd, 27, 40, 0, 8,3).
+vessel(ve, 36, 70, 12, 0,3).
+vessel(vf, 40, 60, 8, 6,3).
+vessel(vg, 52, 80, 9, 10,3).
+vessel(vi, 61, 90, 13, 8,3).
+vessel(vj, 74, 100, 7, 7,3).
+vessel(vk, 81, 110, 6, 8,3).
 %vessel(vl, 90, 140, 22, 18,5).
 %vessel(vm, 112, 140, 8, 7,5).
 %vessel(vn, 82, 135, 13, 12,5).

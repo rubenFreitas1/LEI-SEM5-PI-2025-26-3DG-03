@@ -1,30 +1,52 @@
-% Fatos `vessel`: (Nome, TIn, TDep, TUnload, TLoad)
-%vessel(va, 6, 63, 10, 16).
-% safe_log_improved/2: registo seguro em user_error se disponível
+:- dynamic vessel/6.
+
+% Vessel facts: (Name, TIn, TDep, TUnload, TLoad, MaxCranes)
+vessel(va, 6, 63, 10, 16,3).
+vessel(vb, 23, 50, 9, 7,3).
+vessel(vc, 8, 40, 5, 12,3).
+vessel(vd, 27, 40, 0, 8,3).
+vessel(ve, 36, 70, 12, 0,3).
+vessel(vf, 40, 60, 8, 6,3).
+vessel(vg, 52, 80, 9, 10,3).
+vessel(vi, 61, 90, 13, 8,3).
+vessel(vj, 74, 100, 7, 7,3).
+vessel(vk, 81, 110, 6, 8,3).
+%vessel(vl, 90, 140, 22, 18,5).
+%vessel(vm, 112, 140, 8, 7,5).
+%vessel(vn, 82, 135, 13, 12,5).
+
+% Safe logging helper: avoid exceptions if user_error/CGI stream is unavailable
 safe_log_improved(Format, Args) :-
     catch(with_output_to(user_error, format(Format, Args)), _, true).
 
-% sequence_temporization_improved/2: produz triplets em lista [[V,TIU,TEL],...] a partir da ordem de navios
+% Convert an ordered list of vessels into triplets of (V, TInUnload, TEndLoad)
 sequence_temporization_improved(LV,SeqTriplets):-
     sequence_temporization1_improved(0,LV,SeqTriplets).
 
-sequence_temporization1_improved(EndPrevSeq,[V|LV],[[V,TInUnload,TEndLoad]|SeqTriplets]):-
-    vessel(V, _Dock, TIn, _TDep, TUnload, TLoad),
+sequence_temporization1_improved(EndPrevSeq,[V|LV],[(V,TInUnload,TEndLoad)|SeqTriplets]):-
+    vessel(V,TIn,_,TUnload,TLoad,_),
     ( (TIn> EndPrevSeq,!, TInUnload is TIn); TInUnload is EndPrevSeq+1),
     TEndLoad is TInUnload + TUnload+TLoad -1,
     sequence_temporization1_improved(TEndLoad,LV,SeqTriplets).
 
 sequence_temporization1_improved(_,[],[]).
 
-% sum_delays_improved/2: calcula atraso total para sequência em forma de lista
+
+% Sum delays from a sequence of triplets
 sum_delays_improved([],0).
-sum_delays_improved([[V,_,TEndLoad]|LV],S):-
-    vessel(V, _, _, TDep, _, _), TPossibleDep is TEndLoad+1,
+sum_delays_improved([(V,_,TEndLoad)|LV],S):-
+    vessel(V,_,TDep,_,_,_), TPossibleDep is TEndLoad+1,
     ( (TPossibleDep>TDep,!,SV is TPossibleDep-TDep); SV is 0),
     sum_delays_improved(LV,SLV),
     S is SV+SLV.
 
-% greedy_order_by_insertion/2: constrói ordem por inserção gulosa (1 crane)
+
+% -------------------------
+% Greedy scheduler by slackRel
+% (SLACK-REL ALGORITHM REMOVED)
+
+
+% Greedy insertion order
 greedy_order_by_insertion(LV, OrderedLV) :-
     greedy_insertion_build(LV, [], OrderedLV).
 
@@ -44,7 +66,8 @@ greedy_insertion_build(Rem, Acc, Ordered) :-
     append(Acc, [BestV], Acc2),
     greedy_insertion_build(Rem2, Acc2, Ordered).
 
-% local_improvement/3: melhora sequência por trocas par-a-par (1 crane)
+
+% Local improvement by pairwise swaps (hill-climbing)
 local_improvement(SeqV, BestSeqV, BestDelay) :-
     sequence_temporization_improved(SeqV, Trip),
     sum_delays_improved(Trip, Delay),
@@ -64,7 +87,7 @@ local_swap_optimize(Seq, Delay, BestSeq, BestDelay) :-
         ; BestSeq = Seq, BestDelay = Delay)
     ).
 
-% swap_positions/4 e set_nth1/3: utilitários para trocar elementos e definir o n-ésimo
+% swap_positions: swap elements at positions I and J (1-based)
 swap_positions(Seq, I, J, SeqOut) :-
     nth1(I, Seq, ElemI), nth1(J, Seq, ElemJ),
     set_nth1(Seq, I, ElemJ, Temp),
@@ -73,7 +96,8 @@ swap_positions(Seq, I, J, SeqOut) :-
 set_nth1([_|T], 1, Elem, [Elem|T]).
 set_nth1([H|T], N, Elem, [H|R]) :- N>1, N1 is N-1, set_nth1(T, N1, Elem, R).
 
-% schedule_greedy_improved/4: cria e otimiza escalonamento para 1 crane
+
+% Improved scheduler wrapper: insertion + local improvement
 schedule_greedy_improved(LV, FinalSeqTriplets, FinalDelay, TimeSecs) :-
     get_time(T0),
     greedy_order_by_insertion(LV, OrdLV),
@@ -83,139 +107,240 @@ schedule_greedy_improved(LV, FinalSeqTriplets, FinalDelay, TimeSecs) :-
     FinalDelay = BestDelay,
     get_time(T1), TimeSecs is T1 - T0.
 
-% obtain_seq_shortest_delay_improved/3: wrapper do utilizador que retorna triplets em lista
+
 obtain_seq_shortest_delay_improved(SeqTriplets, DelayHours, ExecutionTime) :-
     findall(V, vessel(V,_,_,_,_,_), LV),
     schedule_greedy_improved(LV, SeqTriplets, DelayHours, TimeSecs),
     ExecutionTime = TimeSecs,
     safe_log_improved('Time to generate the improved schedule (secs): ~w~n', [TimeSecs]).
 
-% obtain_seq_shortest_delay_improved_multi/5: wrapper que tenta multi-cranes e regista resultado
-obtain_seq_shortest_delay_improved_multi(SeqBetterQuadruplets, SShortestDelay, LCranesAlloc, Logs, Strategy) :-
-    findall(V, vessel(V,_,_,_,_,_), AllVessels),
-    length(AllVessels, NVessels),
-    obtain_seq_shortest_delay_improved(SeqTripletsTuple, SDelay1Crane, _ExecutionTime),
-    SeqTriplets = SeqTripletsTuple,
-    ( (NVessels > 2, SDelay1Crane > 0) ->
-        Strategy = 'multi_cranes',
-        findall(Vv, vessel(Vv,_,_,_,_,_), LVAll),
-        ( catch(schedule_greedy_improved_multi(LVAll, SeqBetterQuadruplets, SShortestDelay, _TExec), E, (safe_log_improved('Error in multi scheduler: ~w~n',[E]), fail)) ->
-            extract_cranes_list(SeqBetterQuadruplets, LCranesAlloc),
-            atomic_list_concat(['MULTI-CRANES ACTIVATED (', NVessels, ' vessels). Initial delay (1 crane): ', SDelay1Crane, '. Final delay: ', SShortestDelay], '', Msg0),
-            Logs = [Msg0]
-        ;
-            Strategy = 'single_crane',
-            SShortestDelay is SDelay1Crane,
-            convert_triplets_to_quadruplets(SeqTriplets, 1, SeqBetterQuadruplets),
-            extract_cranes_list(SeqBetterQuadruplets, LCranesAlloc),
-            atomic_list_concat(['MULTI-CRANES attempt failed, using single-crane solution. Delay: ', SShortestDelay], '', MsgF),
-            Logs = [MsgF]
-        )
+
+% ---------------- Escalonamento (multi-cranes) para improved ----------------
+
+% build_seq_quad_1crane_improved/3: converte triplets para quadruplets com 1 crane
+build_seq_quad_1crane_improved([], [], []).
+build_seq_quad_1crane_improved([(V, TIn, TEnd)|T], [(V, TIn, TEnd, ExecTime, 1)|QT], [1|CT]) :-
+    vessel(V, _, _, TUnload, TLoad, _),
+    ExecTime is TUnload + TLoad,
+    build_seq_quad_1crane_improved(T, QT, CT).
+
+% obtain_seq_shortest_delay_improved_multi/3: wrapper multi-crane para improved
+obtain_seq_shortest_delay_improved_multi(SeqQuad, DelayBest, CranesAlloc) :-
+    % Obter a melhor sequência com 1 crane usando o algoritmo greedy improved
+    findall(V, vessel(V,_,_,_,_,_), LV),
+    schedule_greedy_improved(LV, SeqTriplets, Delay1Crane, _),
+    
+    % Verificar se todos os vessels permitem apenas 1 crane
+    findall(M, vessel(_, _, _, _, _, M), Ms),
+    max_list(Ms, MaxCraneAllowed),
+    ( MaxCraneAllowed =< 1 ->
+        build_seq_quad_1crane_improved(SeqTriplets, SeqQuad, CranesAlloc),
+        DelayBest = Delay1Crane,
+        safe_log_improved('All vessels allow only 1 crane; returning single-crane solution.~n', [])
     ;
-        Strategy = 'single_crane',
-        SShortestDelay is SDelay1Crane,
-        convert_triplets_to_quadruplets(SeqTriplets, 1, SeqBetterQuadruplets),
-        extract_cranes_list(SeqBetterQuadruplets, LCranesAlloc),
-        atomic_list_concat(['SINGLE-CRANE chosen. Delay: ', SShortestDelay], '', MsgS),
-        Logs = [MsgS]
+        ( Delay1Crane =:= 0 ->
+            build_seq_quad_1crane_improved(SeqTriplets, SeqQuad, CranesAlloc),
+            DelayBest = Delay1Crane,
+            safe_log_improved('Single-crane solution without delays.~n', [])
+        ;
+            apply_multi_cranes_improved(SeqTriplets, SeqQuad, DelayBest, CranesAlloc)
+        )
     ).
 
-% sequence_temporization_improved_multi/3: calcula tempos quando cada navio tem NCranes atribuídos
-sequence_temporization_improved_multi(LV, LCranes, SeqQuadruplets) :-
-    sequence_temporization_improved_multi1(0, LV, LCranes, SeqQuadruplets).
+% Wrapper de compatibilidade: obtain_seq_shortest_delay_improved_multi/4
+obtain_seq_shortest_delay_improved_multi(SeqQuad, DelayBest, ExecutionTime, MaxCranes) :-
+    get_time(Ti),
+    % Obter a melhor sequência com 1 crane
+    findall(V, vessel(V,_,_,_,_,_), LV),
+    schedule_greedy_improved(LV, SeqSingle, DelaySingle, _),
+    
+    ( DelaySingle =:= 0 ->
+        % single-crane already optimal, build quad with 1 crane each
+        build_seq_quad_1crane_improved(SeqSingle, SeqQuad, _),
+        DelayBest = DelaySingle
+    ; MaxCranes =< 1 ->
+        % caller requested testing only up to 1 crane
+        build_seq_quad_1crane_improved(SeqSingle, SeqQuad, _),
+        DelayBest = DelaySingle,
+        safe_log_improved('MaxCranes <= 1: skipping multi-crane search and returning single-crane solution.~n', [])
+    ;
+        % try N from 1..MaxCranes
+        loop_try_N_improved_limit(1, MaxCranes, SeqSingle, BestSeq, BestDelay, _),
+        SeqQuad = BestSeq,
+        DelayBest = BestDelay
+    ),
+    get_time(Tf),
+    ExecutionTime is Tf - Ti,
+    safe_log_improved('Improved multi-crane search time (secs): ~w~n', [ExecutionTime]).
 
-sequence_temporization_improved_multi1(EndPrevSeq, [V|LV], [NCranes|LC], [[V, TInUnload, TEndLoad, NCranes]|Seq]) :-
-    vessel(V, _Dock, TIn, _TDep, TUnload, TLoad),
-    ( (TIn > EndPrevSeq, !, TInUnload is TIn) ; TInUnload is EndPrevSeq + 1 ),
-    TProc0 is (TUnload + TLoad) // NCranes,
-    ( TProc0 < 1 -> TProc is 1 ; TProc is TProc0 ),
-    TEndLoad is TInUnload + TProc - 1,
-    sequence_temporization_improved_multi1(TEndLoad, LV, LC, Seq).
+% apply_multi_cranes_improved/4: aplica alocação de cranes e calcula quad + atraso
+apply_multi_cranes_improved(SeqTriplets, SeqQuad, DelayBest, CranesAlloc) :-
+    % determinar o maximo de cranes permitido
+    findall(M, vessel(_, _, _, _, _, M), Ms),
+    max_list(Ms, MaxCrane),
+    % iterar N de 1..MaxCrane e escolher a melhor alocação
+    loop_try_N_improved(1, MaxCrane, SeqTriplets, SeqQuad, DelayBest, CranesAlloc).
 
-sequence_temporization_improved_multi1(_, [], [], []).
+% build_alloc_for_N_improved/3: constrói lista de alocações por navio
+build_alloc_for_N_improved([], _N, []).
+build_alloc_for_N_improved([(ID, _, _)|T], N, [A|AT]) :-
+    vessel(ID, _, _, _, _, MaxC),
+    (N =< MaxC -> A = N ; A = MaxC),
+    build_alloc_for_N_improved(T, N, AT).
 
-% sum_delays_improved_multi/2: calcula atraso total para quadrupletos multi-cranes
-sum_delays_improved_multi([], 0).
-sum_delays_improved_multi([[V, _, TEndLoad, _]|LV], S) :-
-    vessel(V, _, _, TDep, _, _),
+% loop_try_N_improved/6: itera N e escolhe melhor solução
+% Case 1: CurrN valid and DelayRaw < 0 -> early stop, treat as zero
+loop_try_N_improved(CurrN, MaxN, SeqTriplets, BestSeq, BestDelay, BestAlloc) :-
+    CurrN =< MaxN,
+    build_alloc_for_N_improved(SeqTriplets, CurrN, Alloc),
+    sequence_temporization_multi_improved(SeqTriplets, Alloc, SeqQuad),
+    sum_delays_multi_improved(SeqQuad, DelayRaw),
+    DelayRaw < 0,
+    BestSeq = SeqQuad, BestDelay = 0, BestAlloc = Alloc.
+
+% Case 2: CurrN valid and DelayRaw == 0 -> early stop
+loop_try_N_improved(CurrN, MaxN, SeqTriplets, BestSeq, BestDelay, BestAlloc) :-
+    CurrN =< MaxN,
+    build_alloc_for_N_improved(SeqTriplets, CurrN, Alloc),
+    sequence_temporization_multi_improved(SeqTriplets, Alloc, SeqQuad),
+    sum_delays_multi_improved(SeqQuad, DelayRaw),
+    DelayRaw =:= 0,
+    BestSeq = SeqQuad, BestDelay = DelayRaw, BestAlloc = Alloc.
+
+% Case 3: CurrN < MaxN and need to compare with next N
+loop_try_N_improved(CurrN, MaxN, SeqTriplets, BestSeq, BestDelay, BestAlloc) :-
+    CurrN < MaxN,
+    build_alloc_for_N_improved(SeqTriplets, CurrN, Alloc),
+    sequence_temporization_multi_improved(SeqTriplets, Alloc, SeqQuad),
+    sum_delays_multi_improved(SeqQuad, DelayRaw),
+    Next is CurrN + 1,
+    loop_try_N_improved(Next, MaxN, SeqTriplets, SeqQuadNext, DelayNext, AllocNext),
+    ( DelayRaw =< DelayNext -> BestSeq = SeqQuad, BestDelay = DelayRaw, BestAlloc = Alloc ; BestSeq = SeqQuadNext, BestDelay = DelayNext, BestAlloc = AllocNext ).
+
+% Case 4: CurrN == MaxN (final N)
+loop_try_N_improved(CurrN, MaxN, SeqTriplets, BestSeq, BestDelay, BestAlloc) :-
+    CurrN =< MaxN,
+    build_alloc_for_N_improved(SeqTriplets, CurrN, Alloc),
+    sequence_temporization_multi_improved(SeqTriplets, Alloc, SeqQuad),
+    sum_delays_multi_improved(SeqQuad, DelayRaw),
+    BestSeq = SeqQuad, BestDelay = DelayRaw, BestAlloc = Alloc.
+
+% loop_try_N_improved_limit/6: similar to loop_try_N but limits to given MaxParam
+% Case 1: CurrN valid and DelayRaw < 0 -> early stop, treat as zero
+loop_try_N_improved_limit(CurrN, MaxParam, SeqTriplets, BestSeq, BestDelay, BestAlloc) :-
+    CurrN =< MaxParam,
+    build_alloc_for_N_improved(SeqTriplets, CurrN, Alloc),
+    sequence_temporization_multi_improved(SeqTriplets, Alloc, SeqQuad),
+    sum_delays_multi_improved(SeqQuad, DelayRaw),
+    DelayRaw < 0,
+    BestSeq = SeqQuad, BestDelay = 0, BestAlloc = Alloc.
+
+% Case 2: CurrN valid and DelayRaw == 0 -> early stop
+loop_try_N_improved_limit(CurrN, MaxParam, SeqTriplets, BestSeq, BestDelay, BestAlloc) :-
+    CurrN =< MaxParam,
+    build_alloc_for_N_improved(SeqTriplets, CurrN, Alloc),
+    sequence_temporization_multi_improved(SeqTriplets, Alloc, SeqQuad),
+    sum_delays_multi_improved(SeqQuad, DelayRaw),
+    DelayRaw =:= 0,
+    BestSeq = SeqQuad, BestDelay = DelayRaw, BestAlloc = Alloc.
+
+% Case 3: CurrN < MaxParam and need to compare with next N
+loop_try_N_improved_limit(CurrN, MaxParam, SeqTriplets, BestSeq, BestDelay, BestAlloc) :-
+    CurrN < MaxParam,
+    build_alloc_for_N_improved(SeqTriplets, CurrN, Alloc),
+    sequence_temporization_multi_improved(SeqTriplets, Alloc, SeqQuad),
+    sum_delays_multi_improved(SeqQuad, DelayRaw),
+    Next is CurrN + 1,
+    loop_try_N_improved_limit(Next, MaxParam, SeqTriplets, SeqQuadNext, DelayNext, AllocNext),
+    ( DelayRaw =< DelayNext -> BestSeq = SeqQuad, BestDelay = DelayRaw, BestAlloc = Alloc ; BestSeq = SeqQuadNext, BestDelay = DelayNext, BestAlloc = AllocNext ).
+
+% Case 4: CurrN == MaxParam (final N)
+loop_try_N_improved_limit(CurrN, MaxParam, SeqTriplets, BestSeq, BestDelay, BestAlloc) :-
+    CurrN =< MaxParam,
+    build_alloc_for_N_improved(SeqTriplets, CurrN, Alloc),
+    sequence_temporization_multi_improved(SeqTriplets, Alloc, SeqQuad),
+    sum_delays_multi_improved(SeqQuad, DelayRaw),
+    BestSeq = SeqQuad, BestDelay = DelayRaw, BestAlloc = Alloc.
+
+% sequence_temporization_multi_improved/3: produz quadrupletos com multi-cranes
+sequence_temporization_multi_improved([], [], []).
+sequence_temporization_multi_improved([(V, TIn, _TEnd)|VTs], [N|NCs], [(V, TInUnload, TEndLoad, ExecTime, N)|SeqQuad]) :-
+    vessel(V, _, _, TUnload, TLoad, _),
+    Total is TUnload + TLoad,
+    ExecTimeRaw is (Total + N - 1) // N, % ceil division
+    % Garantir que ExecTime seja pelo menos 1
+    (ExecTimeRaw < 1 -> ExecTime = 1 ; ExecTime = ExecTimeRaw),
+    TInUnload is TIn,
+    TEndLoad is TInUnload + ExecTime - 1,
+    sequence_temporization_multi_improved(VTs, NCs, SeqQuad).
+
+% sum_delays_multi_improved/2: calcula atraso total para quadrupletos multi-cranes
+sum_delays_multi_improved([], 0).
+sum_delays_multi_improved([(V, _, TEndLoad, _ExecTime, _NC)|LV], S) :-
+    vessel(V, _, TDep, _, _, _),
     TPossibleDep is TEndLoad + 1,
-    ( (TPossibleDep > TDep, !, SV is TPossibleDep - TDep) ; SV is 0 ),
-    sum_delays_improved_multi(LV, SLV),
+    % only count non-negative tardiness
+    (TPossibleDep > TDep -> SV is TPossibleDep - TDep ; SV = 0),
+    sum_delays_multi_improved(LV, SLV),
     S is SV + SLV.
 
-% allowed_cranes_for_vessel/2: produz contagens candidatas de cranes para um navio
-allowed_cranes_for_vessel(V, CNCandidates) :-
-    ( current_predicate(vessel/6), vessel(V, DockID, _, _, _, _), current_predicate(dock/2), dock(DockID, Max) -> true
-    ; ( current_predicate(dock/2) -> findall(M, dock(_, M), Ms), (Ms = [] -> Max = 2 ; max_list(Ms, Max)) ; Max = 2 )
+
+% ---------------- Predicado de Teste ----------------
+% run_test_single_improved/0: executa teste rápido para single-crane improved e regista resultado
+run_test_single_improved :-
+    obtain_seq_shortest_delay_improved(Seq, Delay, ExecTime),
+    safe_log_improved('Single-crane improved schedule: ~w~n', [Seq]),
+    safe_log_improved('Single-crane improved total delay: ~w~n', [Delay]),
+    safe_log_improved('Execution time: ~w secs~n', [ExecTime]).
+
+% run_test_multi_improved/0: executa teste rápido para multi-crane improved e regista resultado
+run_test_multi_improved :-
+    obtain_seq_shortest_delay_improved_multi(SeqQuad, Delay, CranesAlloc),
+    safe_log_improved('Multi-crane improved schedule: ~w~n', [SeqQuad]),
+    safe_log_improved('Multi-crane improved total delay: ~w~n', [Delay]),
+    safe_log_improved('Cranes allocated per vessel: ~w~n', [CranesAlloc]).
+
+% ---------------- Predicado de Testes Globais ----------------
+% run_all_tests_improved/0: executa bateria global de testes (single + multi) para improved
+run_all_tests_improved :-
+    safe_log_improved('--- Global Test for Improved Vessel Scheduling ---~n', []),
+
+    % Primeiro, testar single-crane improved
+    safe_log_improved('Running single-crane improved test...~n', []),
+    obtain_seq_shortest_delay_improved(SeqSingle, DelaySingle, ExecTimeSingle),
+    safe_log_improved('Single-crane improved schedule: ~w~n', [SeqSingle]),
+    safe_log_improved('Single-crane improved total delay: ~w~n', [DelaySingle]),
+    safe_log_improved('Execution time: ~w secs~n', [ExecTimeSingle]),
+
+    % Antes de chamar multi-crane, verificar se alguma embarcação permite >1 crane
+    findall(Mx, vessel(_, _, _, _, _, Mx), MsAll),
+    max_list(MsAll, MaxCraneAllowed),
+    ( MaxCraneAllowed =< 1 ->
+        % Se todas as embarcações permitem no max 1 crane, não correr a lógica multi
+        safe_log_improved('All vessels restrict max cranes to 1; skipping multi-crane search.~n', []),
+        build_seq_quad_1crane_improved(SeqSingle, SeqMulti, CranesAlloc),
+        DelayMulti = DelaySingle
+    ;
+        % Verificar se há atrasos para decidir reporte
+        (DelaySingle =:= 0 ->
+            safe_log_improved('Single-crane was sufficient, no multi-crane needed.~n', [])
+        ;
+            safe_log_improved('Delays detected with single-crane, applying multi-crane...~n', [])
+        ),
+        % Testar multi-crane
+        obtain_seq_shortest_delay_improved_multi(SeqMulti, DelayMulti, CranesAlloc)
     ),
-        Max >= 1,
-        findall(N, between(1, Max, N), CNCandidates).
 
-% greedy_order_by_insertion_multi/3: inserção gulosa para sequência e alocação de guindastes
-greedy_order_by_insertion_multi(LV, OrderedLV, OrderedLCranes) :-
-    greedy_insertion_build_multi(LV, [], [], OrderedLV, OrderedLCranes).
+    % Unificar impressão dos resultados multi-crane
+    safe_log_improved('Multi-crane improved schedule: ~w~n', [SeqMulti]),
+    safe_log_improved('Multi-crane improved total delay: ~w~n', [DelayMulti]),
+    safe_log_improved('Cranes allocated per vessel: ~w~n', [CranesAlloc]),
 
-greedy_insertion_build_multi([], AccSeq, AccCranes, AccSeq, AccCranes).
-greedy_insertion_build_multi(Rem, AccSeq, AccCranes, Ordered, OrderedCranes) :-
-    (AccSeq = [] -> CurrD = 0 ; (sequence_temporization_improved_multi(AccSeq, AccCranes, AccTrip), sum_delays_improved_multi(AccTrip, CurrD))),
-    findall(Inc-(V-NC), (
-        member(V, Rem),
-        allowed_cranes_for_vessel(V, CNCandidates), member(NC, CNCandidates),
-        append(AccSeq, [V], NewSeq), append(AccCranes, [NC], NewCranes),
-        sequence_temporization_improved_multi(NewSeq, NewCranes, TripNew),
-        sum_delays_improved_multi(TripNew, D),
-        Inc is D - CurrD
-    ), Pairs),
-    keysort(Pairs, Sorted),
-    Sorted = [_-(BestV-BestNC)|_],
-    select(BestV, Rem, Rem2),
-    append(AccSeq, [BestV], Acc2Seq),
-    append(AccCranes, [BestNC], Acc2Cranes),
-    greedy_insertion_build_multi(Rem2, Acc2Seq, Acc2Cranes, Ordered, OrderedCranes).
+    % Conferir consistência
+    (DelayMulti =< DelaySingle ->
+        safe_log_improved('Verification: Multi-crane did not increase delays.~n', [])
+    ;
+        safe_log_improved('Alert: Multi-crane caused more delay than single-crane!~n', [])
+    ),
 
-% local_improvement_multi/5: otimização local para sequências multi-guindaste
-local_improvement_multi(SeqV, SeqLCranes, BestSeqV, BestLCranes, BestDelay) :-
-    sequence_temporization_improved_multi(SeqV, SeqLCranes, Trip),
-    sum_delays_improved_multi(Trip, Delay),
-    local_swap_optimize_multi(SeqV, SeqLCranes, Delay, BestSeqV, BestLCranes, BestDelay).
-
-local_swap_optimize_multi(Seq, LCr, Delay, BestSeq, BestLCr, BestDelay) :-
-    length(Seq, N),
-    findall(D2-(S2-L2), (
-        between(1, N, I), Jstart is I+1, between(Jstart, N, J),
-        swap_positions(Seq, I, J, S2), swap_positions(LCr, I, J, L2),
-        sequence_temporization_improved_multi(S2, L2, T2), sum_delays_improved_multi(T2, D2)
-    ), SwapResults),
-    findall(Df-(Seqf-Lf), (
-        between(1, N, K), nth1(K, LCr, C), nth1(K, Seq, V),
-        allowed_cranes_for_vessel(V, CNCandidates), member(Cn, CNCandidates), Cn \= C,
-        set_nth1(LCr, K, Cn, Lf), Seqf = Seq,
-        sequence_temporization_improved_multi(Seqf, Lf, Tf), sum_delays_improved_multi(Tf, Df)
-    ), FlipResults),
-    append(SwapResults, FlipResults, Results),
-    ( Results = [] -> BestSeq = Seq, BestLCr = LCr, BestDelay = Delay
-    ; keysort(Results, Sorted), Sorted = [MinD-(CandSeq-CandLCr)|_],
-        ( MinD < Delay -> local_swap_optimize_multi(CandSeq, CandLCr, MinD, BestSeq, BestLCr, BestDelay)
-        ; BestSeq = Seq, BestLCr = LCr, BestDelay = Delay
-        )
-    ).
-
-% schedule_greedy_improved_multi/4: cria e otimiza escalonamento multi-crane
-schedule_greedy_improved_multi(LV, FinalSeqQuadruplets, FinalDelay, TimeSecs) :-
-    get_time(T0),
-    greedy_order_by_insertion_multi(LV, OrdLV, OrdLCranes),
-    sequence_temporization_improved_multi(OrdLV, OrdLCranes, OrdTrip), sum_delays_improved_multi(OrdTrip, _OrdDelay),
-    local_improvement_multi(OrdLV, OrdLCranes, BestSeqV, BestLCranes, BestDelay),
-    sequence_temporization_improved_multi(BestSeqV, BestLCranes, FinalSeqQuadruplets),
-    FinalDelay = BestDelay,
-    get_time(T1), TimeSecs is T1 - T0.
-
-% convert_triplets_to_quadruplets/3: converte tripletas em lista para quadrupletos com NC
-convert_triplets_to_quadruplets([], _, []).
-convert_triplets_to_quadruplets([[V, TIU, TEL]|T], N, [[V, TIU, TEL, N]|Q]) :-
-    convert_triplets_to_quadruplets(T, N, Q).
-
-% extract_cranes_list/2: extrai valores NC de quadrupletos
-extract_cranes_list([], []).
-extract_cranes_list([[_, _, _, NC]|T], [NC|L]) :-
-    extract_cranes_list(T, L).
+    safe_log_improved('--- End of global test for improved ---~n', []).
