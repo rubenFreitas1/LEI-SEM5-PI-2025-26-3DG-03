@@ -12,7 +12,8 @@ export class VesselVisitExecutionMap {
             raw.status,
             raw.arrivalDate,
             raw.lastUpdated,
-            raw.systemUserID
+            raw.systemUserID,
+            raw.departureDate
         );
     }
 
@@ -22,6 +23,7 @@ export class VesselVisitExecutionMap {
             vesselIMO: vve.vesselIMO,
             status: vve.status,
             arrivalDate: vve.arrivalDate,
+            departureDate: vve.departureDate,
             lastUpdated: vve.lastUpdated,
             systemUserID: vve.systemUserID
         };
@@ -39,6 +41,7 @@ export class VesselVisitExecutionMap {
             vesselIMO: vve.vesselIMO,
             status: vve.status,
             arrivalDate: vve.arrivalDate,
+            departureDate: vve.departureDate,
             lastUpdated: vve.lastUpdated,
             systemUserID: vve.systemUserID
         };

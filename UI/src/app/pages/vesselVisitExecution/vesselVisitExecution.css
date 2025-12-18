@@ -24,6 +24,18 @@
   display: inline-block;
 }
 
+/* Approved styling (reuse same palette for Completed/Approved) */
+.status-approved {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
 .status-inmaintenance,
 .status-inprogress {
   background-color: #fff3cd;
@@ -50,9 +62,365 @@
   border-color: #2d5a2f;
 }
 
+:host-context([data-coreui-theme="dark"]) .status-approved {
+  background-color: #1e4620;
+  color: #7ee57f;
+  border-color: #2d5a2f;
+}
+
 :host-context([data-coreui-theme="dark"]) .status-inmaintenance,
 :host-context([data-coreui-theme="dark"]) .status-inprogress {
   background-color: #5c4a1e;
   color: #ffd966;
   border-color: #7a6128;
 }
+
+/* Page layout tweaks for search & filters */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 420px;
+}
+
+.calendar-wrapper { position: relative; display: inline-block; }
+.search-input {
+  flex: 1 1 auto;
+  min-width: 180px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  background: white;
+  color: #333;
+}
+
+:host-context([data-coreui-theme="dark"]) .search-input {
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.02);
+  color: #e6eef7;
+}
+.clear-button {
+  margin-left: 8px;
+  background: transparent;
+  border: none;
+  padding: 6px;
+  border-radius: 6px;
+  color: #666;
+  cursor: pointer;
+}
+
+:host-context([data-coreui-theme="dark"]) .clear-button {
+  color: #bbb;
+}
+.filter-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #333;
+}
+
+:host-context([data-coreui-theme="dark"]) .filter-item {
+  color: #cfd8e3;
+}
+.btn-compact {
+  padding: 6px 10px;
+  font-size: 0.85rem;
+}
+.action-buttons {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.table-container .no-results {
+  padding: 36px 0;
+  text-align: center;
+  color: #666;
+  font-size: 1rem;
+}
+
+:host-context([data-coreui-theme="dark"]) .table-container .no-results {
+  color: #cbd5e1;
+}
+
+/* Datepicker popover styling */
+.calendar-button {
+  margin-left: 8px;
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  cursor: pointer;
+  font-size: 1.05rem;
+}
+
+/* Make the calendar button look like a compact dark input with icon */
+.calendar-button {
+  background: white;
+  border: 1px solid #ced4da;
+  padding: 8px 10px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #333;
+}
+
+.calendar-button:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+:host-context([data-coreui-theme="dark"]) .calendar-button {
+  background: #26303a;
+  border: 1px solid rgba(255,255,255,0.04);
+  color: #d7e6f3;
+}
+
+:host-context([data-coreui-theme="dark"]) .calendar-button:hover {
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+}
+
+.calendar-button .calendar-icon { font-size: 1rem; line-height: 1; }
+.calendar-button .calendar-label { font-size: 0.78rem; color: #555; }
+
+:host-context([data-coreui-theme="dark"]) .calendar-button .calendar-label { color: #bcd3e6; }
+
+/* when no dates selected, keep button compact (hide label) */
+.calendar-button:not(:has(.calendar-label)) { padding-left: 8px; padding-right: 8px; }
+
+/* SVG calendar icon styling to match popover pickers */
+.calendar-button .calendar-icon svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  color: #333;
+}
+
+/* slightly darker on hover */
+.calendar-button:hover .calendar-icon svg { color: #000; }
+
+:host-context([data-coreui-theme="dark"]) .calendar-button .calendar-icon svg {
+  color: #bcd3e6;
+}
+
+:host-context([data-coreui-theme="dark"]) .calendar-button:hover .calendar-icon svg { color: #d7e6f3; }
+.datepicker-popover {
+  position: absolute;
+  right: 0; /* align to the calendar button */
+  left: auto;
+  transform: none;
+  top: calc(100% + 8px);
+  min-width: 280px;
+  max-width: 420px;
+  background: white;
+  border: 1px solid #dee2e6;
+  padding: 10px;
+  border-radius: 8px;
+  z-index: 1400;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+}
+
+:host-context([data-coreui-theme="dark"]) .datepicker-popover {
+  background: #1f2933;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
+.datepicker-popover .dp-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.datepicker-popover .dp-header {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+:host-context([data-coreui-theme="dark"]) .datepicker-popover .dp-header {
+  color: #e6eef7;
+}
+
+.datepicker-popover label { color: #555; display: flex; align-items: center; gap: 8px; }
+
+:host-context([data-coreui-theme="dark"]) .datepicker-popover label { color: #c9d8e6; }
+
+.datepicker-popover label input[type="date"] {
+  /* pill style matching the compact calendar button */
+  background: white;
+  border: 1px solid #ced4da;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #333;
+  min-width: 160px;
+  height: 36px;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+:host-context([data-coreui-theme="dark"]) .datepicker-popover label input[type="date"] {
+  background: #26303a;
+  border: 1px solid rgba(255,255,255,0.04);
+  color: #d7e6f3;
+}
+
+/* Ensure the date inputs visually match the compact pill style in the screenshot */
+.datepicker-popover .dp-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Firefox pseudo-element (may not be supported in all versions) */
+input[type="date"]::-moz-focus-inner { color: transparent; }
+
+/* Ensure the editable text inside the date input uses the correct color */
+.datepicker-popover input[type="date"]::-webkit-datetime-edit,
+.datepicker-popover input[type="date"]::-webkit-datetime-edit-text,
+.datepicker-popover input[type="date"]::-webkit-datetime-edit-month-field,
+.datepicker-popover input[type="date"]::-webkit-datetime-edit-day-field,
+.datepicker-popover input[type="date"]::-webkit-datetime-edit-year-field {
+  color: #333;
+}
+
+:host-context([data-coreui-theme="dark"]) .datepicker-popover input[type="date"]::-webkit-datetime-edit,
+:host-context([data-coreui-theme="dark"]) .datepicker-popover input[type="date"]::-webkit-datetime-edit-text,
+:host-context([data-coreui-theme="dark"]) .datepicker-popover input[type="date"]::-webkit-datetime-edit-month-field,
+:host-context([data-coreui-theme="dark"]) .datepicker-popover input[type="date"]::-webkit-datetime-edit-day-field,
+:host-context([data-coreui-theme="dark"]) .datepicker-popover input[type="date"]::-webkit-datetime-edit-year-field {
+  color: #dbeaf6;
+}
+
+/* Popover action buttons styling (Apply / Clear / Close) */
+.datepicker-popover .dp-actions .btn {
+  background: transparent;
+  border: none;
+  color: #555;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.datepicker-popover .dp-actions .btn:hover {
+  background: rgba(0,0,0,0.05);
+  color: #333;
+}
+
+:host-context([data-coreui-theme="dark"]) .datepicker-popover .dp-actions .btn {
+  color: #bcd3e6;
+}
+
+:host-context([data-coreui-theme="dark"]) .datepicker-popover .dp-actions .btn:hover {
+  background: rgba(255,255,255,0.02);
+  color: #e6eef7;
+}
+.datepicker-popover .dp-actions .btn-primary {
+  background: #0b74ff;
+  color: white;
+  border: 1px solid rgba(11,116,255,0.15);
+}
+.datepicker-popover .dp-actions .btn-primary:hover { filter: brightness(1.05); }
+
+/* Make the label inside popover more subtle */
+.datepicker-popover .dp-row label { font-size: 0.9rem; color: #555; }
+
+:host-context([data-coreui-theme="dark"]) .datepicker-popover .dp-row label { color: #c6d6e4; }
+
+/* Ensure placeholder text in date inputs is lighter */
+.datepicker-popover input[type="date"]::placeholder { color: #999; }
+
+:host-context([data-coreui-theme="dark"]) .datepicker-popover input[type="date"]::placeholder { color: #97a6b6; }
+.datepicker-popover .dp-actions { margin-top: 8px; display:flex; gap:6px; justify-content:flex-end; }
+
+/* Dark-mode: make button and popover use the same dark subtle surface variable */
+:host-context([data-coreui-theme="dark"]) .calendar-button {
+  background: var(--cui-dark-bg-subtle) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  color: var(--cui-body-color) !important;
+}
+
+:host-context([data-coreui-theme="dark"]) .calendar-button .calendar-icon svg {
+  color: var(--cui-body-color) !important;
+}
+
+:host-context([data-coreui-theme="dark"]) .datepicker-popover {
+  background: var(--cui-dark-bg-subtle) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+:host-context([data-coreui-theme="dark"]) .datepicker-popover label { color: var(--cui-body-color) !important; }
+:host-context([data-coreui-theme="dark"]) .datepicker-popover input[type="date"] {
+  background: var(--cui-dark-bg-subtle) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+  color: var(--cui-body-color) !important;
+}
+
+:host-context([data-coreui-theme="dark"]) .datepicker-popover label:after {
+  /* ensure the small SVG icon inside the input appears with the correct contrast */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='3' y='4' width='18' height='18' rx='2' fill='none' stroke='%23e6eef7' stroke-width='1.2'/><path d='M16 2v4M8 2v4' stroke='%23e6eef7' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/><path d='M3 10h18' stroke='%23e6eef7' stroke-width='1.2' stroke-linecap='round'/></svg>");
+}
+
+/* --- schedule-like controls for Status --- */
+.schedule-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.algorithm-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 12px;
+  white-space: nowrap;
+}
+
+.alg-label {
+  font-weight: 600;
+  margin-right: 6px;
+  display: inline-block;
+  color: #333;
+}
+
+:host-context([data-coreui-theme="dark"]) .alg-label {
+  color: #cfd8e3;
+}
+
+.algorithm-dropdown {
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  min-width: 140px;
+}
+
+.algorithm-dropdown:hover { border-color: #0d6efd; }
+
+.algorithm-dropdown:focus { outline: none; border-color: #0d6efd; box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25); }
+
+:host-context([data-coreui-theme="dark"]) .alg-label { color: #e2e8f0; }
+
+:host-context([data-coreui-theme="dark"]) .algorithm-dropdown {
+  background-color: #4a5568;
+  border-color: #718096;
+  color: #e2e8f0;
+}
+
+.algorithm-dropdown option { background: #4a5568; color: #e2e8f0; }
+

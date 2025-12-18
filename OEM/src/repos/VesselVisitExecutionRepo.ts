@@ -50,12 +50,25 @@ export default class VesselVisitExecutionRepo implements IVesselVisitExecutionRe
         return records.map(record => VesselVisitExecutionMap.toDomain(record));
     }
 
-    async findByVesselIMO(vesselIMO: string): Promise<VesselVisitExecution | null> {
-        const record = await this.vesselVisitExecutionSchema.findOne({ vesselIMO });
-        return record ? VesselVisitExecutionMap.toDomain(record) : null;
+    async findByVesselIMO(vesselIMO: string): Promise<VesselVisitExecution[]> {
+        const records = await this.vesselVisitExecutionSchema.find({ vesselIMO });
+        return records.map(record => VesselVisitExecutionMap.toDomain(record));
         
     }
     
+    async findByFilters(filters: { from?: Date; to?: Date; vesselIMO?: string; status?: VesselVisitExecutionStatus }): Promise<VesselVisitExecution[]> {
+        const query: any = {};
+        if (filters.vesselIMO) query.vesselIMO = filters.vesselIMO;
+        if (filters.status) query.status = filters.status;
+        if (filters.from || filters.to) {
+            query.arrivalDate = {} as any;
+            if (filters.from) query.arrivalDate.$gte = filters.from;
+            if (filters.to) query.arrivalDate.$lte = filters.to;
+        }
+
+        const records = await this.vesselVisitExecutionSchema.find(query);
+        return records.map(record => VesselVisitExecutionMap.toDomain(record));
+    }
     async update(vve: VesselVisitExecution): Promise<boolean> {
         const raw = VesselVisitExecutionMap.toPersistence(vve);
         const result = await this.vesselVisitExecutionSchema.updateOne({ code: vve.code }, raw);

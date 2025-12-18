@@ -9,12 +9,14 @@ export class VesselVisitExecution {
         public status: VesselVisitExecutionStatus,
         public arrivalDate: Date,
         public lastUpdated: Date,
-        public systemUserID: string
+        public systemUserID: string,
+        public departureDate?: Date
     ) {
         this.validateCode(code);
         this.validateVesselIMO(vesselIMO);
         this.validateStatus(status);
         this.validateArrivalDate(arrivalDate);
+        this.validateDepartureDate(departureDate);
     }
 
     private validateCode(code: string) {
@@ -49,10 +51,30 @@ export class VesselVisitExecution {
         }
     }
 
+    private validateDepartureDate(departureDate?: Date) {
+        if (departureDate === undefined || departureDate === null) return;
+        if (!(departureDate instanceof Date) || isNaN(departureDate.getTime())) {
+            throw new Error("Departure date must be a valid date.");
+        }
+        const now = new Date();
+        if (departureDate.getTime() > now.getTime()) {
+            throw new Error("Departure date cannot be in the future.");
+        }
+        if (this.arrivalDate && departureDate.getTime() < this.arrivalDate.getTime()) {
+            throw new Error("Departure date cannot be before arrival date.");
+        }
+    }
+
 
     updateStatus(status: VesselVisitExecutionStatus) {
         this.validateStatus(status);
         this.status = status;
+        if (status === VesselVisitExecutionStatus.Completed) {
+            if (!this.departureDate) {
+                this.departureDate = new Date();
+            }
+            this.validateDepartureDate(this.departureDate);
+        }
         this.lastUpdated = new Date();
     }
 }

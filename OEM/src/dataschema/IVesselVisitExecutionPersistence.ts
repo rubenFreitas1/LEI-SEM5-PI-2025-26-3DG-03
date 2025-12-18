@@ -6,6 +6,7 @@ export interface IVesselVisitExecutionPersistence {
     vesselIMO: string;
     status: VesselVisitExecutionStatus;
     arrivalDate: Date;
+    departureDate?: Date;
     lastUpdated: Date;
     systemUserID: string;
 }

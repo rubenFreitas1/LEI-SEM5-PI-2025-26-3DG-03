@@ -7,19 +7,58 @@
         type="text"
         [(ngModel)]="searchTerm"
         (input)="onSearch()"
-        placeholder="Search by code, name or description"
+        placeholder="Search by code, name, IMO or description"
         class="search-input"
       >
       <button *ngIf="searchTerm" (click)="clearSearchAndNotify()" class="clear-button" title="Clear search">✕</button>
-    </div>
+      <div class="calendar-wrapper">
+        <button class="calendar-button" (click)="toggleDatePicker(); $event.stopPropagation()" title="Select date range" aria-label="Select date range">
+          <span class="calendar-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"></rect>
+              <path d="M16 2v4M8 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M3 10h18" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
+            </svg>
+          </span>
+          <span class="calendar-label" *ngIf="filterFrom || filterTo">{{ filterFrom ? (filterFrom | date: 'dd/MM/yyyy') : 'From' }} - {{ filterTo ? (filterTo | date: 'dd/MM/yyyy') : 'To' }}</span>
+        </button>
 
+        <div *ngIf="showDatePicker" class="datepicker-popover" (click)="$event.stopPropagation()">
+        <div class="dp-header">From - To</div>
+        <div class="dp-row">
+          <label>From: <input type="date" [(ngModel)]="filterFrom" /></label>
+          <label>To: <input type="date" [(ngModel)]="filterTo" /></label>
+        </div>
+        <div class="dp-actions">
+          <button class="btn btn-compact" (click)="applyDateRange()">Apply</button>
+          <button class="btn btn-compact" (click)="clearDateRange()">Clear</button>
+          <button class="btn btn-compact" (click)="closeDatePicker()">Close</button>
+        </div>
+        </div>
+      </div>
+    </div>
+    <div class="filter-container">
+      <div class="filter-row">
+          <div class="schedule-controls">
+            <div class="algorithm-select">
+              <label class="alg-label">Status:</label>
+              <select class="algorithm-dropdown" [(ngModel)]="filterStatus" (change)="onFilterChange()">
+                <option value="">Any</option>
+                <option value="InProgress">InProgress</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+          </div>
+      </div>
+    </div>
     <div class="action-buttons">
       <button (click)="onCreateNew()" class="btn btn-primary" title="New Execution">New Execution</button>
-      <!-- No Edit button in VVE page by requirement -->
+      <button (click)="onUpdate()" class="btn btn-secondary" [disabled]="!selected" title="Edit Execution">Edit</button>
     </div>
   </div>
 
-  <div *ngIf="statusMessage" [ngClass]="statusMessageType === 'success' ? 'success-message' : 'error-message'" [class.hiding]="statusHiding">
+  <!-- show only success messages here; error messages are shown inside the table as friendly no-results text -->
+  <div *ngIf="statusMessage && statusMessageType === 'success'" class="success-message" [class.hiding]="statusHiding">
     {{ statusMessage }}
     <button (click)="clearStatusMessage()" class="close-error">✕</button>
   </div>
@@ -53,8 +92,7 @@
     </table>
 
     <div *ngIf="filteredItems.length === 0 && !isLoading" class="no-results">
-      <ng-container *ngIf="searchTerm; else noneFound"><p>No results for "{{ searchTerm }}"</p></ng-container>
-      <ng-template #noneFound><p>No results.</p></ng-template>
+      <p>{{ getNoResultsMessage() }}</p>
     </div>
   </div>
 
@@ -65,8 +103,38 @@
       <p *ngIf="selected.name"><strong>Vessel IMO:</strong> {{ selected.name }}</p>
       <p *ngIf="selected.status || selected.description"><strong>Status:</strong> <span [ngClass]="getStatusClass(selected.status || selected.description)">{{ selected.status || selected.description }}</span></p>
       <p *ngIf="selected.arrivalDate"><strong>Arrival Date:</strong> {{ selected.arrivalDate | date: 'dd/MM/yyyy, HH:mm:ss' }}</p>
+      <p *ngIf="selected.departureDate"><strong>Departure Date:</strong> {{ selected.departureDate | date: 'dd/MM/yyyy, HH:mm:ss' }}</p>
       <p *ngIf="selected.lastUpdated"><strong>Last Updated:</strong> {{ selected.lastUpdated | date: 'dd/MM/yyyy, HH:mm:ss' }}</p>
       <p *ngIf="selected.systemUserID"><strong>Created By System User ID:</strong> {{ selected.systemUserID }}</p>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div *ngIf="showEditModal" class="modal-overlay" (click)="closeEditModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Edit Execution</h2>
+      <button class="close-button" (click)="closeEditModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div *ngIf="editModalErrorMessage" class="alert alert-danger">{{ editModalErrorMessage }}</div>
+
+      <form (ngSubmit)="onSaveEdit()" #editForm="ngForm">
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" name="status" [(ngModel)]="editItem.status" required class="form-input">
+            <option [ngValue]="'InProgress'">InProgress</option>
+            <option [ngValue]="'Completed'">Completed</option>
+          </select>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" (click)="closeEditModal()" class="btn btn-secondary" [disabled]="isEditing">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isEditing || !editForm.form.valid">{{ isEditing ? 'Saving...' : 'Save' }}</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

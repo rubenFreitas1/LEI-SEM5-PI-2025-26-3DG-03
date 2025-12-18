@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
-import { VesselVisitExecutionService } from '../../services/vesselVisitExecution.service';
+import { VesselVisitExecutionService } from '../../services-oem/vesselVisitExecution.service';
 import { VesselVisitExecutionModel } from '../../models/vesselVisitExecution.model';
 import { VesselVisitNotificationService } from '../../services/vesselVisitNotification.service';
 import { VesselVisitNotificationModel, VisitStatus } from '../../models/vesselVisitNotification.model';
@@ -19,6 +19,18 @@ export class VesselVisitExecution implements OnInit, OnDestroy {
   items: VesselVisitExecutionModel[] = [];
   filteredItems: VesselVisitExecutionModel[] = [];
   selected: VesselVisitExecutionModel | null = null;
+  // Filters
+  filterFrom = '';
+  filterTo = '';
+  filterVesselIMO = '';
+  filterStatus = '';
+
+  // Edit modal
+  showEditModal = false;
+  isEditing = false;
+  editItem: any = { status: '' };
+  editModalErrorMessage = '';
+  editFieldErrors: { [key: string]: string } = {};
 
   approvedNotifications: VesselVisitNotificationModel[] = [];
 
@@ -35,6 +47,9 @@ export class VesselVisitExecution implements OnInit, OnDestroy {
   newItem: VesselVisitExecutionModel = { vesselVisitNotificationCode: '', arrivalDate: '' };
   modalErrorMessage = '';
   fieldErrors: { [key: string]: string } = {};
+
+  // Date picker popover
+  showDatePicker = false;
 
   private destroy$ = new Subject<void>();
   private searchSubject$ = new Subject<string>();
@@ -62,16 +77,56 @@ export class VesselVisitExecution implements OnInit, OnDestroy {
 
   loadItems() {
     this.isLoading = true;
-    this.vveService
-      .getAll()
+    const hasFilters = this.filterFrom || this.filterTo || this.filterVesselIMO || this.filterStatus;
+    const source$ = hasFilters ? this.vveService.search({ from: this.filterFrom, to: this.filterTo, vesselIMO: this.filterVesselIMO, status: this.filterStatus }) : this.vveService.getAll();
+    source$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (items) => {
-          this.items = items;
+          this.items = items || [];
           this.filteredItems = [...this.items];
           this.isLoading = false;
+
+          if (!this.items || this.items.length === 0) {
+            if (this.filterStatus) {
+              this.statusHiding = false;
+              this.statusMessage = `No results for status "${this.filterStatus}"`;
+              this.statusMessageType = 'error';
+            } else if (this.filterVesselIMO) {
+              this.statusHiding = false;
+              this.statusMessage = `No results for IMO "${this.filterVesselIMO}"`;
+              this.statusMessageType = 'error';
+            } else if (this.filterFrom || this.filterTo) {
+              this.statusHiding = false;
+              this.statusMessage = 'No results for the selected date range.';
+              this.statusMessageType = 'error';
+            }
+          } else if (this.statusMessage && this.statusMessageType === 'error') {
+            this.clearStatusMessage();
+          }
         },
         error: (error) => {
+          const backendMsg = error?.originalError?.error || error?.message || '';
+          if (typeof backendMsg === 'string' && backendMsg.includes('No Vessel Visit Executions found')) {
+            this.items = [];
+            this.filteredItems = [];
+            this.isLoading = false;
+            if (this.filterStatus) {
+              this.statusHiding = false;
+              this.statusMessage = `No results for status "${this.filterStatus}"`;
+              this.statusMessageType = 'error';
+            } else if (this.filterVesselIMO) {
+              this.statusHiding = false;
+              this.statusMessage = `No results for IMO "${this.filterVesselIMO}"`;
+              this.statusMessageType = 'error';
+            } else {
+              this.statusHiding = false;
+              this.statusMessage = 'No results found for the given filters.';
+              this.statusMessageType = 'error';
+            }
+            return;
+          }
+
           this.statusHiding = false;
           this.statusMessage = 'Error loading VVE list. Please check your connection.';
           this.statusMessageType = 'error';
@@ -81,29 +136,93 @@ export class VesselVisitExecution implements OnInit, OnDestroy {
       });
   }
 
+  onFilterChange() {
+    // reload items with filters
+    this.loadItems();
+  }
+
+  clearFilters() {
+    this.filterFrom = '';
+    this.filterTo = '';
+    this.filterVesselIMO = '';
+    this.filterStatus = '';
+    this.loadItems();
+  }
+
   onSearch() {
     this.searchSubject$.next(this.searchTerm);
   }
 
+  toggleDatePicker() {
+    this.showDatePicker = !this.showDatePicker;
+  }
+
+  closeDatePicker() {
+    this.showDatePicker = false;
+  }
+
+  applyDateRange() {
+    this.showDatePicker = false;
+    this.onFilterChange();
+  }
+
+  clearDateRange() {
+    this.filterFrom = '';
+    this.filterTo = '';
+    this.showDatePicker = false;
+    this.onFilterChange();
+  }
+
   private performSearch(searchTerm: string) {
-    if (!searchTerm.trim()) {
+    const term = (searchTerm || '').trim();
+    if (!term) {
       this.filteredItems = [...this.items];
       if (this.statusMessage && this.statusMessageType === 'error') this.clearStatusMessage();
       return;
     }
 
+    // Detect IMO numeric search (commonly 7 digits) and use backend search by vesselIMO
+    const imoMatch = /^\d{6,7}$/.test(term);
+    if (imoMatch) {
+      this.isLoading = true;
+      this.vveService.search({ vesselIMO: term })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (items) => {
+            this.filteredItems = items || [];
+            if (!items || items.length === 0) {
+              this.statusHiding = false;
+              this.statusMessage = `No results found for IMO "${term}"`;
+              this.statusMessageType = 'error';
+            } else if (this.statusMessage && this.statusMessageType === 'error') {
+              this.clearStatusMessage();
+            }
+            this.isLoading = false;
+          },
+          error: (err) => {
+            console.error('Error searching by IMO:', err);
+            this.statusHiding = false;
+            this.statusMessage = 'Error searching VVE by IMO. Please try again.';
+            this.statusMessageType = 'error';
+            this.filteredItems = [];
+            this.isLoading = false;
+          }
+        });
+      return;
+    }
+
     const localResults = this.items.filter(
       (i) =>
-        i.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        i.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        i.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        i.name?.toLowerCase().includes(term.toLowerCase()) ||
+        i.code?.toLowerCase().includes(term.toLowerCase()) ||
+        i.description?.toLowerCase().includes(term.toLowerCase())
     );
 
     if (localResults.length > 0) {
       this.filteredItems = localResults;
       if (this.statusMessage && this.statusMessageType === 'error') this.clearStatusMessage();
     } else {
-      this.searchByName(searchTerm);
+      this.searchByName(term);
     }
   }
 
@@ -143,6 +262,15 @@ export class VesselVisitExecution implements OnInit, OnDestroy {
     this.searchSubject$.next(this.searchTerm);
   }
 
+  // Provide a friendly no-results message depending on current search/filters
+  getNoResultsMessage(): string {
+    if (this.searchTerm && this.searchTerm.trim()) return `No results for "${this.searchTerm.trim()}"`;
+    if (this.filterStatus) return `No results for status "${this.filterStatus}"`;
+    if (this.filterVesselIMO) return `No results for IMO "${this.filterVesselIMO}"`;
+    if (this.filterFrom || this.filterTo) return 'No results for the selected date range.';
+    return 'No results.';
+  }
+
   select(item: VesselVisitExecutionModel) {
     this.selected = this.selected?.id === item.id ? null : item;
   }
@@ -152,6 +280,63 @@ export class VesselVisitExecution implements OnInit, OnDestroy {
     this.showCreateModal = true;
     this.resetNewItem();
     this.loadApprovedNotifications();
+  }
+
+  onUpdate() {
+    if (this.selected) {
+      this.showEditModal = true;
+      this.resetEditItem();
+      this.editItem = { status: this.selected.status ?? '' };
+    } else {
+      alert('Please select a vessel visit execution to update.');
+    }
+  }
+
+  resetEditItem() {
+    this.editItem = { status: '' };
+    this.editModalErrorMessage = '';
+    this.editFieldErrors = {};
+  }
+
+  closeEditModal() {
+    this.showEditModal = false;
+    this.isEditing = false;
+    this.resetEditItem();
+  }
+
+  onSaveEdit() {
+    this.editModalErrorMessage = '';
+    this.editFieldErrors = {};
+
+    if (!this.editItem || !this.editItem.status || !this.editItem.status.toString().trim()) {
+      this.editModalErrorMessage = 'Please select a valid status.';
+      return;
+    }
+
+    if (!this.selected) {
+      this.editModalErrorMessage = 'No execution selected.';
+      return;
+    }
+
+    this.isEditing = true;
+    const payload = { status: this.editItem.status };
+    this.vveService.update(this.selected.code || this.selected.vesselVisitNotificationCode || '', payload)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.closeEditModal();
+          this.statusHiding = false;
+          this.statusMessage = `Execution "${this.selected?.code}" updated successfully!`;
+          this.statusMessageType = 'success';
+          setTimeout(() => this.clearStatusMessage(), 3000);
+          this.loadItems();
+        },
+        error: (err) => {
+          console.error('Error updating VVE:', err);
+          this.editModalErrorMessage = err?.message || 'Error updating execution.';
+          this.isEditing = false;
+        }
+      });
   }
 
   resetNewItem() {

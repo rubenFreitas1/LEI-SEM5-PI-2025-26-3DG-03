@@ -55,7 +55,7 @@ export default (app: Router) => {
      *         description: Array of Vessel Visit Executions
      */
     route.get('', (req, res, next) =>
-        ctrl.getAllVesselVisitExecutions(req, res, next)
+        ctrl.getVesselVisitExecutions(req, res, next)
     );
 
     /**
@@ -147,5 +147,49 @@ export default (app: Router) => {
      */
     route.get('/vessel-imo/:vesselIMO', (req, res, next) =>
         ctrl.getVesselVisitExecutionsByVesselIMO(req, res, next)
+    );
+
+    /**
+     * @swagger
+     * /vessel-visit-executions/{code}:
+     *   put:
+     *     tags: [VesselVisitExecutions]
+     *     summary: Update a Vessel Visit Execution status by its code
+     *     parameters:
+     *       - in: path
+     *         name: code
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: Code in the format "YYYY-PA-XXXXXX"
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               status:
+     *                 type: string
+     *                 enum: [InProgress, Completed]
+     *             required: [status]
+     *           example:
+     *             status: "Completed"
+     *     responses:
+     *       200:
+     *         description: Vessel Visit Execution updated
+     *       400:
+     *         description: Validation error
+     *       404:
+     *         description: Not found
+     */
+    route.put(
+        '/:code',
+        celebrate({
+            body: Joi.object({
+                status: Joi.string().valid('InProgress', 'Completed').required(),
+            }).unknown(true),
+        }),
+        (req, res, next) => ctrl.updateVesselVisitExecution(req, res, next)
     );
 }

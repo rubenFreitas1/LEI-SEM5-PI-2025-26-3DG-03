@@ -30,6 +30,12 @@ const VesselVisitExecutionSchema = new mongoose.Schema(
         unique: false
     },
 
+    departureDate: {
+      type: Date,
+      required: false,
+      unique: false
+    },
+
     lastUpdated: {
         type: Date,
         required: false,

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, catchError, map, throwError } from 'rxjs';
 import { VesselVisitExecutionModel } from '../models/vesselVisitExecution.model';
-import { OemService } from '../services-oem/oem.service';
+import { OemService } from './oem.service';
 
 @Injectable({ providedIn: 'root' })
 export class VesselVisitExecutionService {
@@ -12,6 +12,19 @@ export class VesselVisitExecutionService {
     return this.oemService.get<any[]>('/vessel-visit-executions').pipe(
       map((dtos) => (dtos || []).map(this.mapDtoToVVE)),
       catchError((err) => this.handleError('getAll', err))
+    );
+  }
+
+  search(filters: { from?: string; to?: string; vesselIMO?: string; status?: string }): Observable<VesselVisitExecutionModel[]> {
+    const params: string[] = [];
+    if (filters.from) params.push(`from=${encodeURIComponent(filters.from)}`);
+    if (filters.to) params.push(`to=${encodeURIComponent(filters.to)}`);
+    if (filters.vesselIMO) params.push(`vesselIMO=${encodeURIComponent(filters.vesselIMO)}`);
+    if (filters.status) params.push(`status=${encodeURIComponent(filters.status)}`);
+    const query = params.length ? `?${params.join('&')}` : '';
+    return this.oemService.get<any[]>(`/vessel-visit-executions${query}`).pipe(
+      map((dtos) => (dtos || []).map(this.mapDtoToVVE)),
+      catchError((err) => this.handleError('search', err))
     );
   }
 
@@ -39,12 +52,19 @@ export class VesselVisitExecutionService {
     );
   }
 
+  update(code: string, payload: any): Observable<any> {
+    return this.oemService.put<any>(`/vessel-visit-executions/${code}`, payload).pipe(
+      catchError((err) => this.handleError('update', err))
+    );
+  }
+
   private mapDtoToVVE = (dto: any): VesselVisitExecutionModel => ({
     id: dto?.id ?? dto?._id ?? undefined,
     code: dto?.code ?? dto?.vesselVisitNotificationCode ?? '',
     name: dto?.vesselIMO ?? dto?.vessel?.imo ?? dto?.vesselVisitNotificationCode ?? '',
     description: dto?.status ?? dto?.visitStatus ?? '',
     status: dto?.status ?? dto?.visitStatus,
+    departureDate: dto?.departureDate,
     arrivalDate: dto?.arrivalDate,
     lastUpdated: dto?.lastUpdated,
     systemUserID: dto?.systemUserID,

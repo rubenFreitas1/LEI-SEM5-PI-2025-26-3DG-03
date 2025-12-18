@@ -76,17 +76,43 @@ export default class VesselVisitExecutionService implements IVesselVisitExecutio
         }
     }
 
-    public async getVesselVisitExecutionsByVesselIMO(vesselIMO: string): Promise<Result<VesselVisitExecutionDTO>> {
+    public async getVesselVisitExecutionsByVesselIMO(vesselIMO: string): Promise<Result<VesselVisitExecutionDTO[]>> {
         try {
             const vesselVisitExecutions = await this.vesselVisitExecutionRepo.findByVesselIMO(vesselIMO);
-            if (!vesselVisitExecutions) {
+            if (!vesselVisitExecutions || vesselVisitExecutions.length === 0) {
                 return Result.fail(`No Vessel Visit Executions found for the vessel IMO ${vesselIMO}.`);
             }
-            const dtoList = VesselVisitExecutionMap.toDTO(vesselVisitExecutions);
+            const dtoList = vesselVisitExecutions.map(vve => VesselVisitExecutionMap.toDTO(vve));
             return Result.ok(dtoList);
         } catch (error) {
             this.logger.error(error);
             return Result.fail("Error getting vessel visit executions by vessel IMO.");
+        }
+    }
+
+    public async getVesselVisitExecutions(filters: { from?: string; to?: string; vesselIMO?: string; status?: string }): Promise<Result<VesselVisitExecutionDTO[]>> {
+        try {
+            const parsed: any = {};
+            if (filters.vesselIMO) parsed.vesselIMO = filters.vesselIMO;
+            if (filters.status) {
+                const enumValue = VesselVisitExecutionStatus[filters.status as keyof typeof VesselVisitExecutionStatus];
+                if (enumValue === undefined) {
+                    return Result.fail(`Invalid status value: ${filters.status}.`);
+                }
+                parsed.status = enumValue;
+            }
+            if (filters.from) parsed.from = new Date(filters.from);
+            if (filters.to) parsed.to = new Date(filters.to);
+
+            const vesselVisitExecutions = await this.vesselVisitExecutionRepo.findByFilters(parsed);
+            if (!vesselVisitExecutions || vesselVisitExecutions.length === 0) {
+                return Result.fail('No Vessel Visit Executions found for the given filters.');
+            }
+            const dtoList = vesselVisitExecutions.map(vve => VesselVisitExecutionMap.toDTO(vve));
+            return Result.ok(dtoList);
+        } catch (error) {
+            this.logger.error(error);
+            return Result.fail('Error getting vessel visit executions with filters.');
         }
     }
 
@@ -156,7 +182,7 @@ export default class VesselVisitExecutionService implements IVesselVisitExecutio
                 return Result.fail("Vessel IMO is missing in the Vessel Visit Notification.");
             }
             const vveByVesselIMO = await this.vesselVisitExecutionRepo.findByVesselIMO(vesselIMO);
-            if (vveByVesselIMO) {
+            if (vveByVesselIMO && vveByVesselIMO.length > 0) {
                 return Result.fail(`A Vessel Visit Execution already exists for vessel IMO ${vesselIMO}.`);
             }
             const vesselVisitExecutionCode = await this.generateVesselVisitExecutionCode();
@@ -177,6 +203,44 @@ export default class VesselVisitExecutionService implements IVesselVisitExecutio
         } catch (error: any) {
             this.logger.error(error);
             return Result.fail("Error creating vessel visit execution: " + error.message);
+        }
+    }
+
+    public async updateVesselVisitExecution(code: string, payload: any): Promise<Result<VesselVisitExecutionDTO>> {
+        try {
+            const vesselVisitExecution = await this.vesselVisitExecutionRepo.findByCode(code);
+            if (!vesselVisitExecution) {
+                return Result.fail('Vessel Visit Execution not found.');
+            }
+
+            if (payload.status) {
+                const enumValue = VesselVisitExecutionStatus[payload.status as keyof typeof VesselVisitExecutionStatus];
+                if (enumValue === undefined) {
+                    return Result.fail(`Invalid status value: ${payload.status}.`);
+                }
+                vesselVisitExecution.updateStatus(enumValue);
+            }
+
+            if (payload.departureDate) {
+                const d = new Date(payload.departureDate);
+                if (isNaN(d.getTime())) {
+                    return Result.fail('Invalid departureDate format.');
+                }
+                (vesselVisitExecution as any).departureDate = d;
+            }
+
+            vesselVisitExecution.lastUpdated = new Date();
+
+            const updated = await this.vesselVisitExecutionRepo.update(vesselVisitExecution);
+            if (!updated) {
+                return Result.fail('Failed to update Vessel Visit Execution.');
+            }
+
+            const dto = VesselVisitExecutionMap.toDTO(vesselVisitExecution);
+            return Result.ok(dto);
+        } catch (error: any) {
+            this.logger.error(error);
+            return Result.fail('Error updating vessel visit execution: ' + (error.message || error));
         }
     }
 }

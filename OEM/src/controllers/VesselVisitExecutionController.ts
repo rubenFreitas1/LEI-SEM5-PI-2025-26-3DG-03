@@ -5,6 +5,7 @@ import { VesselVisitExecutionDTO } from '../dto/VesselVisitExecutionDTO';
 import { Result } from '../core/logic/Result';
 import SystemUserClient from '../services/clients/SystemUserClient';
 import config from '../../config';
+import { VesselVisitExecutionStatus } from '../domain/VesselVisitExecutionStatus';
 
 @Service()
 export default class VesselVisitExecutionController implements IVesselVisitExecutionController {
@@ -22,6 +23,34 @@ export default class VesselVisitExecutionController implements IVesselVisitExecu
                 res.status(200).json(result.getValue());
             } else {
                 res.status(500).json({ error: result.error });
+            }
+        } catch (e) {
+            this.logger.error(e);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
+
+    public async getVesselVisitExecutions(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            this.logger.silly('Getting vessel visit executions with filters');
+            const { from, to, vesselIMO, status } = req.query as any;
+
+            const hasFilters = from || to || vesselIMO || status;
+            if (!hasFilters) {
+                const result = await this.vesselVisitExecutionService.getAllVesselVisitExecutions();
+                if (result.isSuccess) {
+                    res.status(200).json(result.getValue());
+                } else {
+                    res.status(500).json({ error: result.error });
+                }
+                return;
+            }
+
+            const result = await this.vesselVisitExecutionService.getVesselVisitExecutions({ from, to, vesselIMO, status });
+            if (result.isSuccess) {
+                res.status(200).json(result.getValue());
+            } else {
+                res.status(404).json({ error: result.error });
             }
         } catch (e) {
             this.logger.error(e);
@@ -119,8 +148,25 @@ export default class VesselVisitExecutionController implements IVesselVisitExecu
         try {
             this.logger.silly('Updating vessel visit execution');
             const code: string = req.params.code;
-            const vesselVisitExecutionDTO: VesselVisitExecutionDTO = req.body;
-            const result = await this.vesselVisitExecutionService.updateVesselVisitExecution(code, vesselVisitExecutionDTO);
+            const status: VesselVisitExecutionStatus = req.body && req.body.status;
+
+            if (!status) {
+                res.status(400).json({ error: 'Missing status in request body' });
+                return;
+            }
+
+            const allowedStatuses = Object.values(VesselVisitExecutionStatus) as string[];
+            if (!allowedStatuses.includes(String(status))) {
+                res.status(400).json({ error: 'Invalid status value' });
+                return;
+            }
+
+            const payload: any = { status };
+            if (String(status) === String(VesselVisitExecutionStatus.Completed)) {
+                payload.departureDate = new Date();
+            }
+
+            const result = await this.vesselVisitExecutionService.updateVesselVisitExecution(code, payload);
             if (result.isSuccess) {
                 res.status(200).json(result.getValue());
             } else {

@@ -7,6 +7,7 @@ export default interface IVesselVisitExecutionRepo extends Repo<VesselVisitExecu
     findById(id: string): Promise<VesselVisitExecution | null>;
     findByCode(code: string): Promise<VesselVisitExecution | null>;
     findByStatus(status: VesselVisitExecutionStatus): Promise<VesselVisitExecution[]>;
-    findByVesselIMO(vesselIMO: string): Promise<VesselVisitExecution | null>;
+    findByVesselIMO(vesselIMO: string): Promise<VesselVisitExecution[]>;
+    findByFilters(filters: { from?: Date; to?: Date; vesselIMO?: string; status?: VesselVisitExecutionStatus }): Promise<VesselVisitExecution[]>;
     update(vve: VesselVisitExecution): Promise<boolean>;
 }

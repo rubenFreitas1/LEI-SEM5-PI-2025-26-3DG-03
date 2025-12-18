@@ -40,6 +40,11 @@ import { VesselVisitExecutionStatus } from "../domain/VesselVisitExecutionStatus
  *           format: date-time
  *           description: Timestamp of the last update to this record
  *           example: "2025-12-17T09:00:00Z"
+ *         departureDate:
+ *           type: string
+ *           format: date-time
+ *           description: Actual date and time when the vessel departed the port
+ *           example: "2025-12-18T18:30:00Z"
  *         systemUserID:
  *           type: string
  *           description: Identifier of the system user who created this VVE
@@ -54,5 +59,6 @@ export interface VesselVisitExecutionDTO {
     status: VesselVisitExecutionStatus;
     arrivalDate: Date; 
     lastUpdated: Date; 
+    departureDate?: Date;
     systemUserID: string;
 }
