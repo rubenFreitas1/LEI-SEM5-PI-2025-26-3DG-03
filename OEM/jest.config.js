@@ -8,6 +8,9 @@ module.exports = {
   // Stop running tests after the first failure
   // bail: false,
 
+  // Run tests serially to avoid database conflicts in system tests
+  maxWorkers: 1,
+
   // Respect "browser" field in package.json when resolving modules
   // browser: false,
 

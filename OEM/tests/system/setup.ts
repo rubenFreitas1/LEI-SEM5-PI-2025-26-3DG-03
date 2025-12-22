@@ -30,7 +30,6 @@ function validateTestDatabase() {
     );
   }
 
-  console.log(`Safety check passed - Using test database: "${dbName}"`);
 }
 
 export async function createSystemApp() {
@@ -58,13 +57,8 @@ export async function clearDatabase() {
 export async function closeDatabase() {
   validateTestDatabase();
   
-  const dbName = mongoose.connection.db?.databaseName;
-  console.log(`Dropping test database: "${dbName}"`);
-  
   await mongoose.connection.dropDatabase();
   await mongoose.connection.close();
-  
-  console.log(`Test database "${dbName}" dropped and connection closed`);
 }
 
 export async function connectDatabase() {

@@ -77,7 +77,7 @@ export default class ComplementaryTaskCategoryController implements IComplementa
         try {
             this.logger.silly('Getting complementary task categories with parent filter');
             const hasParent = req.params.value === 'true';
-            const result = await this.complementaryTaskCategoryService.getComplementaryTaskCategoriesParent(hasParent);
+            const result = await this.complementaryTaskCategoryService.getComplementaryTaskCategoriesWithParent(hasParent);
             if (result.isSuccess) {
                 res.status(200).json(result.getValue());
             } else {
@@ -93,7 +93,7 @@ export default class ComplementaryTaskCategoryController implements IComplementa
         try {
             this.logger.silly('Getting complementary task categories by parent code');
             const parentCode = req.params.parentCode;
-            const result = await this.complementaryTaskCategoryService.getComplementaryTaskCategoriesByParent(parentCode);
+            const result = await this.complementaryTaskCategoryService.getComplementaryTaskCategoryByParent(parentCode);
             if (result.isSuccess) {
                 res.status(200).json(result.getValue());
             } else {
