@@ -1,0 +1,605 @@
+@startuml DomainModel
+
+package "**«Aggregate» Vessel Type**" #DDDDDD {
+        entity "Vessel Type" as entity_vesselType <<entity root>>{
+        }
+
+        class "Name" as vObject_name <<(V, #7E84F7)>> {
+        }
+
+        class "Description" as vObject_description <<(V, #7E84F7)>> {
+        }
+
+        class "Capacity" as vObject_capacity <<(V, #7E84F7)>> {
+        }
+
+        class "MaxRows" as vObject_maxRows <<(V, #7E84F7)>> {
+        }
+
+        class "MaxBays" as vObject_maxBays <<(V, #7E84F7)>> {
+        }
+
+        class "MaxTiers" as vObject_maxTiers <<(V, #7E84F7)>> {
+        }
+
+        entity_vesselType *-- vObject_name
+        entity_vesselType *-- vObject_capacity
+        entity_vesselType *-- vObject_description
+        entity_vesselType *-- vObject_maxRows
+        entity_vesselType *-- vObject_maxBays
+        entity_vesselType *-- vObject_maxTiers
+}
+
+
+package "**«Aggregate» Vessel**" #DDDDDD {
+        entity "Vessel" as entity_vessel <<entity root>>{
+        }
+
+        class "vesselName" as vObject_vesselName <<(V, #7E84F7)>> {
+        }
+
+        class "IMO" as vObject_IMO <<(V, #7E84F7)>> {
+        }
+
+        class "Operator" as vObject_operator <<(V, #7E84F7)>> {
+        }
+
+        entity_vessel *-- vObject_vesselName
+        entity_vessel *-- vObject_IMO
+        entity_vessel *-- vObject_operator
+}
+
+
+package "**«Aggregate» Dock**" #DDDDDD {
+        entity "Dock" as entity_dock <<entity root>>{
+        }
+
+        class "ID" as vObject_dockID <<(V, #7E84F7)>> {
+        }
+        class "dockName" as vObject_dockName <<(V, #7E84F7)>> {
+        }
+
+        class "Location" as vObject_location <<(V, #7E84F7)>> {
+        }
+
+        class "Length" as vObject_length <<(V, #7E84F7)>> {
+        }
+
+        class "Depth" as vObject_depth <<(V, #7E84F7)>> {
+        }
+
+        class "MaxDraft" as vObject_maxDraft <<(V, #7E84F7)>> {
+        }
+
+        entity_dock *-- vObject_dockID
+        entity_dock *-- vObject_dockName
+        entity_dock *-- vObject_length
+        entity_dock *-- vObject_location
+        entity_dock *-- vObject_depth
+        entity_dock *-- vObject_maxDraft
+}
+
+package "**«Aggregate» StorageArea**" #DDDDDD {
+        entity "StorageArea" as entity_storageArea <<entity root>>{
+        }
+
+        class "ID" as vObject_storageAreaID <<(V, #7E84F7)>> {
+        }
+
+        class "Type" as vObject_storageType <<(V, #7E84F7)>> {
+        }
+
+        class "Location" as vObject_location <<(V, #7E84F7)>> {
+        }
+
+        class "Ocupation" as vObject_ocupation <<(V, #7E84F7)>> {
+        }
+
+        class "MaxCapacity" as vObject_maxCapacity <<(V, #7E84F7)>> {
+        }
+
+
+        entity_storageArea *-- vObject_storageAreaID
+        entity_storageArea *-- vObject_storageType
+        entity_storageArea *-- vObject_location
+        entity_storageArea *-- vObject_ocupation
+        entity_storageArea *-- vObject_maxCapacity
+}
+
+package "**«Aggregate» Shipping Agent Organization**" #DDDDDD {
+        entity "Shipping Agent Organization" as entity_org  <<entity root>>{
+        }
+
+        class "Id" as vObject_orgID <<(V, #7E84F7)>> {
+        }
+
+        class "LegalName" as vObject_legalName <<(V, #7E84F7)>> {
+        }
+
+        class "AlternativeName" as vObject_alternativeName <<(V, #7E84F7)>> {
+        }
+
+        class "Address" as vObject_address <<(V, #7E84F7)>> {
+        }
+
+        class "Tax Number" as vObject_taxNumber <<(V, #7E84F7)>> {
+        }
+
+        entity_org *-- vObject_orgID
+        entity_org *-- vObject_legalName
+        entity_org *-- vObject_alternativeName
+        entity_org *-- vObject_address
+        entity_org *-- vObject_taxNumber
+}
+
+package "**«Aggregate» Shipping Agent Representative**" #DDDDDD {
+        entity "Shipping Agent Representative" as entity_representative  <<entity root>>{
+        }
+
+        class "RepresentativeName" as vObject_representativeName <<(V, #7E84F7)>> {
+        }
+
+        class "CitizenID" as vObject_citizenID <<(V, #7E84F7)>> {
+        }
+
+        class "Nationality" as vObject_nationality <<(V, #7E84F7)>> {
+        }
+
+        class "Email" as vObject_email <<(V, #7E84F7)>> {
+        }
+
+        class "PhoneNumber" as vObject_phoneNumber <<(V, #7E84F7)>> {
+        }
+
+        class "Status" as vObject_status <<(V, #7E84F7)>> {
+        }
+
+        entity_representative *-- vObject_representativeName
+        entity_representative *-- vObject_citizenID
+        entity_representative *-- vObject_nationality
+        entity_representative *-- vObject_email
+        entity_representative *-- vObject_phoneNumber
+        entity_representative *-- vObject_status
+}
+
+
+
+
+package "**«Aggregate» Vessel Visit Notification**" #DDDDDD {
+        entity "Vessel Visit Notification" as entity_vesselVisit <<entity root>> {
+        }
+
+        class "Expectative Arrival" as vObject_eta <<(V, #7E84F7)>> {
+        }
+
+        class "Expected Departure" as vObject_etd <<(V, #7E84F7)>> {
+        }
+
+        class "Volume" as vObject_volume <<(V, #7E84F7)>> {
+        }
+
+        class "Cargo Type" as vObject_cargoType <<(V, #7E84F7)>> {
+        }
+
+        class "Status" as vObject_visitStatus <<(V, #7E84F7)>> {
+            InProgress
+            Submited
+        }
+
+        class "Decision" as entity_decision {
+        }
+
+        class "CrewMember" as entity_crewMember {
+        }
+
+        class "memberName" as vObject_memberName <<(V, #7E84F7)>> {
+        }
+
+        class "memberCitizenID" as vObject_memberCitizenID <<(V, #7E84F7)>> {
+        }
+
+        class "memberNationality" as vObject_memberNationality <<(V, #7E84F7)>> {
+        }
+
+        class "memberHazardQualification" as vObject_memberHazardQualification <<(V, #7E84F7)>> {
+        }
+
+        class "Decision" as vObject_decision <<(V, #7E84F7)>> {
+            Approved
+            Rejected
+        }
+
+        class "Officer Id" as vObject_officerID <<(V, #7E84F7)>> {
+        }
+
+        class "Reason" as vObject_reason <<(V, #7E84F7)>> {
+        }
+
+        class "Timestamp" as vObject_timestamp <<(V, #7E84F7)>> {
+        }
+
+
+
+        entity_vesselVisit *-- vObject_eta
+        entity_vesselVisit *-- vObject_etd
+        entity_vesselVisit *-- vObject_volume
+        entity_vesselVisit *-- vObject_cargoType
+        entity_vesselVisit *-- vObject_visitStatus
+        entity_vesselVisit *-- entity_decision
+        entity_vesselVisit "1"<--"1..*" entity_crewMember
+        entity_crewMember *-- vObject_memberName
+        entity_crewMember *-- vObject_memberCitizenID
+        entity_crewMember *-- vObject_memberNationality
+        entity_crewMember *-- vObject_memberHazardQualification
+        entity_decision *-- vObject_decision
+        entity_decision *-- vObject_officerID
+        entity_decision *-- vObject_reason
+        entity_decision *-- vObject_timestamp
+}
+
+
+package "**«Aggregate» Cargo Manifest**" #DDDDDD {
+        entity "Cargo Manifest" as entity_cargoManifest <<entity root>>{
+        }
+
+        class "manifestType" as vObject_manifestType <<(V, #7E84F7)>> {
+            Loading
+            Unloading
+        }
+
+        class "Entry" as entity_entry {
+        }
+
+        class "Bay" as vObject_bay <<(V, #7E84F7)>> {
+        }
+
+        class "Row" as vObject_row <<(V, #7E84F7)>> {
+        }
+
+        class "Tier" as vObject_tier <<(V, #7E84F7)>> {
+        }
+
+        entity_cargoManifest *-- vObject_manifestType
+        entity_cargoManifest "1"<--"1..*" entity_entry
+        entity_entry *-- vObject_bay
+        entity_entry *-- vObject_row
+        entity_entry *-- vObject_tier
+}
+
+package "**«Aggregate» Container**" #DDDDDD {
+        entity "Container" as entity_container <<entity root>>{
+        }
+
+        class "isoID" as vObject_isoID <<(V, #7E84F7)>> {
+        }
+
+        class "Description" as vObject_containerDescription <<(V, #7E84F7)>> {
+        }
+
+        class "inStorage" as vObject_inStorage <<(V, #7E84F7)>>{
+        }
+
+        class "cargoType" as vObject_cargoType <<(V, #7E84F7)>> {
+            HAZMAT
+            "Refrigerated Goods"
+            "General Consumer Products"
+            Electronics
+            "Oversized Industrial Equipment"
+        }
+
+        entity_container *-- vObject_isoID
+        entity_container *-- vObject_containerDescription
+        entity_container *-- vObject_inStorage
+        entity_container *-- vObject_cargoType
+
+}
+
+package "**«Aggregate» Qualification**" #DDDDDD {
+        entity "Qualification" as entity_qualification <<entity root>>{
+        }
+
+        class "QualificationCode" as vObject_qualiCode <<(V, #7E84F7)>>{
+        }
+
+        class "QualificationName" as vObject_qualiName <<(V, #7E84F7)>>{
+        }
+
+        entity_qualification *-- vObject_qualiCode
+        entity_qualification *-- vObject_qualiName
+}
+
+package "**«Aggregate» Resources**" #DDDDDD {
+        entity "Resources" as entity_resources <<entity root>>{
+        }
+
+        class "Crane" as entity_crane{
+        }
+
+        class "isMobile" as vObject_isMobile <<(V, #7E84F7)>>{
+        }
+
+        class "Description" as vObject_description <<(V, #7E84F7)>>{
+        }
+
+        class "Operational Capacity" as vObject_capacity <<(V, #7E84F7)>>{
+        }
+
+        class "Assigned Area" as vObject_area <<(V, #7E84F7)>>{
+        }
+
+        class "Status" as vObject_status <<(V, #7E84F7)>>{
+            Active
+            Inactive
+            Under Maintenance
+        }
+
+        class "Setup Time" as vObject_time <<(V, #7E84F7)>>{
+        }
+
+        class "ID" as vObject_id <<(V, #7E84F7)>>{
+        }
+
+         entity "Staff" as entity_staff{
+        }
+
+        class "StaffId" as vObject_staffID  <<(V, #7E84F7)>>{
+        }
+
+        class "Name"     as vObject_staffName  <<(V, #7E84F7)>>{
+        }
+
+        class "Email" as vObject_staffEmail <<(V, #7E84F7)>>{
+        }
+
+        class "Phone Number" as vObject_staffPhoneNumber <<(V, #7E84F7)>>{
+        }
+
+        class "Status" as vObject_status <<(V, #7E84F7)>>{
+                Available
+                Unavailable
+        }
+
+        class "Operational Window" as vObject_operationalWindow <<(V, #7E84F7)>>{
+        }
+
+
+        entity_staff *-- vObject_staffID
+        entity_staff *-- vObject_staffName
+        entity_staff *-- vObject_staffEmail
+        entity_staff *-- vObject_staffPhoneNumber
+        
+        entity_staff *-- vObject_operationalWindow
+
+
+
+        entity_resources *-- entity_crane
+        entity_resources *-- vObject_time
+        entity_resources *-- vObject_area
+        entity_resources *-- vObject_status
+        entity_resources *-- vObject_capacity
+        entity_resources *- vObject_id
+        entity_crane *-- vObject_isMobile
+        entity_resources *-- vObject_description
+        
+        entity_resources *-- entity_staff
+
+}
+
+package "**«Aggregate» Operation Plan**" #DDDDDD {
+
+        entity "Operation Plan" as entity_operationPlan <<entity root>>{
+        }
+
+        class "Target Day" as vObject_targetDay <<(V, #7E84F7)>> {
+        }
+
+
+        class "Author" as vObject_author <<(V, #7E84F7)>> {
+        }
+
+        class "Algorithm" as vObject_algorithm <<(V, #7E84F7)>> {
+        }
+
+        class "Creation Date" as vObject_creationDate <<(V, #7E84F7)>> {
+        }
+
+
+        entity "Operation Entry" as entity_operationEntry {
+        }
+
+        class "OperationType" as vObject_operationType <<(V, #7E84F7)>> {
+            Loading
+            Unloading
+            Maintenance
+        }
+
+        class "OperationStart" as vObject_operationStart <<(V, #7E84F7)>> {
+        }
+
+        class "OperationEnd" as vObject_operationEnd <<(V, #7E84F7)>> {
+        }
+
+        class "Last Modified Date" as vObject_lastModifiedDate <<(V, #7E84F7)>> {
+        }
+
+        entity_operationPlan *-- vObject_targetDay
+        entity_operationPlan *-- vObject_author
+        entity_operationPlan *-- vObject_algorithm
+        entity_operationPlan *-- vObject_creationDate
+        entity_operationPlan *-- vObject_lastModifiedDate
+        entity_operationPlan "1" --> "1" entity_vesselVisit: "is associated to"
+        entity_operationPlan "1"-->"1..*" entity_operationEntry
+        entity_operationEntry *-- vObject_operationType
+        entity_operationEntry *-- vObject_operationStart
+        entity_operationEntry *-- vObject_operationEnd
+        entity_operationEntry *-- vObject_lastModifiedDate
+        entity_operationEntry "1" ---> "1..*" entity_resources: "uses"
+
+}
+
+package "**«Aggregate» Vessel Visit Execution**" #DDDDDD {
+
+        entity "Vessel Visit Execution" as entity_vesselVisitExecution <<entity root>>{
+        }
+
+        class "Code" as vObject_executionCode <<(V, #7E84F7)>> {
+        }
+        
+        class "Status" as vObject_executionStatus <<(V, #7E84F7)>> {
+            InProgress
+            Completed
+        }
+
+        class "Arrival" as vObject_executionArrival <<(V, #7E84F7)>> {
+        }
+
+        class "Departure" as vObject_executionDeparture <<(V, #7E84F7)>> {
+        }
+
+        class "Last Update" as vObject_executionLastUpdate <<(V, #7E84F7)>> {
+        }
+
+        entity_vesselVisitExecution *-- vObject_executionCode
+        entity_vesselVisitExecution *-- vObject_executionStatus
+        entity_vesselVisitExecution *-- vObject_executionArrival
+        entity_vesselVisitExecution *-- vObject_executionDeparture
+        entity_vesselVisitExecution *-- vObject_executionLastUpdate
+
+}
+
+
+
+package "**«Aggregate» Incident Type**" #DDDDDD {
+
+        entity "Incident Type" as entity_incidentType <<entity root>>{
+        }
+
+        class "Classification" as vObject_classification <<(V, #7E84F7)>> {
+            Minor
+            Major
+            Critical
+        }
+
+        class "Code" as vObject_typeCode <<(V, #7E84F7)>> {
+        }
+
+        class "Name" as vObject_typeName <<(V, #7E84F7)>> {
+        }
+
+        class "Description" as vObject_typeDescription <<(V, #7E84F7)>> {
+        }
+
+        entity_incidentType *-- vObject_classification
+        entity_incidentType *-- vObject_typeCode
+        entity_incidentType *-- vObject_typeName
+        entity_incidentType *-- vObject_typeDescription
+        entity_incidentType "1" --> "1" entity_incidentType: "can be related to"
+  
+}
+
+
+package "**«Aggregate» Incident**" #DDDDDD {
+
+        entity "Incident" as entity_incident <<entity root>>{
+        }
+
+        class "Start Date" as vObject_startDate <<(V, #7E84F7)>> {
+        }
+
+        class "End Date" as vObject_endDate <<(V, #7E84F7)>> {
+        }
+
+        class "Description" as vObject_incidentDescription <<(V, #7E84F7)>> {
+        }
+
+        class "Status" as vObject_incidentStatus <<(V, #7E84F7)>> {
+            Active
+            Resolved
+        }       
+
+        class "Last Update" as vObject_lastUpdate <<(V, #7E84F7)>> {
+        }
+
+        class "Duration" as vObject_duration <<(V, #7E84F7)>> {
+        }
+
+        entity_incident *-- vObject_startDate
+        entity_incident *-- vObject_endDate
+        entity_incident *-- vObject_incidentDescription
+        entity_incident *-- vObject_incidentStatus
+        entity_incident *-- vObject_lastUpdate
+        entity_incident *-- vObject_duration
+}
+
+package "**«Aggregate» Complementary Task Category**" #DDDDDD {
+
+        entity "Complementary Task Category" as entity_taskCategory <<entity root>>{
+        }
+
+        class "Code" as vObject_taskCategoryCode <<(V, #7E84F7)>> {
+        }
+
+        class "Name" as vObject_taskCategoryName <<(V, #7E84F7)>> {
+        }
+
+        class "Description" as vObject_taskCategoryDescription <<(V, #7E84F7)>> {
+        }
+
+        class "Duration" as vObject_taskCategoryDuration <<(V, #7E84F7)>> {
+        }
+
+        class "Last Update" as vObject_taskCategoryLastUpdate <<(V, #7E84F7)>> {
+        }
+
+        entity_taskCategory *-- vObject_taskCategoryCode
+        entity_taskCategory *-- vObject_taskCategoryName
+        entity_taskCategory *-- vObject_taskCategoryDescription
+        entity_taskCategory *-- vObject_taskCategoryDuration
+        entity_taskCategory *-- vObject_taskCategoryLastUpdate
+        entity_taskCategory "1" --> "1" entity_taskCategory: "can be related to"
+}
+
+package "**«Aggregate» Complementary Task**" #DDDDDD {
+
+        entity "Complementary Task" as entity_task <<entity root>>{
+        }
+
+
+        class "Name" as vObject_taskName <<(V, #7E84F7)>> {
+        }
+
+        class "Start Date" as vObject_startDate <<(V, #7E84F7)>> {
+        }
+
+        class "End Date" as vObject_endDate <<(V, #7E84F7)>> {
+        }
+
+        class "Status" as vObject_taskStatus <<(V, #7E84F7)>> {
+            Ongoing
+            Completed
+        }
+
+        entity_task *-- vObject_taskName
+        entity_task *-- vObject_startDate
+        entity_task *-- vObject_endDate
+        entity_task *-- vObject_taskStatus
+}
+
+entity_dock "1" -down--> "1..*" entity_vesselType: "can receive"
+entity_vesselType "1" <-- "*" entity_vessel: "can be"
+entity_org "1" --- "1..*" entity_representative: "is associated with"
+entity_representative "1" <---- "*" entity_vesselVisit: "made by"
+entity_vesselVisit "1" ----> "0,1,2" entity_cargoManifest: "can have"
+entity_vesselVisit "1" ----> "1" entity_vessel: "is associatted to"
+entity_vesselVisit "1" -up-> "1" entity_dock: "is associatted to"
+entity_entry "1" -down---> "1..*" entity_container: "contains"
+entity_entry "1" -down-> "1" entity_storageArea: "is associated to"
+entity_staff "1" --down-> "*" entity_qualification: "has"
+entity_resources "1" -right-> "*" entity_qualification: "has"
+entity_incident "*" -up--> "1" entity_incidentType: "is of type"
+entity_vesselVisitExecution "1" -down-> "1" entity_vesselVisit: "is for"
+entity_incident "1" ---> "*" entity_vesselVisitExecution: "may affect"
+entity_task "*" ---> "1" entity_taskCategory: "is of category"
+entity_vesselVisitExecution "1" <-- "*" entity_task: "involves"
+
+@enduml
