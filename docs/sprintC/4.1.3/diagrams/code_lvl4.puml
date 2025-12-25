@@ -1,142 +1,184 @@
-@startuml OperationPlansCode
+@startuml Code level for 4.1.3
 
 class OperationPlanRoute {
-    +postOperationPlan(req, res, next)
-    +putOperationPlan(id, req, res, next)
-    +getOperationPlanById(id, req, res, next)
-    +getOperationPlans(req, res, next)
+    +createOperationPlan(req, res, next)
+    +updateOperationPlan( req, res, next)
+    +getAllOperationPlans(req, res, next)
+    +getOperationPlanById( req, res, next)
+    +getOperationPlansByVvn(req, res, next)
+    +getOperationPlansByTargetDay(req, res, next)
+    +getOperationPlansByAuthor(req, res, next)
+    +getOperationPlansByAlgorithm(req, res, next)
+}
+
+interface IOperationPlanController{
+    +getAllOperationPlans(req, res, next)
+    +getOperationPlanById(req, res, next)
+    +getOperationPlansByVvn(req, res, next)
+    +getOperationPlansByTargetDay(req, res, next)
+    +getOperationPlansByArrivalTime(req, res, next)
+    +getOperationPlansByDepartureTime(req, res, next)
+    +getOperationPlansByAuthor(req, res, next)
+    +getOperationPlansByAlgorithm(req, res, next)
+    +createOperationPlan(req, res, next)
+    +updateOperationPlan(req, res, next)
 }
 
 class OperationPlanController {
-    +createOperationPlan(Request req, Response res, NextFunction next)
-    +updateOperationPlan(Request req, Response res, NextFunction next)
-    +getOperationPlanById(Request req, Response res, NextFunction next)
-    +getOperationPlansByFilters(Request req, Response res, NextFunction next)
+    +getAllOperationPlans(req, res, next)
+    +getOperationPlanById(req, res, next)
+    +getOperationPlansByVvn(req, res, next)
+    +getOperationPlansByTargetDay(req, res, next)
+    +getOperationPlansByArrivalTime(req, res, next)
+    +getOperationPlansByDepartureTime(req, res, next)
+    +getOperationPlansByAuthor(req, res, next)
+    +getOperationPlansByAlgorithm(req, res, next)
+    +createOperationPlan(req, res, next)
+    +updateOperationPlan(req, res, next)
 }
 
 class OperationPlanService {
-    +createOperationPlan(OperationPlanDTO dto)
-    +updateOperationPlan(string id, OperationPlanDTO dto)
-    +getOperationPlanById(string id)
-    +getOperationPlansByAuthor(string author)
-    +getOperationPlansByAlgorithm(string algorithm)
-    +getOperationPlanByTargetDay(string targetDay)
+    +getAllOperationPlans()
+    +getOperationPlanById(id: string)
+    +getOperationPlansByVvn(vvn: string)
+    +getOperationPlansByTargetDay(targetDay: Date)
+    +getOperationPlansByArrivalTime(arrivalTime: Date)
+    +getOperationPlansByDepartureTime(departureTime: Date)
+    +getOperationPlansByAuthor(author: string)
+    +getOperationPlansByAlgorithm(algorithm: string)
+    +create(dto: OperationPlanDTO)
+    +update(vvn: string, dto: OperationPlanDTO)
+    +createOperationEntries(vvn: string,assignedCranes: string[],operationTypes: string[],\ncontainers: string[],arrivalTime: Date,departureTime: Date)
+    +createBatch(vvns: string[],assignedCranes: string[][],staffs: string[][],operationTypes: string[][]\n,containers: string[][],arrivalTimes: string[],departureTimes: string[],targetDays: string[],author: string,algorithm: string)
+}
+
+interface IOperationPlanService{
+    +getAllIncidentTypes()
+    +getIncidentTypeById(id: string)
+    +getIncidentTypeByCode(code: string)
+    +getIncidentTypeByName(name: string)
+    +getIncidentTypesWithParent(hasParent: boolean)
+    +getIncidentTypesByClassification(classification: string)
+    +getIncidentTypesByParent(parentCode: string)
+    +create(dto: IncidentTypeDTO)
+    +update(code: string,dto: IncidentTypeDTO)
 }
 
 interface IOperationPlanRepo {
     +findAll()
-    +findById(string id)
-    +findByAuthor(string author)
-    +findByAlgorithm(string algorithm)
-    +findByTargetDay(Date targetDay)
-    +save(OperationPlan plan)
-    +update(OperationPlan plan)
+    +findById(id: string)
+    +findByVvn(vvn: string)
+    +findByTargetDay(targetDay: Date)
+    +findByArrivalTime(arrivalTime: Date)
+    +findByDepartureTime(departureTime: Date)
+    +findByAuthor(author: string)
+    +findByAlgorithm(algorithm: string)
+    +update(operationPlan: OperationPlan)
+    +findByIds(ids: string[])
 }
 
 class OperationPlanRepo {
+    +exists(plan: OperationPlan)
+    +save(plan: OperationPlan)
+    +findByIds(ids: string[])
     +findAll()
-    +findById(string id)
-    +findByAuthor(string author)
-    +findByAlgorithm(string algorithm)
-    +findByTargetDay(Date targetDay)
-    +save(OperationPlan plan)
-    +update(OperationPlan plan)
+    +findById(id: string)
+    +findByVvn(vvn: string)
+    +findByTargetDay(targetDay: Date)
+    +findByArrivalTime(arrivalTime: Date)
+    +findByDepartureTime(departureTime: Date)
+    +findByAuthor(author: string)
+    +findByAlgorithm(algorithm: string)
+    +update(plan: OperationPlan)
 }
 
 class OperationPlanDTO {
     -id: string
-    -operationList: OperationEntryDTO[]
+    -vvn: string
     -targetDay: Date
+    -arrivalTime: Date
+    -departureTime: Date
+    -operations: OperationEntryDTO[]
     -author: string
     -algorithm: string
     -createdAt: Date
-    -lastModifiedAt: Date
 }
 
 class OperationEntryDTO {
     -id: string
-    -vesselName: string
-    -arrivalTime: Date
-    -departureTime: Date
-    -cranes: string[]
-    -staffMembers: string[]
-    -lastModifiedAt: Date
+    -operationType: string
+    -container: string
+    -operationStart: Date
+    -operationEnd: Date
+    -craneUsed: string
 }
 
 class OperationPlanMap {
-    +toDomain(IOperationPlanPersistence raw)
-    +toDTO(OperationPlan domain)
-    +toPersistence(OperationPlan domain)
+    +toDomain(raw: IOperationPlanPersistence | any)
+    +toPersistence(plan: OperationPlan)
+    +toDTO(plan: OperationPlan)
 }
 
 class OperationEntryMap {
-    +toDomain(IOperationEntryPersistence raw)
-    +toDTO(OperationEntry entry)
-    +toPersistence(OperationEntry entry)
+    +toDomain(raw: IOperationEntryPersistence | any)
+    +toPersistence(entry: OperationEntry)
+    +toDTO(entry: OperationEntry)
 }
 
 class OperationPlan {
     -id: string
-    -operationList: OperationEntry[]
-    -targetDay: Date
-    -author: string
-    -algorithm: string
-    -createdAt: Date
-    -lastModifiedAt: Date
-    +updateAuthor(string author)
-    +updateAlgorithm(string algorithm)
-    +updateOperationList(OperationEntry[] entries)
-    +updateTargetDay(Date targetDay)
+    -code: string
+    -name: string
+    -description: string
+    -classification: IncidentClassification
+    -parentIncidentTypeId?: string
 }
 
 class OperationEntry {
     -id: string
-    -vesselName: string
-    -arrivalTime: Date
-    -departureTime: Date
-    -cranes: string[]
-    -staffMembers: string[]
-    -lastModifiedAt: Date
-    +updateName(string name)
-    +updateCranes(string[] cranes)
-    +updateStaffMembers(string[] staff)
-    +updateArrivalTime(Date arrival)
-    +updateDepartureTime(Date departure)
+    -operationType: string
+    -container: string
+    -operationStart: Date
+    -operationEnd: Date
+    -craneUsed: string
 }
 
+
+
 interface IOperationPlanPersistence {
-    +_id: string
-    +operationList: IOperationEntryPersistence[]
-    +targetDay: Date
-    +author: string
-    +algorithm: string
-    +createdAt: Date
-    +lastModifiedAt: Date
+    -_id: string
+    -vvn: string
+    -TargetDay: Date
+    -arrivalTime: Date
+    -departureTime: Date
+    -operations: IOperationEntryPersistence[]
+    -author: string
+    -algorithm: string
+    -createdAt: Date
 }
 
 interface IOperationEntryPersistence {
-    +_id: string
-    +vesselName: string
-    +arrivalTime: Date
-    +departureTime: Date
-    +cranes: string[]
-    +staffMembers: string[]
-    +lastModifiedAt: Date
+    -_id: string
+    -operationType: string
+    -container: string
+    -operationStart: Date
+    -operationEnd: Date
+    -craneUsed: string
 }
 
 class OperationPlanSchema {
     +mongooseModel: Model
-    +ensureIndexes()
 }
 
 class MongoDBCluster <<database>>
 
 OperationPlanRoute --> OperationPlanController : forwards requests
+OperationPlanController ..|> IOperationPlanController
 OperationPlanController --> OperationPlanService : invokes methods
 OperationPlanService --> OperationPlanDTO : consumes/produces
-OperationPlanService --> OperationEntryDTO : consumes/produces
 OperationPlanService --> OperationPlanMap : delegates mapping
-OperationPlanService --> IOperationPlanRepo : uses persistence abstraction
+OperationPlanService ---> IOperationPlanRepo : uses persistence abstraction
+OperationPlanService .up.|> IOperationPlanService
 
 OperationPlanRepo ..|> IOperationPlanRepo
 OperationPlanRepo --> OperationPlanMap : uses
@@ -145,13 +187,13 @@ OperationPlanSchema --> IOperationPlanPersistence : implements structure
 OperationPlanSchema --> MongoDBCluster : stores documents
 
 OperationPlanMap --> OperationPlan : maps domain
-OperationPlanMap --> OperationEntryMap : delegates entry mapping
-OperationEntryMap --> OperationEntry : maps domain
 OperationPlanMap --> OperationPlanDTO : maps DTO
-OperationEntryMap --> OperationEntryDTO : maps DTO
 OperationPlanMap --> IOperationPlanPersistence : maps persistence
-OperationEntryMap --> IOperationEntryPersistence : maps persistence
 
 OperationPlan --> OperationEntry : aggregates
-
+OperationEntryMap --> OperationEntry : maps domain
+OperationPlanMap --> OperationEntryMap : uses for entries
+OperationEntryMap --> IOperationEntryPersistence : maps persistence
+OperationEntryMap --> OperationEntryDTO : maps DTO
+IOperationPlanPersistence --> IOperationEntryPersistence : contains
 @enduml
