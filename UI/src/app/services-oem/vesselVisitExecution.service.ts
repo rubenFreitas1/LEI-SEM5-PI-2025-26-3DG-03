@@ -63,6 +63,7 @@ export class VesselVisitExecutionService {
     id: dto?.id ?? dto?._id ?? undefined,
     code: dto?.code ?? dto?.vesselVisitNotificationCode ?? '',
     name: dto?.vesselIMO ?? dto?.vessel?.imo ?? dto?.vesselVisitNotificationCode ?? '',
+    vesselIMO: dto?.vesselIMO ?? dto?.vessel?.imo ?? '',
     description: dto?.status ?? dto?.visitStatus ?? '',
     status: dto?.status ?? dto?.visitStatus,
     departureDate: dto?.departureDate,

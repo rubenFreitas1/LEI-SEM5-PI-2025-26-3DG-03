@@ -7,6 +7,9 @@ import { StorageAreaService } from './storageArea.service';
 import { PhysicalResourcesService } from './physicalResources.service';
 import { PhysicalResourceKind } from '../models/physicalResources.model';
 import { firstValueFrom } from 'rxjs';
+import { VesselService } from './vessel.service';
+import { VesselVisitExecutionService } from '../services-oem/vesselVisitExecution.service';
+import { VesselVisitNotificationService } from './vesselVisitNotification.service';
 
 export interface ElementInfo {
   name: string;
@@ -45,6 +48,29 @@ export interface ElementInfo {
   // Crane list navigation
   cranesList?: any[];
   currentCraneIndex?: number;
+  // Vessel specific
+  imoNumber?: string;
+  vesselRecordId?: number;
+  vesselType?: string;
+  vesselTypeId?: number;
+  vesselTypeDescription?: string;
+  operator?: string;
+  vesselRecordLastModified?: string;
+  maxRows?: number;
+  maxBays?: number;
+  maxTiers?: number;
+  vesselTypeLastModified?: string;
+  // VVE specific
+  vveCode?: string;
+  vveStatus?: string;
+  arrivalDate?: string;
+  departureDate?: string;
+  // VVN specific (approved notifications)
+  expectedArrivalDate?: string;
+  expectedDepartureDate?: string;
+  // Vessel list navigation
+  vesselsList?: any[];
+  currentVesselIndex?: number;
   // Common
   lastModified?: string;
 }
@@ -56,17 +82,24 @@ export class ElementInfoService {
   private currentElement$ = new BehaviorSubject<PickableObject | null>(null);
   private elementInfo$ = new BehaviorSubject<ElementInfo | null>(null);
   private overlayVisible$ = new BehaviorSubject<boolean>(false);
+  private loadingCounter = 0; // Track loading operations
 
   constructor(
     private permissionService: PermissionService,
     private docksService: DocksService,
     private storageAreaService: StorageAreaService,
-    private physicalResourcesService: PhysicalResourcesService
+    private physicalResourcesService: PhysicalResourcesService,
+    private vesselService: VesselService,
+    private vesselVisitExecutionService: VesselVisitExecutionService,
+    private vesselVisitNotificationService: VesselVisitNotificationService
   ) {}
 
   setCurrentElement(element: PickableObject | null) {
+    console.log('[setCurrentElement] Called with:', element?.type, element?.name);
     this.currentElement$.next(element);
     if (element) {
+      // Don't clear elementInfo to prevent overlay flicker
+      // Just load new info - it will replace the old one
       this.loadElementInfo(element);
     } else {
       this.elementInfo$.next(null);
@@ -93,6 +126,10 @@ export class ElementInfoService {
   }
 
   private async loadElementInfo(element: PickableObject) {
+    // Increment counter to track this loading operation
+    const currentLoadId = ++this.loadingCounter;
+    console.log('[loadElementInfo] Starting load #', currentLoadId, 'for', element.type, element.name);
+
     const userRole = this.permissionService.getRole();
     const canSeeRestrictedInfo = 
       userRole === 'PortAuthorityOfficer' || 
@@ -100,6 +137,7 @@ export class ElementInfoService {
       userRole === 'Admin';
 
     console.log('[ElementInfo Debug]', {
+      loadId: currentLoadId,
       userRole,
       canSeeRestrictedInfo,
       elementType: element.type,
@@ -134,7 +172,13 @@ export class ElementInfoService {
       console.error('Error loading element info:', error);
     }
 
-    this.elementInfo$.next(info);
+    // Only update if this is still the latest loading operation
+    if (currentLoadId === this.loadingCounter) {
+      console.log('[loadElementInfo] Applying load #', currentLoadId, 'info:', info);
+      this.elementInfo$.next(info);
+    } else {
+      console.log('[loadElementInfo] Discarding load #', currentLoadId, 'because newer load exists:', this.loadingCounter);
+    }
   }
 
   private async loadDockInfo(element: PickableObject, canSeeRestricted: boolean): Promise<ElementInfo> {
@@ -159,14 +203,18 @@ export class ElementInfoService {
         description: dock?.location ? `Dock located at ${dock.location}` : 'Port docking facility'
       };
 
-      // Load technical info only for authorized users
-      if (canSeeRestricted && dock) {
-        info.dockId = dock.id;
+      // Load info visible to all users
+      if (dock) {
         info.location = dock.location;
         info.length = dock.length;
         info.depth = dock.depth;
         info.maxDraft = dock.maxDraft;
         info.vesselTypesAllowed = dock.vesselTypesAllowed?.map((vt: any) => vt.name || vt).join(', ') || 'N/A';
+      }
+
+      // Load restricted info only for authorized users
+      if (canSeeRestricted && dock) {
+        info.dockId = dock.id;
         info.lastModified = dock.lastModifiedAt ? new Date(dock.lastModifiedAt).toLocaleDateString() : undefined;
       }
 
@@ -214,19 +262,23 @@ export class ElementInfoService {
         description: area?.code ? `Storage area ${area.code} - ${area.storageAreaType}` : 'Port storage facility'
       };
 
-      // Load technical info only for authorized users
-      if (canSeeRestricted && area) {
-        info.storageAreaId = area.id;
+      // Load info visible to all users
+      if (area) {
         info.code = area.code;
         info.location = area.location;
         info.storageType = area.storageAreaType;
         info.currentCapacity = area.currentCapacity;
         info.maxCapacity = area.maxCapacity;
-        info.lastModified = area.lastModifiedAt ? new Date(area.lastModifiedAt).toLocaleDateString() : undefined;
         const utilizationPercent = (area.maxCapacity && area.maxCapacity > 0 && area.currentCapacity)
           ? ((area.currentCapacity / area.maxCapacity) * 100).toFixed(1)
           : '0';
         info.utilization = `${utilizationPercent}%`;
+      }
+
+      // Load restricted info only for authorized users
+      if (canSeeRestricted && area) {
+        info.storageAreaId = area.id;
+        info.lastModified = area.lastModifiedAt ? new Date(area.lastModifiedAt).toLocaleDateString() : undefined;
         console.log('[StorageArea Info Loaded]', info);
       }
 
@@ -241,21 +293,150 @@ export class ElementInfoService {
   }
 
   private async loadVesselInfo(element: PickableObject, canSeeRestricted: boolean): Promise<ElementInfo> {
-    const info: ElementInfo = {
-      name: element.name,
-      type: 'Vessel',
-      description: 'Maritime vessel'
-    };
+    try {
+      console.log('[loadVesselInfo] Starting...');
 
-    if (canSeeRestricted) {
-      // TODO: Fetch from vessel API when available
-      info.status = 'Docked';
-      info.eta = new Date().toISOString();
-      info.etd = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
-      info.ongoingOperations = ['Loading cargo', 'Refueling'];
+      // Fetch all vessels
+      const vessels = await firstValueFrom(this.vesselService.getAllVesselRecords());
+      console.log('[loadVesselInfo] Fetched vessels:', vessels.length);
+
+      // Try to fetch VVEs, but don't fail if OEM is not available
+      let activeVVEs: any[] = [];
+      try {
+        const vves = await firstValueFrom(this.vesselVisitExecutionService.getAll());
+        console.log('[loadVesselInfo] Fetched VVEs:', vves.length);
+
+        // Filter VVEs to show only active ones (arrival date <= today <= departure date or no departure date)
+        const now = new Date();
+        activeVVEs = (vves as any[]).filter(vve => {
+          const arrival = vve.arrivalDate ? new Date(vve.arrivalDate) : null;
+          const departure = vve.departureDate ? new Date(vve.departureDate) : null;
+          
+          if (!arrival) return false;
+          
+          // If no departure date, consider current time as max
+          if (!departure) {
+            return arrival.getTime() <= now.getTime();
+          }
+          
+          // Check if today is between arrival and departure
+          return arrival.getTime() <= now.getTime() && now.getTime() <= departure.getTime();
+        });
+
+        console.log('[loadVesselInfo] Active VVEs:', activeVVEs.length);
+      } catch (vveError) {
+        console.warn('[loadVesselInfo] Could not fetch VVEs (OEM may not be running):', vveError);
+      }
+
+      // Fetch all VVNs to get approved ones
+      let approvedVVNs: any[] = [];
+      try {
+        const vvns = await firstValueFrom(this.vesselVisitNotificationService.getAllVesselVisitNotifications());
+        console.log('[loadVesselInfo] Fetched VVNs:', vvns.length);
+        
+        // Filter only approved VVNs
+        approvedVVNs = (vvns as any[]).filter(vvn => vvn.visitStatus === 'Approved');
+        console.log('[loadVesselInfo] Approved VVNs:', approvedVVNs.length);
+      } catch (vvnError) {
+        console.warn('[loadVesselInfo] Could not fetch VVNs:', vvnError);
+      }
+
+      // Show all vessels, or prioritize those with active VVE if available
+      let vesselsToShow = vessels;
+      if (activeVVEs.length > 0) {
+        const activeVesselIMOs = new Set(
+          activeVVEs.map((vve: any) => vve.vesselIMO || vve.name)
+            .filter((imo: string) => imo)
+        );
+        const vesselsWithActiveVVE = (vessels as any[]).filter(v => activeVesselIMOs.has(v.imoNumber));
+        
+        if (vesselsWithActiveVVE.length > 0) {
+          vesselsToShow = vesselsWithActiveVVE;
+          console.log('[loadVesselInfo] Showing only vessels with active VVE:', vesselsWithActiveVVE.length);
+        }
+      }
+
+      console.log('[loadVesselInfo] Vessels to show:', vesselsToShow.length);
+
+      if (vesselsToShow.length === 0) {
+        return {
+          name: 'No Vessels',
+          type: 'Vessel',
+          description: 'No vessels available'
+        };
+      }
+
+      const currentVessel = vesselsToShow[0];
+      console.log('[loadVesselInfo] Current vessel:', currentVessel);
+
+      // Find active VVE for this vessel (check both name and vesselIMO fields)
+      const vesselVVE = activeVVEs.find((vve: any) => 
+        vve.name === currentVessel.imoNumber || vve.vesselIMO === currentVessel.imoNumber
+      );
+
+      // Find approved VVN for this vessel
+      const vesselVVN = approvedVVNs.find((vvn: any) => 
+        vvn.vessel?.imoNumber === currentVessel.imoNumber || vvn.vesselId === currentVessel.id
+      );
+
+      console.log('[loadVesselInfo] Vessel VVE:', vesselVVE);
+      console.log('[loadVesselInfo] Vessel VVN (Approved):', vesselVVN);
+
+      const vesselLastModified = currentVessel.lastModifiedAt
+        ? new Date(currentVessel.lastModifiedAt).toLocaleString()
+        : undefined;
+
+      const info: ElementInfo = {
+        name: currentVessel.vesselName || 'Vessel',
+        type: 'Vessel',
+        description: `Vessel ${currentVessel.vesselName || 'Unknown'}`,
+        vesselsList: vesselsToShow,
+        currentVesselIndex: 0,
+        vesselRecordId: currentVessel.id,
+        imoNumber: currentVessel.imoNumber,
+        vesselType: currentVessel.vesselType?.name || currentVessel.vesselTypeName || 'N/A',
+        operator: currentVessel.operator || 'N/A',
+        lastModified: vesselLastModified,
+        vesselRecordLastModified: vesselLastModified
+      };
+
+      // Add VesselType details if available
+      if (currentVessel.vesselType) {
+        info.vesselTypeId = currentVessel.vesselType.id;
+        info.vesselTypeDescription = currentVessel.vesselType.description;
+        info.currentCapacity = currentVessel.vesselType.capacity;
+        info.maxRows = currentVessel.vesselType.maxRows;
+        info.maxBays = currentVessel.vesselType.maxBays;
+        info.maxTiers = currentVessel.vesselType.maxTiers;
+        info.vesselTypeLastModified = currentVessel.vesselType.lastModifiedAt 
+          ? new Date(currentVessel.vesselType.lastModifiedAt).toLocaleDateString() 
+          : undefined;
+      }
+
+      // Add VVE information if available
+      if (vesselVVE) {
+        info.vveCode = vesselVVE.code;
+        info.vveStatus = vesselVVE.status || vesselVVE.description;
+        info.arrivalDate = vesselVVE.arrivalDate ? new Date(vesselVVE.arrivalDate).toLocaleString() : undefined;
+        info.departureDate = vesselVVE.departureDate ? new Date(vesselVVE.departureDate).toLocaleString() : 'In progress';
+      }
+
+      // Add VVN information if available (approved notifications only)
+      if (vesselVVN) {
+        info.expectedArrivalDate = vesselVVN.eta ? new Date(vesselVVN.eta).toLocaleString() : undefined;
+        info.expectedDepartureDate = vesselVVN.etd ? new Date(vesselVVN.etd).toLocaleString() : undefined;
+      }
+      
+      console.log('[loadVesselInfo] Final info:', info);
+      return info;
+    } catch (error) {
+      console.error('Error loading vessel info:', error);
+      return {
+        name: element.name,
+        type: 'Vessel',
+        description: 'Maritime vessel (error loading details)'
+      };
     }
-
-    return info;
   }
 
   private async loadCraneInfo(element: PickableObject, canSeeRestricted: boolean): Promise<ElementInfo> {
@@ -384,6 +565,117 @@ export class ElementInfoService {
     };
 
     this.elementInfo$.next(updated);
+  }
+
+  nextVessel() {
+    const current = this.elementInfo$.value;
+    if (!current || !current.vesselsList || current.vesselsList.length === 0) return;
+
+    let nextIndex = (current.currentVesselIndex || 0) + 1;
+    if (nextIndex >= current.vesselsList.length) nextIndex = 0;
+
+    this.updateVesselIndex(nextIndex);
+  }
+
+  previousVessel() {
+    const current = this.elementInfo$.value;
+    if (!current || !current.vesselsList || current.vesselsList.length === 0) return;
+
+    let prevIndex = (current.currentVesselIndex || 0) - 1;
+    if (prevIndex < 0) prevIndex = current.vesselsList.length - 1;
+
+    this.updateVesselIndex(prevIndex);
+  }
+
+  private async updateVesselIndex(index: number) {
+    const current = this.elementInfo$.value;
+    if (!current || !current.vesselsList) return;
+
+    try {
+      const vessel = current.vesselsList[index];
+      
+      // Fetch active VVEs again for this vessel
+      let activeVVEs: any[] = [];
+      try {
+        const vves = await firstValueFrom(this.vesselVisitExecutionService.getAll());
+        const now = new Date();
+        activeVVEs = (vves as any[]).filter(vve => {
+          const arrival = vve.arrivalDate ? new Date(vve.arrivalDate) : null;
+          const departure = vve.departureDate ? new Date(vve.departureDate) : null;
+          
+          if (!arrival) return false;
+          if (!departure) return arrival.getTime() <= now.getTime();
+          return arrival.getTime() <= now.getTime() && now.getTime() <= departure.getTime();
+        });
+      } catch (error) {
+        console.warn('[updateVesselIndex] Could not fetch VVEs:', error);
+      }
+
+      // Fetch approved VVNs again for this vessel
+      let approvedVVNs: any[] = [];
+      try {
+        const vvns = await firstValueFrom(this.vesselVisitNotificationService.getAllVesselVisitNotifications());
+        approvedVVNs = (vvns as any[]).filter(vvn => vvn.visitStatus === 'Approved');
+      } catch (error) {
+        console.warn('[updateVesselIndex] Could not fetch VVNs:', error);
+      }
+
+      const vesselVVE = activeVVEs.find((vve: any) => 
+        vve.name === vessel.imoNumber || vve.vesselIMO === vessel.imoNumber
+      );
+
+      const vesselVVN = approvedVVNs.find((vvn: any) => 
+        vvn.vessel?.imoNumber === vessel.imoNumber || vvn.vesselId === vessel.id
+      );
+
+      const vesselLastModified = vessel.lastModifiedAt
+        ? new Date(vessel.lastModifiedAt).toLocaleString()
+        : undefined;
+
+      const updated: ElementInfo = {
+        ...current,
+        currentVesselIndex: index,
+        name: vessel.vesselName,
+        description: `Vessel ${vessel.vesselName}`,
+        imoNumber: vessel.imoNumber,
+        vesselType: vessel.vesselType?.name || vessel.vesselTypeName || 'N/A',
+        operator: vessel.operator || 'N/A',
+        vesselRecordId: vessel.id,
+        lastModified: vesselLastModified,
+        vesselRecordLastModified: vesselLastModified
+      };
+
+      // Add VesselType details
+      if (vessel.vesselType) {
+        updated.vesselTypeId = vessel.vesselType.id;
+        updated.vesselTypeDescription = vessel.vesselType.description;
+        updated.currentCapacity = vessel.vesselType.capacity;
+        updated.maxRows = vessel.vesselType.maxRows;
+        updated.maxBays = vessel.vesselType.maxBays;
+        updated.maxTiers = vessel.vesselType.maxTiers;
+        updated.vesselTypeLastModified = vessel.vesselType.lastModifiedAt 
+          ? new Date(vessel.vesselType.lastModifiedAt).toLocaleDateString() 
+          : undefined;
+      }
+
+      // Add VVE info
+      if (vesselVVE) {
+        updated.vveCode = vesselVVE.code;
+        updated.vveStatus = vesselVVE.status || vesselVVE.description;
+        updated.arrivalDate = vesselVVE.arrivalDate ? new Date(vesselVVE.arrivalDate).toLocaleString() : undefined;
+        updated.departureDate = vesselVVE.departureDate ? new Date(vesselVVE.departureDate).toLocaleString() : 'In progress';
+      }
+
+      // Add VVN info
+      if (vesselVVN) {
+        updated.expectedArrivalDate = vesselVVN.eta ? new Date(vesselVVN.eta).toLocaleString() : undefined;
+        updated.expectedDepartureDate = vesselVVN.etd ? new Date(vesselVVN.etd).toLocaleString() : undefined;
+      }
+
+      this.elementInfo$.next(updated);
+    } catch (error) {
+      console.error('Error updating vessel index:', error);
+    }
   }
 
   private getTypeLabel(type: string): string {

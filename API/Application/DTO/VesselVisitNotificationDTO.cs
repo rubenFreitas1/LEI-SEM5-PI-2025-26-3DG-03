@@ -10,6 +10,8 @@ public class VesselVisitNotificationDTO
 {
     public long Id { get; set; }
     public string Code { get; set; } = string.Empty;
+        public VesselRecordDTO? Vessel { get; set; }
+        public long VesselId { get; set; }
     public string VesselIMO { get; set; } = null!;
     public string RepresentativeCitizenID { get; set; } = null!;
     public DateTime Eta { get; set; }
@@ -83,6 +85,8 @@ public class VesselVisitNotificationDTO
             ).ToList();
             VesselVisitNotificationDTO vesselVisitNotificationDTO = new VesselVisitNotificationDTO(vesselVisitNotification.Id, vesselVisitNotification.Code, vesselVisitNotification.Vessel.IMONumber!, vesselVisitNotification.Representative.CitizenId!, vesselVisitNotification.ETA, vesselVisitNotification.ETD, cargoManifestDTOs, vesselVisitNotification.CargoType, vesselVisitNotification.Volume, crewMemberDTOs, vesselVisitNotification.VisitStatus, vesselVisitNotification.NumberOfCrewMembers);
             vesselVisitNotificationDTO.LastModifiedAt = vesselVisitNotification.LastModifiedAt;
+            vesselVisitNotificationDTO.Vessel = VesselRecordDTO.ToDTO(vesselVisitNotification.Vessel);
+            vesselVisitNotificationDTO.VesselId = vesselVisitNotification.VesselId;
 
             if (vesselVisitNotification.AssignedDock != null)
             {

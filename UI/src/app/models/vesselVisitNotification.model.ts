@@ -50,15 +50,17 @@ export interface CargoManifestModel {
 export interface VesselVisitNotificationModel {
   id?: number;
   code?: string;
+  vessel?: any; // Full vessel object
+  vesselId?: number;
   vesselIMO?: string;
   representativeCitizenID?: string;
-  eta?: Date;
-  etd?: Date;
+  eta?: Date | string;
+  etd?: Date | string;
   cargoManifests?: CargoManifestModel[];
   cargoType?: CargoType;
   volume?: number;
   crewMembers?: CrewMemberModel[];
-  visitStatus?: VisitStatus;
-  lastModifiedAt?: Date;
+  visitStatus?: VisitStatus | string;
+  lastModifiedAt?: Date | string;
   numberOfCrewMembers?: number;
 }

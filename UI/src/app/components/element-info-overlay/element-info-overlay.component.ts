@@ -30,8 +30,113 @@ import { ElementInfoService, ElementInfo } from '../../services/element-info.ser
           </div>
         </div>
 
+        <!-- Vessel Section -->
+        <div class="info-section" *ngIf="hasVesselInfo()">
+          <h4>Vessel Information</h4>
+
+          <!-- Vessel list navigation counter -->
+          <div class="info-item" *ngIf="elementInfo.vesselsList && elementInfo.vesselsList.length > 0">
+            <span class="label">Vessels:</span>
+            <span class="value">{{ (elementInfo.currentVesselIndex || 0) + 1 }} / {{ elementInfo.vesselsList.length }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="elementInfo.imoNumber">
+            <span class="label">IMO Number:</span>
+            <span class="value">{{ elementInfo.imoNumber }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="elementInfo.operator">
+            <span class="label">Operator:</span>
+            <span class="value">{{ elementInfo.operator }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="elementInfo.vesselRecordId !== undefined">
+            <span class="label">Vessel Record ID:</span>
+            <span class="value">{{ elementInfo.vesselRecordId }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="elementInfo.vesselRecordLastModified">
+            <span class="label">Last Modified (Vessel):</span>
+            <span class="value">{{ elementInfo.vesselRecordLastModified }}</span>
+          </div>
+
+          <!-- VVN Information (Expected dates from approved notification) -->
+          <h4 *ngIf="elementInfo.expectedArrivalDate || elementInfo.expectedDepartureDate" style="margin-top: 16px; font-size: 0.95em; color: rgba(255, 255, 255, 0.9);">Expected Schedule</h4>
+
+          <div class="info-item" *ngIf="elementInfo.expectedArrivalDate">
+            <span class="label">Expected Arrival:</span>
+            <span class="value">{{ elementInfo.expectedArrivalDate }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="elementInfo.expectedDepartureDate">
+            <span class="label">Expected Departure:</span>
+            <span class="value">{{ elementInfo.expectedDepartureDate }}</span>
+          </div>
+
+          <!-- VVE Information -->
+          <h4 *ngIf="elementInfo.vveCode" style="margin-top: 16px; font-size: 0.95em; color: rgba(255, 255, 255, 0.9);">Current Visit</h4>
+
+          <div class="info-item" *ngIf="elementInfo.vveCode">
+            <span class="label">VVE Code:</span>
+            <span class="value">{{ elementInfo.vveCode }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="elementInfo.vveStatus">
+            <span class="label">Visit Status:</span>
+            <span class="value status" [class]="'status-' + (elementInfo.vveStatus ? elementInfo.vveStatus.toLowerCase() : '')">
+              {{ elementInfo.vveStatus }}
+            </span>
+          </div>
+
+          <div class="info-item" *ngIf="elementInfo.arrivalDate">
+            <span class="label">Arrival Date:</span>
+            <span class="value">{{ elementInfo.arrivalDate }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="elementInfo.departureDate">
+            <span class="label">Departure Date:</span>
+            <span class="value">{{ elementInfo.departureDate }}</span>
+          </div>
+        </div>
+
         <div class="info-section" *ngIf="hasTechnicalInfo()">
           <h4>Technical Details</h4>
+
+          <!-- Vessel type technical details -->
+          <div class="info-item" *ngIf="elementInfo.type === 'Vessel' && elementInfo.vesselType">
+            <span class="label">Type:</span>
+            <span class="value">{{ elementInfo.vesselType }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="elementInfo.type === 'Vessel' && elementInfo.vesselTypeId">
+            <span class="label">Type ID:</span>
+            <span class="value">{{ elementInfo.vesselTypeId }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="elementInfo.type === 'Vessel' && elementInfo.vesselTypeDescription">
+            <span class="label">Type Description:</span>
+            <span class="value">{{ elementInfo.vesselTypeDescription }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="elementInfo.type === 'Vessel' && elementInfo.currentCapacity !== undefined">
+            <span class="label">Capacity:</span>
+            <span class="value">{{ elementInfo.currentCapacity }} TEU</span>
+          </div>
+
+          <div class="info-item" *ngIf="elementInfo.type === 'Vessel' && elementInfo.maxRows !== undefined">
+            <span class="label">Max Rows:</span>
+            <span class="value">{{ elementInfo.maxRows }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="elementInfo.type === 'Vessel' && elementInfo.maxBays !== undefined">
+            <span class="label">Max Bays:</span>
+            <span class="value">{{ elementInfo.maxBays }}</span>
+          </div>
+
+          <div class="info-item" *ngIf="elementInfo.type === 'Vessel' && elementInfo.maxTiers !== undefined">
+            <span class="label">Max Tiers:</span>
+            <span class="value">{{ elementInfo.maxTiers }}</span>
+          </div>
 
           <!-- Crane ID first when available -->
           <div class="info-item" *ngIf="elementInfo.craneId">
@@ -152,10 +257,16 @@ import { ElementInfoService, ElementInfo } from '../../services/element-info.ser
           </div>
         </div>
 
-        <div class="info-section" *ngIf="elementInfo.currentCapacity !== undefined || elementInfo.maxCapacity !== undefined">
+        <!-- Vessel navigation placed after technical details, only for vessels -->
+        <div class="crane-navigation" *ngIf="hasVesselInfo() && elementInfo.vesselsList && elementInfo.vesselsList.length > 1">
+          <button class="nav-button" (click)="previousVessel()" title="Previous vessel">← Previous</button>
+          <button class="nav-button" (click)="nextVessel()" title="Next vessel">Next →</button>
+        </div>
+
+        <div class="info-section" *ngIf="hasCapacityInfo()">
           <h4>Capacity</h4>
 
-          <div class="info-item" *ngIf="elementInfo.currentCapacity !== undefined">
+          <div class="info-item" *ngIf="elementInfo.currentCapacity !== undefined && !hasVesselInfo()">
             <span class="label">Current Capacity:</span>
             <span class="value">{{ elementInfo.currentCapacity }}</span>
           </div>
@@ -169,33 +280,6 @@ import { ElementInfoService, ElementInfo } from '../../services/element-info.ser
             <span class="label">Utilization:</span>
             <span class="value">{{ elementInfo.utilization }}</span>
           </div>
-
-          <!-- Vessel specific fields -->
-          <div class="info-item" *ngIf="elementInfo.status">
-            <span class="label">Status:</span>
-            <span class="value status" [class]="'status-' + (elementInfo.status ? elementInfo.status.toLowerCase() : '')">
-              {{ elementInfo.status }}
-            </span>
-          </div>
-
-          <div class="info-item" *ngIf="elementInfo.eta">
-            <span class="label">ETA:</span>
-            <span class="value">{{ formatDate(elementInfo.eta) }}</span>
-          </div>
-
-          <div class="info-item" *ngIf="elementInfo.etd">
-            <span class="label">ETD:</span>
-            <span class="value">{{ formatDate(elementInfo.etd) }}</span>
-          </div>
-
-          <div class="info-item" *ngIf="elementInfo.ongoingOperations && elementInfo.ongoingOperations.length > 0">
-            <span class="label">Operations:</span>
-            <ul class="operations-list">
-              <li *ngFor="let op of elementInfo.ongoingOperations">{{ op }}</li>
-            </ul>
-          </div>
-
-          
         </div>
       </div>
 
@@ -441,6 +525,20 @@ export class ElementInfoOverlayComponent implements OnInit, OnDestroy {
       }),
       this.elementInfoService.getElementInfo().subscribe(info => {
         this.elementInfo = info;
+        if (info && info.type === 'Vessel') {
+          console.log('[ElementInfoOverlay] Vessel info updated:', {
+            vesselType: info.vesselType,
+            vesselTypeId: info.vesselTypeId,
+            capacity: info.currentCapacity,
+            maxRows: info.maxRows,
+            maxBays: info.maxBays,
+            maxTiers: info.maxTiers,
+            vesselTypeLastModified: info.vesselTypeLastModified,
+            expectedArrivalDate: info.expectedArrivalDate,
+            expectedDepartureDate: info.expectedDepartureDate,
+            fullInfo: info
+          });
+        }
       })
     );
   }
@@ -456,30 +554,41 @@ export class ElementInfoOverlayComponent implements OnInit, OnDestroy {
 
   hasTechnicalInfo(): boolean {
     if (!this.elementInfo) return false;
+    // Show technical details when there is anything meaningful for the element type
+    if (this.elementInfo.type === 'Vessel') {
+      return !!(
+        this.elementInfo.vesselType ||
+        this.elementInfo.vesselTypeId ||
+        this.elementInfo.vesselTypeDescription ||
+        this.elementInfo.currentCapacity !== undefined ||
+        this.elementInfo.maxRows !== undefined ||
+        this.elementInfo.maxBays !== undefined ||
+        this.elementInfo.maxTiers !== undefined ||
+        this.elementInfo.vesselTypeLastModified
+      );
+    }
+
+    // Docks, storage areas, cranes
     return !!(
-      this.elementInfo.status ||
-      this.elementInfo.eta ||
-      this.elementInfo.etd ||
-      this.elementInfo.ongoingOperations ||
-      this.elementInfo.currentCapacity !== undefined ||
-      this.elementInfo.storageType ||
-      this.elementInfo.location ||
-      this.elementInfo.length ||
-      this.elementInfo.depth ||
-      this.elementInfo.maxDraft ||
-      this.elementInfo.vesselTypesAllowed ||
+      this.elementInfo.dockId !== undefined ||
+      this.elementInfo.storageAreaId !== undefined ||
       this.elementInfo.code ||
-      this.elementInfo.utilization ||
-      this.elementInfo.lastModified ||
+      this.elementInfo.location ||
+      this.elementInfo.length !== undefined ||
+      this.elementInfo.depth !== undefined ||
+      this.elementInfo.maxDraft !== undefined ||
+      this.elementInfo.vesselTypesAllowed ||
+      this.elementInfo.storageType ||
+      this.elementInfo.craneId !== undefined ||
       this.elementInfo.craneCode ||
       this.elementInfo.craneKind ||
       this.elementInfo.operationalCapacity !== undefined ||
-      this.elementInfo.setupTimeMinutes ||
+      this.elementInfo.setupTimeMinutes !== undefined ||
       this.elementInfo.assignedDockName ||
       this.elementInfo.assignedStorageAreaCode ||
-      this.elementInfo.craneId ||
       this.elementInfo.qualifications ||
-      this.elementInfo.storageAreaId
+      this.elementInfo.status ||
+      this.elementInfo.lastModified
     );
   }
 
@@ -519,11 +628,47 @@ export class ElementInfoOverlayComponent implements OnInit, OnDestroy {
     event.stopPropagation();
   }
 
+  hasVesselInfo(): boolean {
+    if (!this.elementInfo) return false;
+    // Only show vessel info if element type is Vessel AND has vessel-specific fields
+    return this.elementInfo.type === 'Vessel' && !!(
+      this.elementInfo.vesselsList ||
+      this.elementInfo.imoNumber ||
+      this.elementInfo.vesselType ||
+      this.elementInfo.operator ||
+      this.elementInfo.maxRows !== undefined ||
+      this.elementInfo.maxBays !== undefined ||
+      this.elementInfo.maxTiers !== undefined ||
+      this.elementInfo.vveCode ||
+      this.elementInfo.vveStatus ||
+      this.elementInfo.arrivalDate ||
+      this.elementInfo.departureDate
+    );
+  }
+
+  hasCapacityInfo(): boolean {
+    if (!this.elementInfo) return false;
+    // Show capacity section only for storage areas (not vessels, not cranes)
+    return this.elementInfo.type !== 'Vessel' && this.elementInfo.type !== 'Crane' && !!(
+      this.elementInfo.currentCapacity !== undefined ||
+      this.elementInfo.maxCapacity !== undefined ||
+      this.elementInfo.utilization
+    );
+  }
+
   nextCrane() {
     this.elementInfoService.nextCrane();
   }
 
   previousCrane() {
     this.elementInfoService.previousCrane();
+  }
+
+  nextVessel() {
+    this.elementInfoService.nextVessel();
+  }
+
+  previousVessel() {
+    this.elementInfoService.previousVessel();
   }
 }

@@ -6,4 +6,5 @@ export interface VesselTypeModel {
   maxRows?: number;
   maxBays?: number;
   maxTiers?: number;
+  lastModifiedAt?: Date | string;
 }

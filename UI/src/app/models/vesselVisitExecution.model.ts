@@ -3,6 +3,7 @@ export interface VesselVisitExecutionModel {
   code?: string;
   name?: string;
   description?: string;
+  vesselIMO?: string;
   vesselVisitNotificationCode?: string;
   departureDate?: string | Date;
   arrivalDate?: string;
