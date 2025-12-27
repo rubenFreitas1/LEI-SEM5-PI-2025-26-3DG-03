@@ -1,0 +1,44 @@
+@startuml 4.1.14
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(POS, "Port Operation Supervisor", "System user managing complementary task categories")
+
+Container_Boundary(UI, "UI Module") {
+    Component(ComplementaryTaskCategoryUI, "Complementary Task Category Component", "Angular", "UI component for managing complementary task categories")
+}
+
+
+Container_Boundary(OEM, "OEM Module (Node.js + Express + MongoDB)") {
+    Component(ComplementaryTaskCategoryRoute, "ComplementaryTaskCategoryRoute", "Express Router", "Validates requests and forwards to controller")
+    Component(ComplementaryTaskCategoryController, "ComplementaryTaskCategoryController", "Express Controller", "Handles HTTP requests for complementary task categories")
+    Component(ComplementaryTaskCategoryService, "ComplementaryTaskCategoryService", "TypeScript (TypeDI)", "Business POSgic for complementary task categories")
+    Component(ComplementaryTaskCategoryDTO, "ComplementaryTaskCategoryDTO", "DTO", "Data transfer object for complementary task categories")
+    Component(ComplementaryTaskCategoryDomain, "ComplementaryTaskCategory", "Domain Model", "Represents complementary task category entity")
+    Component(ComplementaryTaskCategoryRepo, "ComplementaryTaskCategoryRepo", "Mongoose Repository", "Persists complementary task categories")
+    Component(ComplementaryTaskCategoryMap, "ComplementaryTaskCategoryMap", "Mapper", "Converts between DTO, domain, and persistence")
+    Component(ComplementaryTaskCategoryPersistence, "IComplementaryTaskCategoryPersistence", "Persistence Contract", "Mongoose document interface")
+    Component(ComplementaryTaskCategorySchema, "ComplementaryTaskCategorySchema", "Mongoose Schema", "Schema describing complementary task category")
+    ComponentDb(MongoDB, "OEM MongoDB", "MongoDB", "Stores complementary task categories")
+}
+
+
+
+
+
+Rel(POS, ComplementaryTaskCategoryUI, "Uses", "Mouse/Keyboard")
+
+Rel(ComplementaryTaskCategoryUI, ComplementaryTaskCategoryRoute, "Sends HTTP requests", "HTTPS/JSON")
+Rel(ComplementaryTaskCategoryRoute, ComplementaryTaskCategoryController, "Invokes controller", "Express pipeline")
+
+Rel(ComplementaryTaskCategoryController, ComplementaryTaskCategoryService, "Calls methods in", "Method Calls")
+Rel(ComplementaryTaskCategoryService, ComplementaryTaskCategoryMap, "Delegates transformations", "Mapping")
+Rel(ComplementaryTaskCategoryService, ComplementaryTaskCategoryRepo, "Uses", "Method Calls")
+Rel(ComplementaryTaskCategoryMap, ComplementaryTaskCategoryDomain, "Creates/updates", "Domain POSgic")
+Rel(ComplementaryTaskCategoryMap, ComplementaryTaskCategoryDTO, "Maps to/from", "DTO Conversion")
+Rel(ComplementaryTaskCategoryMap, ComplementaryTaskCategoryPersistence, "Maps to/from", "Persistence Conversion")
+Rel(ComplementaryTaskCategoryRepo, ComplementaryTaskCategoryMap, "Uses", "Mapping")
+Rel(ComplementaryTaskCategoryRepo, ComplementaryTaskCategorySchema, "Uses", "ODM")
+Rel(ComplementaryTaskCategorySchema, ComplementaryTaskCategoryPersistence, "Implements", "Schema Contract")
+Rel(ComplementaryTaskCategorySchema, MongoDB, "Persists to", "Mongoose")
+@enduml

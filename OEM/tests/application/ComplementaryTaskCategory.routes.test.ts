@@ -5,7 +5,7 @@ import bodyParser from "body-parser";
 import { Container } from "typedi";
 import { errors as celebrateErrors } from "celebrate";
 
-import complementaryTaskCategoryRoutes from "../../src/api/routes/ComplementaryTaskCategory";
+import complementaryTaskCategoryRoutes from "../../src/api/routes/ComplementaryTaskCategoryRoute";
 import ComplementaryTaskCategoryController from "../../src/controllers/ComplementaryTaskCategoryController";
 import config from "../../config";
 

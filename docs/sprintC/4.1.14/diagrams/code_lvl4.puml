@@ -1,0 +1,142 @@
+@startuml Code level for 4.1.14
+
+class ComplementaryTaskCategoryRoute {
+    +postComplementaryTaskCategory(req, res, next)
+    +putComplementaryTaskCategory( req, res, next)
+    +getAllComplementaryTaskCategories(req, res, next)
+    +getComplementaryTaskCategoryById( req, res, next)
+    +getComplementaryTaskCategoryByCode(req, res, next)
+    +getComplementaryTaskCategoryByName(req, res, next)
+    +getComplementaryTaskCategoriesByParent(req, res, next)
+    +getComplementaryTaskCategoriesWithParent(req, res, next)
+}
+
+interface IComplementaryTaskCategoryController{
+    +getAllComplementaryTaskCategories(req: Request, res: Response, next: NextFunction)
+    +getComplementaryTaskCategoryById(req: Request, res: Response, next: NextFunction)
+    +getComplementaryTaskCategoryByCode(req: Request, res: Response, next: NextFunction)
+    +getComplementaryTaskCategoryByName(req: Request, res: Response, next: NextFunction)
+    +getComplementaryTaskCategoriesWithParent(req: Request, res: Response, next: NextFunction)
+    +getComplementaryTaskCategoriesByParent(req: Request, res: Response, next: NextFunction)
+    +createComplementaryTaskCategory(req: Request, res: Response, next: NextFunction)
+    +updateComplementaryTaskCategory(req: Request, res: Response, next: NextFunction)
+}
+
+class ComplementaryTaskCategoryController {
+    +getAllComplementaryTaskCategories(req: Request, res: Response, next: NextFunction)
+    +getComplementaryTaskCategoryById(req: Request, res: Response, next: NextFunction)
+    +getComplementaryTaskCategoryByCode(req: Request, res: Response, next: NextFunction)
+    +getComplementaryTaskCategoryByName(req: Request, res: Response, next: NextFunction)
+    +getComplementaryTaskCategoriesWithParent(req: Request, res: Response, next: NextFunction)
+    +getComplementaryTaskCategoriesByParent(req: Request, res: Response, next: NextFunction)
+    +createComplementaryTaskCategory(req: Request, res: Response, next: NextFunction)
+    +updateComplementaryTaskCategory(req: Request, res: Response, next: NextFunction)
+}
+
+class ComplementaryTaskCategoryService {
+    +getAllComplementaryTaskCategories()
+    +getComplementaryTaskCategoryById(id: string)
+    +getComplementaryTaskCategoryByCode(code: string)
+    +getComplementaryTaskCategoryByName(name: string)
+    +getComplementaryTaskCategoriesWithParent(hasParent: boolean)
+    +getComplementaryTaskCategoryByParent(parentId: string)
+    +create(dto: ComplementaryTaskCategoryDTO)
+    +update(code: string, dto: ComplementaryTaskCategoryDTO)
+}
+
+interface IComplementaryTaskCategoryService{
+    +getAllComplementaryTaskCategories()
+    +getComplementaryTaskCategoryById(id: string)
+    +getComplementaryTaskCategoryByCode(code: string)
+    +getComplementaryTaskCategoryByName(name: string)
+    +getComplementaryTaskCategoriesWithParent(hasParent: boolean)
+    +getComplementaryTaskCategoryByParent(parentId: string)
+    +create(dto: ComplementaryTaskCategoryDTO)
+    +update(code: string, dto: ComplementaryTaskCategoryDTO)
+}
+
+interface IComplementaryTaskCategoryRepo {
+    +findAll()
+    +findById(id: string)
+    +findByCode(code: string)
+    +findByName(name: string)
+    +findWithParent(hasParent: boolean)
+    +findByParent(parentId: string)
+    +update(incidentType: ComplementaryTaskCategory)
+    +findByIds(ids: string[])
+}
+
+class ComplementaryTaskCategoryRepo {
+    +findAll()
+    +findById(id: string)
+    +findByCode(code: string)
+    +findByName(name: string)
+    +findWithParent(hasParent: boolean)
+    +findByParent(parentId: string)
+    +update(incidentType: ComplementaryTaskCategory)
+    +findByIds(ids: string[])
+}
+
+class ComplementaryTaskCategoryDTO {
+    -id: string
+    -code: string
+    -name: string
+    -description: string
+    -duration: string | null
+    -lastUpdated: Date
+    -parentComplementaryTaskCategoryCode?: string
+}
+
+class ComplementaryTaskCategoryMap {
+    +toDomain(raw: IComplementaryTaskCategoryPersistence | any)
+    +toPersistence(ComplementaryTaskCategory: ComplementaryTaskCategory)
+    +toDTO(ComplementaryTaskCategory: ComplementaryTaskCategory, parentComplementaryTaskCategoryCode?: string)
+}
+
+class ComplementaryTaskCategory {
+    -id: string
+    -code: string
+    -name: string
+    -description: string
+    -duration: string | null
+    -lastUpdated: Date
+    -parentComplementaryTaskCategoryId?: string
+}
+
+interface ComplementaryTaskCategoryPersistence {
+    -_id: string
+    -code: string
+    -name: string
+    -description: string
+    -duration?: string | null
+    -lastUpdated: Date
+    -parentComplementaryTaskCategoryId?: string
+}
+
+
+
+class ComplementaryTaskCategorySchema {
+    +mongooseModel: Model
+}
+
+class MongoDBCluster <<database>>
+
+ComplementaryTaskCategoryRoute --> ComplementaryTaskCategoryController : forwards requests
+ComplementaryTaskCategoryController ..|> IComplementaryTaskCategoryController
+ComplementaryTaskCategoryController --> ComplementaryTaskCategoryService : invokes methods
+ComplementaryTaskCategoryService --> ComplementaryTaskCategoryDTO : consumes/produces
+ComplementaryTaskCategoryService --> ComplementaryTaskCategoryMap : delegates mapping
+ComplementaryTaskCategoryService ---> IComplementaryTaskCategoryRepo : uses persistence abstraction
+ComplementaryTaskCategoryService .up.|> IComplementaryTaskCategoryService
+
+ComplementaryTaskCategoryRepo ..|> IComplementaryTaskCategoryRepo
+ComplementaryTaskCategoryRepo --> ComplementaryTaskCategoryMap : uses
+ComplementaryTaskCategoryRepo --> ComplementaryTaskCategorySchema : uses ODM
+ComplementaryTaskCategorySchema --> ComplementaryTaskCategoryPersistence : implements structure
+ComplementaryTaskCategorySchema --> MongoDBCluster : stores documents
+
+ComplementaryTaskCategoryMap --> ComplementaryTaskCategory : maps domain
+ComplementaryTaskCategoryMap --> ComplementaryTaskCategoryDTO : maps DTO
+ComplementaryTaskCategoryMap --> ComplementaryTaskCategoryPersistence : maps persistence
+
+@enduml
