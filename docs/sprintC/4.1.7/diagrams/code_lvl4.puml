@@ -1,0 +1,159 @@
+@startuml Code level for 4.1.12
+
+class VesselVisitExecutionRoute {
+    +postVesselVisitExecution(req, res, next)
+    +putVesselVisitExecution( req, res, next)
+    +getVesselVisitExecutions(req, res, next)
+    +getVesselVisitExecutionById( req, res, next)
+    +getVesselVisitExecutionByCode(req, res, next)
+    +getVesselVisitExecutionByStatus(req, res, next)
+    +getVesselVisitExecutionsByVesselIMO(req, res, next)
+}
+
+interface IVesselVisitExecutionController{
+    +getAllVesselVisitExecutions(req: Request, res: Response, next: NextFunction)
+    +getVesselVisitExecutionById(req: Request, res: Response, next: NextFunction)
+    +getVesselVisitExecutionByCode(req: Request, res: Response, next: NextFunction)
+    +getVesselVisitExecutionsByStatus(req: Request, res: Response, next: NextFunction)
+    +getVesselVisitExecutionsByVesselIMO(req: Request, res: Response, next: NextFunction)
+    +getVesselVisitExecutions(req: Request, res: Response, next: NextFunction)
+    +createVesselVisitExecution(req: Request, res: Response, next: NextFunction)
+    +updateVesselVisitExecution(req: Request, res: Response, next: NextFunction)
+}
+
+class VesselVisitExecutionController {
+    +getAllVesselVisitExecutions(req: Request, res: Response, next: NextFunction)
+    +getVesselVisitExecutionById(req: Request, res: Response, next: NextFunction)
+    +getVesselVisitExecutionByCode(req: Request, res: Response, next: NextFunction)
+    +getVesselVisitExecutionsByStatus(req: Request, res: Response, next: NextFunction)
+    +getVesselVisitExecutionsByVesselIMO(req: Request, res: Response, next: NextFunction)
+    +getVesselVisitExecutions(req: Request, res: Response, next: NextFunction)
+    +createVesselVisitExecution(req: Request, res: Response, next: NextFunction)
+    +updateVesselVisitExecution(req: Request, res: Response, next: NextFunction)
+}
+
+class VesselVisitExecutionService {
+    +getAllVesselVisitExecutions()
+    +getVesselVisitExecutionById(id: string)
+    +getVesselVisitExecutionByCode(code: string)
+    +getVesselVisitExecutionsByStatus(status: string)
+    +getVesselVisitExecutionsByVesselIMO(vesselIMO: string)
+    +getVesselVisitExecutions(filters: { from?: string; to?: string; vesselIMO?: string; status?: string })
+    +createVesselVisitExecution(dto: VesselVisitExecutionDTO, apiBaseUrl?: string, authHeader?: string)
+    +updateVesselVisitExecution(code: string, payload: any)
+}
+
+interface IVesselVisitExecutionService{
+    +getAllVesselVisitExecutions()
+    +getVesselVisitExecutionById(id: string)
+    +getVesselVisitExecutionByCode(code: string)
+    +getVesselVisitExecutionsByStatus(status: string)
+    +getVesselVisitExecutionsByVesselIMO(vesselIMO: string)
+    +getVesselVisitExecutions(filters: { from?: string; to?: string; vesselIMO?: string; status?: string })
+    +createVesselVisitExecution(dto: VesselVisitExecutionDTO, apiBaseUrl?: string, authHeader?: string)
+    +updateVesselVisitExecution(code: string, payload: any)
+}
+
+interface IVesselVisitExecutionRepo {
+    +findAll()
+    +findById(id: string)
+    +findByCode(code: string)
+    +findByCodes(codes: string[]): Promise<VesselVisitExecution[]>;
+    +findByStatus(status: VesselVisitExecutionStatus)
+    +findByVesselIMO(vesselIMO: string)
+    +findByVesselIMOs(vesselIMO: string)
+    +findByFilters(filters: { from?: Date; to?: Date; vesselIMO?: string; status?: VesselVisitExecutionStatus })
+    +update(vve: VesselVisitExecution)
+}
+
+class VesselVisitExecutionRepo {
+    +findAll()
+    +findById(id: string)
+    +findByCode(code: string)
+    +findByCodes(codes: string[]): Promise<VesselVisitExecution[]>;
+    +findByStatus(status: VesselVisitExecutionStatus)
+    +findByVesselIMO(vesselIMO: string)
+    +findByVesselIMOs(vesselIMO: string)
+    +findByFilters(filters: { from?: Date; to?: Date; vesselIMO?: string; status?: VesselVisitExecutionStatus })
+    +update(vve: VesselVisitExecution)
+}
+
+class VesselVisitExecutionDTO {
+    -id: string
+    -code: string
+    -vesselIMO: string
+    -vesselVisitNotificationCode?: string
+    -status: VesselVisitExecutionStatus
+    -arrivalDate: Date 
+    -lastUpdated: Date
+    -departureDate?: Date
+    -systemUserID: string
+    -incidentIDs?: string[] | null
+}
+
+class VesselVisitExecutionMap {
+    +toDomain(raw: IVesselVisitExecutionPersistence | any)
+    +toPersistence(vve: VesselVisitExecution)
+    +toDTO(vve: VesselVisitExecution)
+}
+
+
+
+class VesselVisitExecution {
+    -id: string
+    -code: string
+    -vesselIMO: string
+    -status: VesselVisitExecutionStatus
+    -arrivalDate: Date
+    -lastUpdated: Date
+    -systemUserID: string
+    -departureDate?: Date
+}
+
+class VesselVisitExecutionStatus {
+    -InProgress = "InProgress"
+    -Completed = "Completed"
+}
+
+
+
+interface IVesselVisitExecutionPersistence {
+    -_id: string
+    -code: string
+    -vesselIMO: string
+    -status: VesselVisitExecutionStatus
+    -arrivalDate: Date
+    -departureDate?: Date
+    -lastUpdated: Date
+    -systemUserID: string
+}
+
+
+
+class VesselVisitExecutionSchema {
+    +mongooseModel: Model
+}
+
+class MongoDBCluster <<database>>
+
+VesselVisitExecutionRoute --> VesselVisitExecutionController : forwards requests
+VesselVisitExecutionController ..|> IVesselVisitExecutionController
+VesselVisitExecutionController --> VesselVisitExecutionService : invokes methods
+VesselVisitExecutionService --> VesselVisitExecutionDTO : consumes/produces
+VesselVisitExecutionService --> VesselVisitExecutionMap : delegates mapping
+VesselVisitExecutionService ---> IVesselVisitExecutionRepo : uses persistence abstraction
+VesselVisitExecutionService .up.|> IVesselVisitExecutionService
+
+VesselVisitExecutionRepo ..|> IVesselVisitExecutionRepo
+VesselVisitExecutionRepo --> VesselVisitExecutionMap : uses
+VesselVisitExecutionRepo --> VesselVisitExecutionSchema : uses ODM
+VesselVisitExecutionSchema --> IVesselVisitExecutionPersistence : implements structure
+VesselVisitExecutionSchema --> MongoDBCluster : stores documents
+
+VesselVisitExecutionMap --> VesselVisitExecution : maps domain
+VesselVisitExecutionMap --> VesselVisitExecutionDTO : maps DTO
+VesselVisitExecutionMap --> IVesselVisitExecutionPersistence : maps persistence
+
+VesselVisitExecution --> VesselVisitExecutionStatus : has classification
+
+@enduml

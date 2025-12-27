@@ -1,0 +1,34 @@
+@startuml 4.1.7
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Logistic Operator" as logisticOperator
+participant "UI" as ui
+participant "System" as system
+
+title System Sequence Diagram - US4.1.12
+
+== Manage Catalog of Vessel Visit Executions ==
+activate logisticOperator
+
+logisticOperator -> ui: Manage Vessel Visit Executions\n(Create, Read, Update)
+activate ui
+ui -> logisticOperator : Request Vessel Visit Executions Data
+deactivate ui
+
+logisticOperator -> ui : Provide Vessel Visit Execution Data
+activate ui
+ui -> system : Invoke Vessel Visit Execution\nManagement System
+activate system
+
+system -> system : Process Vessel Visit Execution Data
+
+system --> ui : Return Operation Result
+deactivate system
+ui -> logisticOperator : Display Operation Result
+deactivate ui 
+
+
+
+@enduml

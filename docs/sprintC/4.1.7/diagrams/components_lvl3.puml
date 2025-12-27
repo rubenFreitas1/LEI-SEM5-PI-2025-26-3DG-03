@@ -1,0 +1,44 @@
+@startuml 4.1.12
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(LO, "Logistic Operator", "System user managing vessel visit executions")
+
+Container_Boundary(UI, "UI Module") {
+    Component(VesselVisitExecutionUI, "Vessel Visit Execution Component", "Angular", "UI component for managing vessel visit executions")
+}
+
+
+Container_Boundary(OEM, "OEM Module (Node.js + Express + MongoDB)") {
+    Component(VesselVisitExecutionRoute, "VesselVisitExecutionRoute", "Express Router", "Validates requests and forwards to controller")
+    Component(VesselVisitExecutionController, "VesselVisitExecutionController", "Express Controller", "Handles HTTP requests for vessel visit executions")
+    Component(VesselVisitExecutionService, "VesselVisitExecutionService", "TypeScript (TypeDI)", "Business logic for vessel visit executions")
+    Component(VesselVisitExecutionDTO, "VesselVisitExecutionDTO", "DTO", "Data transfer object for vessel visit executions")
+    Component(VesselVisitExecutionDomain, "VesselVisitExecution", "Domain Model", "Represents vessel visit execution entity")
+    Component(VesselVisitExecutionRepo, "VesselVisitExecutionRepo", "Mongoose Repository", "Persists vessel visit executions")
+    Component(VesselVisitExecutionMap, "VesselVisitExecutionMap", "Mapper", "Converts between DTO, domain, and persistence")
+    Component(VesselVisitExecutionPersistence, "IVesselVisitExecutionPersistence", "Persistence Contract", "Mongoose document interface")
+    Component(VesselVisitExecutionSchema, "VesselVisitExecutionSchema", "Mongoose Schema", "Schema describing vessel visit execution")
+    ComponentDb(MongoDB, "OEM MongoDB", "MongoDB", "Stores vessel visit execution")
+}
+
+
+
+
+
+Rel(LO, VesselVisitExecutionUI, "Uses", "Mouse/Keyboard")
+
+Rel(VesselVisitExecutionUI, VesselVisitExecutionRoute, "Sends HTTP requests", "HTTPS/JSON")
+Rel(VesselVisitExecutionRoute, VesselVisitExecutionController, "Invokes controller", "Express pipeline")
+
+Rel(VesselVisitExecutionController, VesselVisitExecutionService, "Calls methods in", "Method Calls")
+Rel(VesselVisitExecutionService, VesselVisitExecutionMap, "Delegates transformations", "Mapping")
+Rel(VesselVisitExecutionService, VesselVisitExecutionRepo, "Uses", "Method Calls")
+Rel(VesselVisitExecutionMap, VesselVisitExecutionDomain, "Creates/updates", "Domain Logic")
+Rel(VesselVisitExecutionMap, VesselVisitExecutionDTO, "Maps to/from", "DTO Conversion")
+Rel(VesselVisitExecutionMap, VesselVisitExecutionPersistence, "Maps to/from", "Persistence Conversion")
+Rel(VesselVisitExecutionRepo, VesselVisitExecutionMap, "Uses", "Mapping")
+Rel(VesselVisitExecutionRepo, VesselVisitExecutionSchema, "Uses", "ODM")
+Rel(VesselVisitExecutionSchema, VesselVisitExecutionPersistence, "Implements", "Schema Contract")
+Rel(VesselVisitExecutionSchema, MongoDB, "Persists to", "Mongoose")
+@enduml
