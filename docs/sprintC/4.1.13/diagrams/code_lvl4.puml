@@ -1,0 +1,167 @@
+@startuml Code level for 4.1.12
+
+class IncidentRoute {
+    +postIncident(req, res, next)
+    +putIncident( req, res, next)
+    +getAllIncidents(req, res, next)
+    +getIncidentById( req, res, next)
+    +getIncidentByVessel(req, res, next)
+    +getIncidentByDateRange(req, res, next)
+    +getIncidentsBySeverity(req, res, next)
+    +getIncidentsByStatus(req, res, next)
+}
+
+interface IIncidentController{
+    +getAllIncidents(req: Request, res: Response, next: NextFunction)
+    +getIncidentById(req: Request, res: Response, next: NextFunction)
+    +getIncidentByVessel(req: Request, res: Response, next: NextFunction)
+    +getIncidentsByDateRange(req: Request, res: Response, next: NextFunction)
+    +getIncidentsBySeverity(req: Request, res: Response, next: NextFunction)
+    +getIncidentsByStatus(req: Request, res: Response, next: NextFunction)
+    +createIncident(req: Request, res: Response, next: NextFunction)
+    +updateIncident(req: Request, res: Response, next: NextFunction)
+}
+
+class IncidentController {
+    +getAllIncidents(req: Request, res: Response, next: NextFunction)
+    +getIncidentById(req: Request, res: Response, next: NextFunction)
+    +getIncidentByVessel(req: Request, res: Response, next: NextFunction)
+    +getIncidentsByDateRange(req: Request, res: Response, next: NextFunction)
+    +getIncidentsBySeverity(req: Request, res: Response, next: NextFunction)
+    +getIncidentsByStatus(req: Request, res: Response, next: NextFunction)
+    +createIncident(req: Request, res: Response, next: NextFunction)
+    +updateIncident(req: Request, res: Response, next: NextFunction)
+}
+
+class IncidentService {
+    +getAllIncidents()
+    +getIncidentById(id: string)
+    +getIncidentsByVessel(vesselIMO: string)
+    +getIncidentsByDateRange(startDate: Date, endDate: Date)
+    +getIncidentsBySeverity(severity: string)
+    +getIncidentsByStatus(status: string)
+    +createIncident(incidentDTO: IncidentDTO, apiBaseUrl: string, authHeader: string)
+    +updateIncident(id: string, incidentDTO: IncidentDTO)
+}
+
+interface IIncidentService{
+    +getAllIncidents()
+    +getIncidentById(id: string)
+    +getIncidentsByVessel(vesselIMO: string)
+    +getIncidentsByDateRange(startDate: Date, endDate: Date)
+    +getIncidentsBySeverity(severity: string)
+    +getIncidentsByStatus(status: string)
+    +createIncident(incidentDTO: IncidentDTO, apiBaseUrl: string, authHeader: string)
+    +updateIncident(id: string, incidentDTO: IncidentDTO)
+}
+
+interface IIncidentRepo {
+    +findAll()
+    +findById(id: string)
+    +findByIDs(ids: string[])
+    +findByVesselIMO(vesselIMO: string)
+    +findByDateRange(startDate: Date, endDate: Date | null)
+    +findBySeverity(severity: string)
+    +findByStatus(status: IncidentStatus)
+    +update(incident: Incident)
+}
+
+class IncidentRepo {
+    +findAll()
+    +findById(id: string)
+    +findByIDs(ids: string[])
+    +findByVesselIMO(vesselIMO: string)
+    +findByDateRange(startDate: Date, endDate: Date | null)
+    +findBySeverity(severity: string)
+    +findByStatus(status: IncidentStatus)
+    +update(incident: Incident)
+}
+
+class IncidentDTO {
+    -id: string
+    -incidentTypeByCode: string
+    -startDate: Date
+    -endDate: Date | null
+    -status: IncidentStatus
+    -description: string
+    -systemUserID: string
+    -lastUpdated: Date
+    -classification: IncidentClassification
+    -duration: number | null
+    -vesselVisitExecutionsCodes: string[] | null
+}
+
+class IncidentMap {
+    +toDomain(raw: IncidentPersistence | any)
+    +toPersistence(incident: Incident)
+    +toDTO(incident: Incident)
+}
+
+class Incident {
+    -id: string
+    -incidentType: IncidentType
+    -startDate: Date
+    -endDate: Date | null
+    -status: IncidentStatus
+    -description: string
+    -systemUserID: string
+    -lastUpdated: Date
+    -classification: IncidentClassification
+    -duration: number | null
+    -vesselVisitExecutions: VesselVisitExecution[] | null
+}
+
+class IncidentStatus {
+    -Active = "Active"
+    -Resolved = "Resolved"
+}
+
+class IncidentClassification {
+    -Minor = "Minor"
+    -Major = "Major"
+    -Critical = "Critical"
+}
+
+interface IncidentPersistence {
+    -_id: string
+    -incidentTypeCode: string
+    -startDate: Date
+    -endDate: Date | null
+    -status: IncidentStatus
+    -description: string
+    -systemUserID: string
+    -lastUpdated: Date
+    -classification: IncidentClassification
+    -duration: number | null
+    -vesselVisitExecutionsCodes: string[] | null
+}
+
+
+
+class IncidentSchema {
+    +mongooseModel: Model
+}
+
+class MongoDBCluster <<database>>
+
+IncidentRoute --> IncidentController : forwards requests
+IncidentController ..|> IIncidentController
+IncidentController --> IncidentService : invokes methods
+IncidentService --> IncidentDTO : consumes/produces
+IncidentService --> IncidentMap : delegates mapping
+IncidentService ---> IIncidentRepo : uses persistence abstraction
+IncidentService .up.|> IIncidentService
+
+IncidentRepo ..|> IIncidentRepo
+IncidentRepo --> IncidentMap : uses
+IncidentRepo --> IncidentSchema : uses ODM
+IncidentSchema --> IncidentPersistence : implements structure
+IncidentSchema --> MongoDBCluster : stores documents
+
+IncidentMap --> Incident : maps domain
+IncidentMap --> IncidentDTO : maps DTO
+IncidentMap --> IncidentPersistence : maps persistence
+
+Incident --> IncidentClassification : has classification
+Incident --> IncidentStatus : has status
+@enduml

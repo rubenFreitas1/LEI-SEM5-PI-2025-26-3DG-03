@@ -1,0 +1,34 @@
+@startuml 4.1.7
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Logistic Operator" as logisticOperator
+participant "UI" as ui
+participant "System" as system
+
+title System Sequence Diagram - US4.1.13
+
+== Manage Catalog of Incidents ==
+activate logisticOperator
+
+logisticOperator -> ui: Manage Incidents\n(Create, Read, Update)
+activate ui
+ui -> logisticOperator : Request Incidents Data
+deactivate ui
+
+logisticOperator -> ui : Provide Incident Data
+activate ui
+ui -> system : Invoke Incident Management System
+activate system
+
+system -> system : Process Incident Data
+
+system --> ui : Return Operation Result
+deactivate system
+ui -> logisticOperator : Display Operation Result
+deactivate ui 
+
+
+
+@enduml
