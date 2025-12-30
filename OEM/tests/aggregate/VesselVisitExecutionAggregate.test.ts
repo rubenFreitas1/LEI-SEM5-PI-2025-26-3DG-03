@@ -396,15 +396,16 @@ describe("VesselVisitExecutionService – Aggregate Tests", () => {
   });
 
   it("should fail if incidents do not overlap with execution time range", async () => {
-    const arrivalDate = new Date("2025-12-20");
-    const departureDate = new Date("2025-12-22");
+    const now = new Date();
+    const arrivalDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+    const departureDate = new Date(now.getTime()); // today
 
-    // Incident outside the time range
+    // Incident outside the time range (6-5 days ago, doesn't overlap with 2 days ago - today)
     const incident = new Incident(
       "INC1", 
       {} as any,  // incidentType
-      new Date("2025-12-16"), 
-      new Date("2025-12-17"), 
+      new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000), 
+      new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000), 
       IncidentStatus.Active,  // status
       "Description test", 
       "user1",   // systemUserID
@@ -429,15 +430,16 @@ describe("VesselVisitExecutionService – Aggregate Tests", () => {
   });
 
   it("should create with incidents that overlap time range", async () => {
-    const arrivalDate = new Date("2025-12-18");
-    const departureDate = new Date("2025-12-22");
+    const now = new Date();
+    const arrivalDate = new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000); // 4 days ago
+    const departureDate = new Date(now.getTime()); // today
 
-    // Incident overlapping with the time range
+    // Incident overlapping with the time range (3-1 days ago, overlaps with 4 days ago - today)
     const incident = new Incident(
       "INC1", 
       {} as any,  // incidentType
-      new Date("2025-12-19"), 
-      new Date("2025-12-21"), 
+      new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000), 
+      new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000), 
       IncidentStatus.Active,  // status
       "Description test", 
       "user1",   // systemUserID

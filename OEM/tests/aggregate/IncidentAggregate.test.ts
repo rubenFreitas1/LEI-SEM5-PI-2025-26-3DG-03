@@ -74,11 +74,15 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
+      const now = new Date();
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
       const incident = new Incident(
         "INC1",
         incidentType,
-        new Date("2025-12-20"),
-        new Date("2025-12-21"),
+        startDate,
+        endDate,
         IncidentStatus.Active,
         "Test description one",
         "user1",
@@ -100,11 +104,15 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
+      const now = new Date();
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
       const incident = new Incident(
         "INC1",
         incidentType,
-        new Date("2025-12-20"),
-        new Date("2025-12-21"),
+        startDate,
+        endDate,
         IncidentStatus.Active,
         "Test description one",
         "user1",
@@ -132,14 +140,20 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
-      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, new Date("2025-12-18"), new Date(), "user1", new Date("2025-12-22"));
+      const now = new Date();
+      const vveArrival = new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000); // 4 days ago
+      const vveDeparture = new Date(now.getTime() - 0 * 24 * 60 * 60 * 1000); // today
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
+      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival, new Date(), "user1", vveDeparture);
       vesselVisitExecutionRepo.addVesselVisitExecution(vve);
 
       const incident = new Incident(
         "INC1",
         incidentType,
-        new Date("2025-12-20"),
-        new Date("2025-12-21"),
+        startDate,
+        endDate,
         IncidentStatus.Active,
         "Test description one",
         "user1",
@@ -160,11 +174,15 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
+      const now = new Date();
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
       const incident = new Incident(
         "INC1",
         incidentType,
-        new Date("2025-12-20"),
-        new Date("2025-12-21"),
+        startDate,
+        endDate,
         IncidentStatus.Active,
         "Test description one",
         "user1",
@@ -176,8 +194,8 @@ describe("IncidentService – Aggregate Tests", () => {
       incidentRepo.addIncident(incident);
 
       const result = await service.getIncidentsByDateRange(
-        new Date("2025-12-19"),
-        new Date("2025-12-22")
+        new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000),
+        new Date(now.getTime())
       );
 
       expect(result.isSuccess).toBe(true);
@@ -188,11 +206,15 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
+      const now = new Date();
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
       const incident = new Incident(
         "INC1",
         incidentType,
-        new Date("2025-12-20"),
-        new Date("2025-12-21"),
+        startDate,
+        endDate,
         IncidentStatus.Active,
         "Test description one",
         "user1",
@@ -213,11 +235,15 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
+      const now = new Date();
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
       const incident = new Incident(
         "INC1",
         incidentType,
-        new Date("2025-12-20"),
-        new Date("2025-12-21"),
+        startDate,
+        endDate,
         IncidentStatus.Active,
         "Test description one",
         "user1",
@@ -243,11 +269,15 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
+      const now = new Date();
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
       const dto: IncidentDTO = {
         id: "",
         incidentTypeByCode: "CODE1",
-        startDate: new Date("2025-12-20"),
-        endDate: new Date("2025-12-21"),
+        startDate: startDate,
+        endDate: endDate,
         status: IncidentStatus.Active,
         description: "Test description one",
         systemUserID: "",
@@ -356,14 +386,20 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
-      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, new Date("2025-12-18"), new Date(), "user1", new Date("2025-12-22"));
+      const now = new Date();
+      const vveArrival = new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000); // 4 days ago
+      const vveDeparture = new Date(now.getTime()); // today
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
+      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival, new Date(), "user1", vveDeparture);
       vesselVisitExecutionRepo.addVesselVisitExecution(vve);
 
       const dto: IncidentDTO = {
         id: "",
         incidentTypeByCode: "CODE1",
-        startDate: new Date("2025-12-20"),
-        endDate: new Date("2025-12-21"),
+        startDate: startDate,
+        endDate: endDate,
         status: IncidentStatus.Active,
         description: "Test description one",
         systemUserID: "",
@@ -406,14 +442,20 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
-      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, new Date("2025-12-16"), new Date(), "user1", new Date("2025-12-17"));
+      const now = new Date();
+      const vveArrival = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000); // 6 days ago
+      const vveDeparture = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000); // 5 days ago
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
+      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival, new Date(), "user1", vveDeparture);
       vesselVisitExecutionRepo.addVesselVisitExecution(vve);
 
       const dto: IncidentDTO = {
         id: "",
         incidentTypeByCode: "CODE1",
-        startDate: new Date("2025-12-20"),
-        endDate: new Date("2025-12-21"),
+        startDate: startDate,
+        endDate: endDate,
         status: IncidentStatus.Active,
         description: "Test description one",
         systemUserID: "",
@@ -433,8 +475,10 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
-      const startDate = new Date("2025-12-20T10:00:00");
-      const endDate = new Date("2025-12-20T14:00:00");
+      const now = new Date();
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      startDate.setHours(10, 0, 0, 0);
+      const endDate = new Date(startDate.getTime() + 4 * 60 * 60 * 1000); // 4 hours later
 
       const dto: IncidentDTO = {
         id: "",
@@ -465,10 +509,14 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
+      const now = new Date();
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
       const incident = new Incident(
         "INC1",
         incidentType,
-        new Date("2025-12-20"),
+        startDate,
         null,
         IncidentStatus.Active,
         "Test description one",
@@ -483,8 +531,8 @@ describe("IncidentService – Aggregate Tests", () => {
       const dto: IncidentDTO = {
         id: "INC1",
         incidentTypeByCode: "CODE1",
-        startDate: new Date("2025-12-20"),
-        endDate: new Date("2025-12-21"),
+        startDate: startDate,
+        endDate: endDate,
         status: IncidentStatus.Active,
         description: "Test description one",
         systemUserID: "user1",
@@ -525,11 +573,15 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
+      const now = new Date();
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
       const incident = new Incident(
         "INC1",
         incidentType,
-        new Date("2025-12-20"),
-        new Date("2025-12-21"),
+        startDate,
+        endDate,
         IncidentStatus.Active,
         "Test description one",
         "user1",
@@ -543,8 +595,8 @@ describe("IncidentService – Aggregate Tests", () => {
       const dto: IncidentDTO = {
         id: "INC2",
         incidentTypeByCode: "CODE1",
-        startDate: new Date("2025-12-20"),
-        endDate: new Date("2025-12-21"),
+        startDate: startDate,
+        endDate: endDate,
         status: IncidentStatus.Active,
         description: "Test description one",
         systemUserID: "user1",
@@ -564,11 +616,16 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
+      const now = new Date();
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+      const newEndDate = new Date(now.getTime()); // today
+
       const incident = new Incident(
         "INC1",
         incidentType,
-        new Date("2025-12-20"),
-        new Date("2025-12-21"),
+        startDate,
+        endDate,
         IncidentStatus.Active,
         "Test description one",
         "user1",
@@ -582,8 +639,8 @@ describe("IncidentService – Aggregate Tests", () => {
       const dto: IncidentDTO = {
         id: "INC1",
         incidentTypeByCode: "CODE1",
-        startDate: new Date("2025-12-20"),
-        endDate: new Date("2025-12-22"),
+        startDate: startDate,
+        endDate: newEndDate,
         status: IncidentStatus.Active,
         description: "Test description one",
         systemUserID: "user1",
@@ -603,11 +660,15 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
+      const now = new Date();
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
       const incident = new Incident(
         "INC1",
         incidentType,
-        new Date("2025-12-20"),
-        new Date("2025-12-21"),
+        startDate,
+        endDate,
         IncidentStatus.Active,
         "Test description one",
         "user1",
@@ -621,8 +682,8 @@ describe("IncidentService – Aggregate Tests", () => {
       const dto: IncidentDTO = {
         id: "INC1",
         incidentTypeByCode: "CODE1",
-        startDate: new Date("2025-12-20"),
-        endDate: new Date("2025-12-21"),
+        startDate: startDate,
+        endDate: endDate,
         status: IncidentStatus.Resolved,
         description: "Test description one",
         systemUserID: "user1",
@@ -642,11 +703,15 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
+      const now = new Date();
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
       const incident = new Incident(
         "INC1",
         incidentType,
-        new Date("2025-12-20"),
-        new Date("2025-12-21"),
+        startDate,
+        endDate,
         IncidentStatus.Active,
         "Test description one",
         "user1",
@@ -660,8 +725,8 @@ describe("IncidentService – Aggregate Tests", () => {
       const dto: IncidentDTO = {
         id: "INC1",
         incidentTypeByCode: "CODE1",
-        startDate: new Date("2025-12-20"),
-        endDate: new Date("2025-12-21"),
+        startDate: startDate,
+        endDate: endDate,
         status: IncidentStatus.Active,
         description: "Updated description one",
         systemUserID: "user1",
@@ -681,14 +746,20 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
-      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, new Date("2025-12-18"), new Date(), "user1", new Date("2025-12-22"));
+      const now = new Date();
+      const vveArrival = new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000); // 4 days ago
+      const vveDeparture = new Date(now.getTime()); // today
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
+      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival, new Date(), "user1", vveDeparture);
       vesselVisitExecutionRepo.addVesselVisitExecution(vve);
 
       const incident = new Incident(
         "INC1",
         incidentType,
-        new Date("2025-12-20"),
-        new Date("2025-12-21"),
+        startDate,
+        endDate,
         IncidentStatus.Active,
         "Test description one",
         "user1",
@@ -702,8 +773,8 @@ describe("IncidentService – Aggregate Tests", () => {
       const dto: IncidentDTO = {
         id: "INC1",
         incidentTypeByCode: "CODE1",
-        startDate: new Date("2025-12-20"),
-        endDate: new Date("2025-12-21"),
+        startDate: startDate,
+        endDate: endDate,
         status: IncidentStatus.Active,
         description: "Test description one",
         systemUserID: "user1",
@@ -723,16 +794,23 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
-      const vve1 = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, new Date("2025-12-18"), new Date(), "user1", new Date("2025-12-22"));
-      const vve2 = new VesselVisitExecution("VVE2", "2025-PA-000002", "IMO7654321", VesselVisitExecutionStatus.Completed, new Date("2025-12-19"), new Date(), "user1", new Date("2025-12-22"));
+      const now = new Date();
+      const vveArrival1 = new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000); // 4 days ago
+      const vveArrival2 = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000); // 3 days ago
+      const vveDeparture = new Date(now.getTime()); // today
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
+      const vve1 = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival1, new Date(), "user1", vveDeparture);
+      const vve2 = new VesselVisitExecution("VVE2", "2025-PA-000002", "IMO7654321", VesselVisitExecutionStatus.Completed, vveArrival2, new Date(), "user1", vveDeparture);
       vesselVisitExecutionRepo.addVesselVisitExecution(vve1);
       vesselVisitExecutionRepo.addVesselVisitExecution(vve2);
 
       const incident = new Incident(
         "INC1",
         incidentType,
-        new Date("2025-12-20"),
-        new Date("2025-12-21"),
+        startDate,
+        endDate,
         IncidentStatus.Active,
         "Test description one",
         "user1",
@@ -746,8 +824,8 @@ describe("IncidentService – Aggregate Tests", () => {
       const dto: IncidentDTO = {
         id: "INC1",
         incidentTypeByCode: "CODE1",
-        startDate: new Date("2025-12-20"),
-        endDate: new Date("2025-12-21"),
+        startDate: startDate,
+        endDate: endDate,
         status: IncidentStatus.Active,
         description: "Test description one",
         systemUserID: "user1",
@@ -766,14 +844,20 @@ describe("IncidentService – Aggregate Tests", () => {
       const incidentType = new IncidentType("IT1", "CODE1", "Type1", "Description1", IncidentClassification.Critical);
       incidentTypeRepo.addIncidentType(incidentType);
 
-      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, new Date("2025-12-16"), new Date(), "user1", new Date("2025-12-17"));
+      const now = new Date();
+      const vveArrival = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000); // 6 days ago
+      const vveDeparture = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000); // 5 days ago
+      const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+
+      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival, new Date(), "user1", vveDeparture);
       vesselVisitExecutionRepo.addVesselVisitExecution(vve);
 
       const incident = new Incident(
         "INC1",
         incidentType,
-        new Date("2025-12-20"),
-        new Date("2025-12-21"),
+        startDate,
+        endDate,
         IncidentStatus.Active,
         "Test description one",
         "user1",
@@ -787,8 +871,8 @@ describe("IncidentService – Aggregate Tests", () => {
       const dto: IncidentDTO = {
         id: "INC1",
         incidentTypeByCode: "CODE1",
-        startDate: new Date("2025-12-20"),
-        endDate: new Date("2025-12-21"),
+        startDate: startDate,
+        endDate: endDate,
         status: IncidentStatus.Active,
         description: "Test description one",
         systemUserID: "user1",
