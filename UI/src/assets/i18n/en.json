@@ -1388,7 +1388,7 @@
   "OPERATION_PLANS": {
     "TITLE": "Operation Plans",
     "SUBTITLE": "View and manage all operation plans generated from vessel schedules",
-    "SEARCH_PLACEHOLDER": "Search by VVN, author, algorithm or ID...",
+    "SEARCH_PLACEHOLDER": "Search by VVN, author or algorithm...",
     "SEARCH_VVN_PLACEHOLDER": "Search VVNs...",
     "NO_PLANS": "No operation plans found.",
     "NO_MISSING_PLANS": "All VVNs have operation plans!",

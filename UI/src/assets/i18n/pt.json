@@ -1387,7 +1387,7 @@
   "OPERATION_PLANS": {
     "TITLE": "Planos de Operação",
     "SUBTITLE": "Ver e gerir todos os planos de operação gerados a partir dos horários de embarcações",
-    "SEARCH_PLACEHOLDER": "Pesquisar por VVN, autor, algoritmo ou ID...",
+    "SEARCH_PLACEHOLDER": "Pesquisar por VVN, autor ou algoritmo...",
     "SEARCH_VVN_PLACEHOLDER": "Pesquisar VVNs...",
     "NO_PLANS": "Nenhum plano de operação encontrado.",
     "NO_MISSING_PLANS": "Todos os VVNs têm planos de operação!",
