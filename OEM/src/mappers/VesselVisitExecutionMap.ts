@@ -1,10 +1,15 @@
 import { VesselVisitExecution } from "../domain/VesselVisitExecution";
 import { IVesselVisitExecutionPersistence } from "../dataschema/IVesselVisitExecutionPersistence";
 import { VesselVisitExecutionDTO } from "../dto/VesselVisitExecutionDTO";
+import { OperationExecutionEntryMap } from "./OperationExecutionEntryMap";
 
 export class VesselVisitExecutionMap {
 
     public static toDomain(raw: IVesselVisitExecutionPersistence | any): VesselVisitExecution {
+        const operations = raw.operations && Array.isArray(raw.operations)
+            ? raw.operations.map((op: any) => OperationExecutionEntryMap.toDomain(op))
+            : [];
+
         return new VesselVisitExecution(
             raw._id ? raw._id.toString() : "",
             raw.code,
@@ -13,6 +18,8 @@ export class VesselVisitExecutionMap {
             raw.arrivalDate,
             raw.lastUpdated,
             raw.systemUserID,
+            operations,
+            raw.DockAssigned || "",
             raw.departureDate
         );
     }
@@ -25,7 +32,9 @@ export class VesselVisitExecutionMap {
             arrivalDate: vve.arrivalDate,
             departureDate: vve.departureDate,
             lastUpdated: vve.lastUpdated,
-            systemUserID: vve.systemUserID
+            systemUserID: vve.systemUserID,
+            DockAssigned: vve.DockAssigned,
+            operations: vve.operations.map(op => OperationExecutionEntryMap.toPersistence(op))
         };
 
         if (vve.id && vve.id !== "") {
@@ -43,7 +52,9 @@ export class VesselVisitExecutionMap {
             arrivalDate: vve.arrivalDate,
             departureDate: vve.departureDate,
             lastUpdated: vve.lastUpdated,
-            systemUserID: vve.systemUserID
+            systemUserID: vve.systemUserID,
+            DockAssigned: vve.DockAssigned,
+            operations: vve.operations.map(op => OperationExecutionEntryMap.toDTO(op))
         };
     }
 }

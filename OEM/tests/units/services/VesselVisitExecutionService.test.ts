@@ -23,10 +23,27 @@ describe("VesselVisitExecutionService (unit tests)", () => {
 
     let vesselVisitExecutionRepo: any;
     let incidentRepo: any;
+    let operationPlanRepo: any;
     let logger: any;
     let service: VesselVisitExecutionService;
+    let mockSystemUserClient: any;
+    let mockVvnClient: any;
 
     beforeEach(() => {
+        // Setup mock instances for clients
+        mockSystemUserClient = {
+            getMyIsFirstTime: jest.fn(),
+            getByEmail: jest.fn()
+        };
+
+        mockVvnClient = {
+            getByCode: jest.fn()
+        };
+
+        // Mock the constructors to return our mock instances
+        (SystemUserClient as jest.Mock).mockImplementation(() => mockSystemUserClient);
+        (VesselVisitNotificationClient as jest.Mock).mockImplementation(() => mockVvnClient);
+
         vesselVisitExecutionRepo = {
             findAll: jest.fn(),
             findById: jest.fn(),
@@ -44,9 +61,13 @@ describe("VesselVisitExecutionService (unit tests)", () => {
             update: jest.fn()
         };
 
+        operationPlanRepo = {
+            findByVvn: jest.fn()
+        };
+
         logger = { error: jest.fn(), info: jest.fn() };
 
-        service = new VesselVisitExecutionService(vesselVisitExecutionRepo, incidentRepo, logger);
+        service = new VesselVisitExecutionService(vesselVisitExecutionRepo, incidentRepo, operationPlanRepo, logger);
 
         // Reset mocks
         jest.clearAllMocks();
@@ -65,7 +86,7 @@ describe("VesselVisitExecutionService (unit tests)", () => {
             new Date("2024-01-01"),
             new Date(),
             "user1",
-            undefined
+            []
         );
 
         vesselVisitExecutionRepo.findAll.mockResolvedValue([domainObj]);
@@ -105,6 +126,8 @@ describe("VesselVisitExecutionService (unit tests)", () => {
             new Date("2024-02-01"),
             new Date(),
             "user2",
+            [],
+            "",
             new Date("2024-02-05")
         );
 
@@ -143,7 +166,7 @@ describe("VesselVisitExecutionService (unit tests)", () => {
             new Date("2024-03-01"),
             new Date(),
             "user3",
-            undefined
+            []
         );
 
         vesselVisitExecutionRepo.findByCode.mockResolvedValue(domainObj);
@@ -181,6 +204,8 @@ describe("VesselVisitExecutionService (unit tests)", () => {
             new Date("2024-04-01"),
             new Date(),
             "user4",
+            [],
+            "",
             new Date("2024-04-05")
         );
 
@@ -226,7 +251,7 @@ describe("VesselVisitExecutionService (unit tests)", () => {
             new Date("2024-05-01"),
             new Date(),
             "user5",
-            undefined
+            []
         );
 
         vesselVisitExecutionRepo.findByVesselIMOs.mockResolvedValue([domainObj]);
@@ -264,7 +289,7 @@ describe("VesselVisitExecutionService (unit tests)", () => {
             new Date("2024-06-01"),
             new Date(),
             "user6",
-            undefined
+            []
         );
 
         vesselVisitExecutionRepo.findByFilters.mockResolvedValue([domainObj]);
@@ -309,16 +334,16 @@ describe("VesselVisitExecutionService (unit tests)", () => {
 
         const mockUser = { id: 1, email: "user@test.com" };
         const mockVVN = { vesselIMO: "IMO5555555", visitStatus: "Approved" };
+        const mockOperationPlan = { 
+            vesselVisitNotificationCode: "VVN001",
+            operations: []
+        };
 
-        (SystemUserClient as jest.Mock).mockImplementation(() => ({
-            getMyIsFirstTime: jest.fn().mockResolvedValue({ email: "user@test.com" }),
-            getByEmail: jest.fn().mockResolvedValue(mockUser)
-        }));
+        mockSystemUserClient.getMyIsFirstTime.mockResolvedValue({ email: "user@test.com" });
+        mockSystemUserClient.getByEmail.mockResolvedValue(mockUser);
+        mockVvnClient.getByCode.mockResolvedValue(mockVVN);
 
-        (VesselVisitNotificationClient as jest.Mock).mockImplementation(() => ({
-            getByCode: jest.fn().mockResolvedValue(mockVVN)
-        }));
-
+        operationPlanRepo.findByVvn.mockResolvedValue(mockOperationPlan);
         vesselVisitExecutionRepo.findByVesselIMO.mockResolvedValue(null);
         vesselVisitExecutionRepo.findAll.mockResolvedValue([]);
 
@@ -330,7 +355,7 @@ describe("VesselVisitExecutionService (unit tests)", () => {
             new Date("2024-07-01"),
             new Date(),
             "1",
-            undefined
+            []
         );
 
         (VesselVisitExecutionMap.toDomain as jest.Mock).mockReturnValue(domainCreated);
@@ -341,7 +366,11 @@ describe("VesselVisitExecutionService (unit tests)", () => {
             code: "2024-PA-000001"
         });
 
-        const result = await service.createVesselVisitExecution(dto as any, "http://api.test", "Bearer token");
+        const result = await service.createVesselVisitExecution(dto as any, "Bearer token");
+
+        if (result.isFailure) {
+            console.log("Failure reason:", result.errorValue());
+        }
 
         expect(result.isSuccess).toBe(true);
         expect(result.getValue()).toEqual({ id: "7", code: "2024-PA-000001" });
@@ -353,11 +382,9 @@ describe("VesselVisitExecutionService (unit tests)", () => {
             arrivalDate: new Date("2024-07-01")
         };
 
-        (SystemUserClient as jest.Mock).mockImplementation(() => ({
-            getMyIsFirstTime: jest.fn().mockResolvedValue(null)
-        }));
+        mockSystemUserClient.getMyIsFirstTime.mockResolvedValue(null);
 
-        const result = await service.createVesselVisitExecution(dto as any, "http://api.test", "Bearer token");
+        const result = await service.createVesselVisitExecution(dto as any, "Bearer token");
 
         expect(result.isFailure).toBe(true);
         expect(result.errorValue()).toContain("No email claim found");
@@ -369,12 +396,10 @@ describe("VesselVisitExecutionService (unit tests)", () => {
             arrivalDate: new Date("2024-07-01")
         };
 
-        (SystemUserClient as jest.Mock).mockImplementation(() => ({
-            getMyIsFirstTime: jest.fn().mockResolvedValue({ email: "user@test.com" }),
-            getByEmail: jest.fn().mockResolvedValue(null)
-        }));
+        mockSystemUserClient.getMyIsFirstTime.mockResolvedValue({ email: "user@test.com" });
+        mockSystemUserClient.getByEmail.mockResolvedValue(null);
 
-        const result = await service.createVesselVisitExecution(dto as any, "http://api.test", "Bearer token");
+        const result = await service.createVesselVisitExecution(dto as any, "Bearer token");
 
         expect(result.isFailure).toBe(true);
         expect(result.errorValue()).toContain("Authenticated user not found");
@@ -388,16 +413,11 @@ describe("VesselVisitExecutionService (unit tests)", () => {
 
         const mockUser = { id: 1, email: "user@test.com" };
 
-        (SystemUserClient as jest.Mock).mockImplementation(() => ({
-            getMyIsFirstTime: jest.fn().mockResolvedValue({ email: "user@test.com" }),
-            getByEmail: jest.fn().mockResolvedValue(mockUser)
-        }));
+        mockSystemUserClient.getMyIsFirstTime.mockResolvedValue({ email: "user@test.com" });
+        mockSystemUserClient.getByEmail.mockResolvedValue(mockUser);
+        mockVvnClient.getByCode.mockResolvedValue(null);
 
-        (VesselVisitNotificationClient as jest.Mock).mockImplementation(() => ({
-            getByCode: jest.fn().mockResolvedValue(null)
-        }));
-
-        const result = await service.createVesselVisitExecution(dto as any, "http://api.test", "Bearer token");
+        const result = await service.createVesselVisitExecution(dto as any, "Bearer token");
 
         expect(result.isFailure).toBe(true);
         expect(result.errorValue()).toContain("Vessel Visit Notification not found");
@@ -412,16 +432,11 @@ describe("VesselVisitExecutionService (unit tests)", () => {
         const mockUser = { id: 1, email: "user@test.com" };
         const mockVVN = { vesselIMO: "IMO5555555", visitStatus: "Pending" };
 
-        (SystemUserClient as jest.Mock).mockImplementation(() => ({
-            getMyIsFirstTime: jest.fn().mockResolvedValue({ email: "user@test.com" }),
-            getByEmail: jest.fn().mockResolvedValue(mockUser)
-        }));
+        mockSystemUserClient.getMyIsFirstTime.mockResolvedValue({ email: "user@test.com" });
+        mockSystemUserClient.getByEmail.mockResolvedValue(mockUser);
+        mockVvnClient.getByCode.mockResolvedValue(mockVVN);
 
-        (VesselVisitNotificationClient as jest.Mock).mockImplementation(() => ({
-            getByCode: jest.fn().mockResolvedValue(mockVVN)
-        }));
-
-        const result = await service.createVesselVisitExecution(dto as any, "http://api.test", "Bearer token");
+        const result = await service.createVesselVisitExecution(dto as any, "Bearer token");
 
         expect(result.isFailure).toBe(true);
         expect(result.errorValue()).toContain("must be 'Approved'");
@@ -436,18 +451,13 @@ describe("VesselVisitExecutionService (unit tests)", () => {
         const mockUser = { id: 1, email: "user@test.com" };
         const mockVVN = { vesselIMO: "IMO5555555", visitStatus: "Approved" };
 
-        (SystemUserClient as jest.Mock).mockImplementation(() => ({
-            getMyIsFirstTime: jest.fn().mockResolvedValue({ email: "user@test.com" }),
-            getByEmail: jest.fn().mockResolvedValue(mockUser)
-        }));
-
-        (VesselVisitNotificationClient as jest.Mock).mockImplementation(() => ({
-            getByCode: jest.fn().mockResolvedValue(mockVVN)
-        }));
+        mockSystemUserClient.getMyIsFirstTime.mockResolvedValue({ email: "user@test.com" });
+        mockSystemUserClient.getByEmail.mockResolvedValue(mockUser);
+        mockVvnClient.getByCode.mockResolvedValue(mockVVN);
 
         vesselVisitExecutionRepo.findByVesselIMO.mockResolvedValue({ id: "existing" });
 
-        const result = await service.createVesselVisitExecution(dto as any, "http://api.test", "Bearer token");
+        const result = await service.createVesselVisitExecution(dto as any, "Bearer token");
 
         expect(result.isFailure).toBe(true);
         expect(result.errorValue()).toContain("already exists");
@@ -466,7 +476,7 @@ describe("VesselVisitExecutionService (unit tests)", () => {
             new Date("2024-08-01"),
             new Date(),
             "user8",
-            undefined
+            []
         );
 
         vesselVisitExecutionRepo.findByCode.mockResolvedValue(existing);
@@ -507,7 +517,7 @@ describe("VesselVisitExecutionService (unit tests)", () => {
             new Date("2024-09-01"),
             new Date(),
             "user9",
-            undefined
+            []
         );
 
         vesselVisitExecutionRepo.findByCode.mockResolvedValue(existing);
@@ -529,7 +539,7 @@ describe("VesselVisitExecutionService (unit tests)", () => {
             new Date("2024-10-01"),
             new Date(),
             "user10",
-            undefined
+            []
         );
 
         vesselVisitExecutionRepo.findByCode.mockResolvedValue(existing);

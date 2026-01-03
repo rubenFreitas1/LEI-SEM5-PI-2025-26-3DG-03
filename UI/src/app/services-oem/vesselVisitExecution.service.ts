@@ -70,7 +70,9 @@ export class VesselVisitExecutionService {
     arrivalDate: dto?.arrivalDate,
     lastUpdated: dto?.lastUpdated,
     systemUserID: dto?.systemUserID,
-    vesselVisitNotificationCode: dto?.code ?? dto?.vesselVisitNotificationCode
+    vesselVisitNotificationCode: dto?.code ?? dto?.vesselVisitNotificationCode,
+    DockAssigned: dto?.DockAssigned ?? dto?.dockAssigned,
+    operations: dto?.operations ?? []
   });
 
   private handleError(context: string, error: any) {

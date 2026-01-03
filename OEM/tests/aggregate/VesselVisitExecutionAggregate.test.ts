@@ -5,6 +5,8 @@ import { Incident } from "../../src/domain/Incident";
 import { IncidentStatus } from "../../src/domain/IncidentStatus";
 import { IncidentClassification } from "../../src/domain/IncidentQualification";
 import { Result } from "../../src/core/logic/Result";
+import { OperationPlan } from "../../src/domain/OperationPlan";
+import { OperationEntry } from "../../src/domain/OperationEntry";
 
 // -----------------------------------------
 // Fake Repositories
@@ -88,6 +90,19 @@ class IncidentRepoFake {
   }
 }
 
+class OperationPlanRepoFake {
+  private data: OperationPlan[] = [];
+
+  async findByVvn(vvn: string) {
+    return this.data.find(x => x.vvn === vvn) ?? null;
+  }
+
+  // Helper method to add operation plans for testing
+  addOperationPlan(operationPlan: OperationPlan) {
+    this.data.push(operationPlan);
+  }
+}
+
 // Mock clients
 jest.mock("../../src/services/clients/SystemUserClient");
 jest.mock("../../src/services/clients/VesselVisitNotificationClient");
@@ -106,6 +121,7 @@ describe("VesselVisitExecutionService – Aggregate Tests", () => {
 
   let vveRepo: VesselVisitExecutionRepoFake;
   let incidentRepo: IncidentRepoFake;
+  let operationPlanRepo: OperationPlanRepoFake;
   let service: VesselVisitExecutionService;
   let mockSystemUserClient: jest.Mocked<SystemUserClient>;
   let mockVVNClient: jest.Mocked<VesselVisitNotificationClient>;
@@ -113,7 +129,8 @@ describe("VesselVisitExecutionService – Aggregate Tests", () => {
   beforeEach(() => {
     vveRepo = new VesselVisitExecutionRepoFake();
     incidentRepo = new IncidentRepoFake();
-    service = new VesselVisitExecutionService(vveRepo as any, incidentRepo as any, loggerFake);
+    operationPlanRepo = new OperationPlanRepoFake();
+    service = new VesselVisitExecutionService(vveRepo as any, incidentRepo as any, operationPlanRepo as any, loggerFake);
 
     // Setup mocks
     mockSystemUserClient = new SystemUserClient("http://localhost") as jest.Mocked<SystemUserClient>;
@@ -289,18 +306,37 @@ describe("VesselVisitExecutionService – Aggregate Tests", () => {
   // CREATE – robust tests
   // ---------------------------------------------
   it("should create a new vessel visit execution", async () => {
+    // Setup an operation plan for the VVN
+    const operations = [
+      new OperationEntry("OP1", "LOAD", "CONT123", new Date("2025-01-15T08:00:00Z"), new Date("2025-01-15T09:00:00Z"), "CRANE-1")
+    ];
+    const operationPlan = new OperationPlan(
+      "1",
+      "VVN001",
+      new Date("2025-01-15"),
+      new Date("2025-01-15T06:00:00Z"),
+      new Date("2025-01-15T18:00:00Z"),
+      operations,
+      "test-author",
+      "default",
+      new Date()
+    );
+    operationPlanRepo.addOperationPlan(operationPlan);
+
     const dto = {
       vesselVisitNotificationCode: "VVN001",
       arrivalDate: new Date(),
       incidentIDs: []
     };
 
-    const result = await service.createVesselVisitExecution(dto as any, "http://localhost", "Bearer token");
+    const result = await service.createVesselVisitExecution(dto as any, "Bearer token");
 
     expect(result.isSuccess).toBe(true);
     expect(result.getValue().vesselIMO).toBe("IMO1234567");
     expect(result.getValue().systemUserID).toBe("user123");
     expect(result.getValue().status).toBe(VesselVisitExecutionStatus.InProgress);
+    expect(result.getValue().operations).toBeDefined();
+    expect(result.getValue().operations?.length).toBe(1);
   });
 
   it("should fail if vesselVisitNotificationCode is missing", async () => {
@@ -309,7 +345,7 @@ describe("VesselVisitExecutionService – Aggregate Tests", () => {
       incidentIDs: []
     };
 
-    const result = await service.createVesselVisitExecution(dto as any, "http://localhost", "Bearer token");
+    const result = await service.createVesselVisitExecution(dto as any, "Bearer token");
 
     expect(result.isFailure).toBe(true);
     expect(result.errorValue()).toContain("vesselVisitNotificationCode is required");
@@ -325,7 +361,7 @@ describe("VesselVisitExecutionService – Aggregate Tests", () => {
       incidentIDs: []
     };
 
-    const result = await service.createVesselVisitExecution(dto as any, "http://localhost", "Bearer token");
+    const result = await service.createVesselVisitExecution(dto as any, "Bearer token");
 
     expect(result.isFailure).toBe(true);
     expect(result.errorValue()).toBe("Authenticated user not found.");
@@ -340,7 +376,7 @@ describe("VesselVisitExecutionService – Aggregate Tests", () => {
       incidentIDs: []
     };
 
-    const result = await service.createVesselVisitExecution(dto as any, "http://localhost", "Bearer token");
+    const result = await service.createVesselVisitExecution(dto as any, "Bearer token");
 
     expect(result.isFailure).toBe(true);
     expect(result.errorValue()).toBe("Vessel Visit Notification not found for provided code.");
@@ -360,7 +396,7 @@ describe("VesselVisitExecutionService – Aggregate Tests", () => {
       incidentIDs: []
     };
 
-    const result = await service.createVesselVisitExecution(dto as any, "http://localhost", "Bearer token");
+    const result = await service.createVesselVisitExecution(dto as any, "Bearer token");
 
     expect(result.isFailure).toBe(true);
     expect(result.errorValue()).toContain("status must be 'Approved'");
@@ -376,26 +412,60 @@ describe("VesselVisitExecutionService – Aggregate Tests", () => {
       incidentIDs: []
     };
 
-    const result = await service.createVesselVisitExecution(dto as any, "http://localhost", "Bearer token");
+    const result = await service.createVesselVisitExecution(dto as any, "Bearer token");
 
     expect(result.isFailure).toBe(true);
     expect(result.errorValue()).toContain("already exists for vessel IMO");
   });
 
   it("should fail if incident IDs not found", async () => {
+    // Setup an operation plan for the VVN
+    const operations = [
+      new OperationEntry("OP1", "LOAD", "CONT123", new Date("2025-01-15T08:00:00Z"), new Date("2025-01-15T09:00:00Z"), "CRANE-1")
+    ];
+    const operationPlan = new OperationPlan(
+      "1",
+      "VVN001",
+      new Date("2025-01-15"),
+      new Date("2025-01-15T06:00:00Z"),
+      new Date("2025-01-15T18:00:00Z"),
+      operations,
+      "test-author",
+      "default",
+      new Date()
+    );
+    operationPlanRepo.addOperationPlan(operationPlan);
+
     const dto = {
       vesselVisitNotificationCode: "VVN001",
       arrivalDate: new Date(),
       incidentIDs: ["INC1", "INC2"]
     };
 
-    const result = await service.createVesselVisitExecution(dto as any, "http://localhost", "Bearer token");
+    const result = await service.createVesselVisitExecution(dto as any, "Bearer token");
 
     expect(result.isFailure).toBe(true);
     expect(result.errorValue()).toBe("One or more Incident IDs not found.");
   });
 
   it("should fail if incidents do not overlap with execution time range", async () => {
+    // Setup an operation plan for the VVN
+    const operations = [
+      new OperationEntry("OP1", "LOAD", "CONT123", new Date("2025-01-15T08:00:00Z"), new Date("2025-01-15T09:00:00Z"), "CRANE-1")
+    ];
+    const operationPlan = new OperationPlan(
+      "1",
+      "VVN001",
+      new Date("2025-01-15"),
+      new Date("2025-01-15T06:00:00Z"),
+      new Date("2025-01-15T18:00:00Z"),
+      operations,
+      "test-author",
+      "default",
+      new Date()
+    );
+    operationPlanRepo.addOperationPlan(operationPlan);
+
     const now = new Date();
     const arrivalDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
     const departureDate = new Date(now.getTime()); // today
@@ -423,13 +493,30 @@ describe("VesselVisitExecutionService – Aggregate Tests", () => {
       incidentIDs: ["INC1"]
     };
 
-    const result = await service.createVesselVisitExecution(dto as any, "http://localhost", "Bearer token");
+    const result = await service.createVesselVisitExecution(dto as any, "Bearer token");
 
     expect(result.isFailure).toBe(true);
     expect(result.errorValue()).toContain("do not overlap with the VesselVisitExecution time range");
   });
 
   it("should create with incidents that overlap time range", async () => {
+    // Setup an operation plan for the VVN
+    const operations = [
+      new OperationEntry("OP1", "LOAD", "CONT123", new Date("2025-01-15T08:00:00Z"), new Date("2025-01-15T09:00:00Z"), "CRANE-1")
+    ];
+    const operationPlan = new OperationPlan(
+      "1",
+      "VVN001",
+      new Date("2025-01-15"),
+      new Date("2025-01-15T06:00:00Z"),
+      new Date("2025-01-15T18:00:00Z"),
+      operations,
+      "test-author",
+      "default",
+      new Date()
+    );
+    operationPlanRepo.addOperationPlan(operationPlan);
+
     const now = new Date();
     const arrivalDate = new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000); // 4 days ago
     const departureDate = new Date(now.getTime()); // today
@@ -457,7 +544,7 @@ describe("VesselVisitExecutionService – Aggregate Tests", () => {
       incidentIDs: ["INC1"]
     };
 
-    const result = await service.createVesselVisitExecution(dto as any, "http://localhost", "Bearer token");
+    const result = await service.createVesselVisitExecution(dto as any, "Bearer token");
 
     expect(result.isSuccess).toBe(true);
   });
@@ -530,5 +617,73 @@ describe("VesselVisitExecutionService – Aggregate Tests", () => {
 
     expect(result.isFailure).toBe(true);
     expect(result.errorValue()).toBe("Invalid departureDate format.");
+  });
+
+  // ---------------------------------------------
+  // UPDATE DOCK
+  // ---------------------------------------------
+
+  it("should update DockAssigned successfully", async () => {
+    const vve = new VesselVisitExecution("1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.InProgress, new Date(), new Date(), "user1");
+    await vveRepo.save(vve);
+
+    const payload = {
+      DockAssigned: "DOCK-A1"
+    };
+
+    const result = await service.updateVesselVisitExecution("2025-PA-000001", payload);
+
+    expect(result.isSuccess).toBe(true);
+    expect(result.getValue().DockAssigned).toBe("DOCK-A1");
+  });
+
+  it("should update arrivalDate and DockAssigned together", async () => {
+    const vve = new VesselVisitExecution("1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.InProgress, new Date(), new Date(), "user1");
+    await vveRepo.save(vve);
+
+    const arrivalDate = new Date("2025-06-10T10:30:00Z");
+    const payload = {
+      arrivalDate: arrivalDate.toISOString(),
+      DockAssigned: "DOCK-B2"
+    };
+
+    const result = await service.updateVesselVisitExecution("2025-PA-000001", payload);
+
+    expect(result.isSuccess).toBe(true);
+    expect(result.getValue().DockAssigned).toBe("DOCK-B2");
+  });
+
+  it("should fail update with invalid arrivalDate format", async () => {
+    const vve = new VesselVisitExecution("1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.InProgress, new Date(), new Date(), "user1");
+    await vveRepo.save(vve);
+
+    const payload = {
+      arrivalDate: "invalid-date"
+    };
+
+    const result = await service.updateVesselVisitExecution("2025-PA-000001", payload);
+
+    expect(result.isFailure).toBe(true);
+    expect(result.errorValue()).toBe("Invalid arrivalDate format.");
+  });
+
+  it("should update status, arrivalDate and DockAssigned all together", async () => {
+    const vve = new VesselVisitExecution("1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.InProgress, new Date(), new Date(), "user1");
+    await vveRepo.save(vve);
+
+    const arrivalDate = new Date("2025-06-10T10:30:00Z");
+    const payload = {
+      status: "Completed",
+      arrivalDate: arrivalDate.toISOString(),
+      DockAssigned: "DOCK-C3",
+      departureDate: new Date("2025-06-15T18:00:00Z").toISOString()
+    };
+
+    const result = await service.updateVesselVisitExecution("2025-PA-000001", payload);
+
+    expect(result.isSuccess).toBe(true);
+    expect(result.getValue().status).toBe(VesselVisitExecutionStatus.Completed);
+    expect(result.getValue().DockAssigned).toBe("DOCK-C3");
+    expect(result.getValue().departureDate).toBeDefined();
   });
 });

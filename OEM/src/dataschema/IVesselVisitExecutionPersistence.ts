@@ -9,4 +9,6 @@ export interface IVesselVisitExecutionPersistence {
     departureDate?: Date;
     lastUpdated: Date;
     systemUserID: string;
+    DockAssigned?: string;
+    operations: any[];
 }

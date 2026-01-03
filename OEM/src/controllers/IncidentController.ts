@@ -108,14 +108,9 @@ export default class IncidentController  implements IIncidentController {
         try {
             this.logger.silly('Creating incident');
             const incidentDTO: IncidentDTO = req.body;
-
-            const apiBaseUrl = config.env === 'production' 
-                ? (process.env.API_URL || '/api')
-                : (process.env.API_URL || 'http://localhost:5000/api');
-
             const authHeader = req.headers.authorization;
 
-            const result = await this.incidentService.createIncident(incidentDTO, apiBaseUrl, authHeader);
+            const result = await this.incidentService.createIncident(incidentDTO, authHeader);
             if (result.isSuccess) {
                 res.status(201).json(result.getValue());
             } else {

@@ -594,7 +594,6 @@ describe("Incident Routes (Application Tests)", () => {
         status: "Active",
         description: "Test incident"
       }),
-      expect.any(String),
       undefined
     );
   });

@@ -45,6 +45,33 @@ const VesselVisitExecutionSchema = new mongoose.Schema(
     systemUserID: {
         type: String,
         required: true
+    },
+
+    DockAssigned: {
+        type: String,
+        required: false,
+        default: ""
+    },
+
+    operations: {
+        type: [
+            {
+                id: { type: String, required: true },
+                operationType: { type: String, required: true },
+                container: { type: String, required: true },
+                plannedStart: { type: Date, required: true },
+                plannedEnd: { type: Date, required: true },
+                craneUsed: { type: String, required: true },
+                status: { 
+                    type: String, 
+                    enum: ["Pending", "Started", "Completed", "Delayed"],
+                    required: true 
+                },
+                actualStart: { type: Date, required: false },
+                actualEnd: { type: Date, required: false }
+            }
+        ],
+        default: []
     }
   },
   { timestamps: true }

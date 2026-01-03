@@ -12,13 +12,17 @@ import SystemUserClient from "./clients/SystemUserClient";
 
 @Service()
 export default class IncidentService implements IIncidentService {
+    private sysClient: SystemUserClient;
 
     constructor(
         @Inject("incidentRepo") private incidentRepo: IIncidentRepo,
         @Inject("incidentTypeRepo") private incidentTypeRepo: IIncidentTypeRepo,
         @Inject("vesselVisitExecutionRepo") private vesselVisitExecutionRepo: IVesselVisitExecutionRepo,
         @Inject("logger") private logger: any
-    ) {}
+    ) {
+        const apiBaseUrl = process.env.API_URL || 'http://localhost:5000/api';
+        this.sysClient = new SystemUserClient(apiBaseUrl);
+    }
 
     public async getAllIncidents(): Promise<Result<IncidentDTO[]>> {
         try {
@@ -105,15 +109,14 @@ export default class IncidentService implements IIncidentService {
         }
     }
 
-    public async createIncident(incidentDTO: IncidentDTO, apiBaseUrl?: string, authHeader?: string): Promise<Result<IncidentDTO>> {
+    public async createIncident(incidentDTO: IncidentDTO, authHeader?: string): Promise<Result<IncidentDTO>> {
         try {
-            const sysClient = new SystemUserClient(apiBaseUrl);
-            const myInfo = await sysClient.getMyIsFirstTime(authHeader);
+            const myInfo = await this.sysClient.getMyIsFirstTime(authHeader);
             const email = myInfo?.email;
             if (!email) {
                 return Result.fail("No email claim found in Auth0 token.");
             }
-            const currentUser = await sysClient.getByEmail(email, authHeader);
+            const currentUser = await this.sysClient.getByEmail(email, authHeader);
             if (!currentUser) {
                 return Result.fail("Authenticated user not found.");
             }

@@ -72,10 +72,30 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
   }, 30000);
 
   // =========================================
+  // HELPER: Create Operation Plan
+  // =========================================
+  const createOperationPlan = async (vvnCode: string) => {
+    const now = new Date();
+    await request(app)
+      .post("/api/operation-plans")
+      .send({
+        vvns: [vvnCode],
+        assignedCranes: [[]],
+        arrivalTimes: [now.toISOString()],
+        departureTimes: [new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString()],
+        targetDays: [now.toISOString()],
+        author: "test-user",
+        algorithm: "Manual"
+      });
+  };
+
+  // =========================================
   // TESTES DE CRIAÇÃO (POST)
   // =========================================
   describe("POST /vessel-visit-executions", () => {
     it("should create and retrieve a vessel visit execution from real database", async () => {
+      await createOperationPlan("2025-PA-000001");
+      
       const payload = {
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -96,6 +116,8 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
     });
 
     it("should fail when creating duplicate vessel visit notification code in database", async () => {
+      await createOperationPlan("2025-PA-000001");
+      
       const payload = {
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -138,6 +160,10 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
     });
 
     it("should return all vessel visit executions from database", async () => {
+      await createOperationPlan("2025-PA-000001");
+      await createOperationPlan("2025-PA-000002");
+      await createOperationPlan("2025-PA-000003");
+      
       await request(app).post("/api/vessel-visit-executions").send({
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -162,6 +188,8 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
 
   describe("GET /vessel-visit-executions/id/:id", () => {
     it("should find vessel visit execution by id in database", async () => {
+      await createOperationPlan("2025-PA-000001");
+      
       const createRes = await request(app).post("/api/vessel-visit-executions").send({
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -188,6 +216,8 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
 
   describe("GET /vessel-visit-executions/code/:code", () => {
     it("should find vessel visit execution by code in database", async () => {
+      await createOperationPlan("2025-PA-000001");
+      
       const createRes = await request(app).post("/api/vessel-visit-executions").send({
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -208,6 +238,10 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
 
   describe("GET /vessel-visit-executions/status/:status", () => {
     beforeEach(async () => {
+      await createOperationPlan("2025-PA-000001");
+      await createOperationPlan("2025-PA-000002");
+      await createOperationPlan("2025-PA-000003");
+      
       await request(app).post("/api/vessel-visit-executions").send({
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -257,6 +291,8 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
 
   describe("GET /vessel-visit-executions/vessel-imo/:vesselIMO", () => {
     it("should find vessel visit executions by vessel IMO in database", async () => {
+      await createOperationPlan("2025-PA-000001");
+      
       await request(app).post("/api/vessel-visit-executions").send({
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -276,6 +312,9 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
     });
 
     it("should find vessel visit execution by specific vessel IMO", async () => {
+      await createOperationPlan("2025-PA-000001");
+      await createOperationPlan("2025-PA-000002");
+      
       await request(app).post("/api/vessel-visit-executions").send({
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -299,6 +338,8 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
   // =========================================
   describe("PUT /vessel-visit-executions/:code", () => {
     it("should update vessel visit execution status to Completed in database", async () => {
+      await createOperationPlan("2025-PA-000001");
+      
       const createRes = await request(app).post("/api/vessel-visit-executions").send({
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -318,6 +359,8 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
     });
 
     it("should update vessel visit execution status to InProgress in database", async () => {
+      await createOperationPlan("2025-PA-000001");
+      
       const createRes = await request(app).post("/api/vessel-visit-executions").send({
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -350,6 +393,8 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
     });
 
     it("should fail when status is invalid", async () => {
+      await createOperationPlan("2025-PA-000001");
+      
       const createRes = await request(app).post("/api/vessel-visit-executions").send({
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -365,6 +410,8 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
     });
 
     it("should fail when status is missing", async () => {
+      await createOperationPlan("2025-PA-000001");
+      
       const createRes = await request(app).post("/api/vessel-visit-executions").send({
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -383,6 +430,8 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
   // =========================================
   describe("Complex Integration Scenarios", () => {
     it("should handle complete CRUD workflow with real database", async () => {
+      await createOperationPlan("2025-PA-000001");
+      
       const payload = {
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -407,6 +456,10 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
     });
 
     it("should persist data between requests (real database test)", async () => {
+      await createOperationPlan("2025-PA-000001");
+      await createOperationPlan("2025-PA-000002");
+      await createOperationPlan("2025-PA-000003");
+      
       await request(app).post("/api/vessel-visit-executions").send({
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -432,6 +485,8 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
     });
 
     it("should handle multiple status updates correctly in database", async () => {
+      await createOperationPlan("2025-PA-000001");
+      
       const createRes = await request(app).post("/api/vessel-visit-executions").send({
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -462,6 +517,10 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
     });
 
     it("should correctly filter by status after multiple operations", async () => {
+      await createOperationPlan("2025-PA-000001");
+      await createOperationPlan("2025-PA-000002");
+      await createOperationPlan("2025-PA-000003");
+      
       const create1 = await request(app).post("/api/vessel-visit-executions").send({
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -497,6 +556,10 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
     });
 
     it("should generate unique codes for each vessel visit execution", async () => {
+      await createOperationPlan("2025-PA-000001");
+      await createOperationPlan("2025-PA-000002");
+      await createOperationPlan("2025-PA-000003");
+      
       const create1 = await request(app).post("/api/vessel-visit-executions").send({
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()
@@ -522,6 +585,8 @@ describe("VesselVisitExecution – System Tests (MongoDB Atlas)", () => {
     });
 
     it("should validate vessel visit execution code format", async () => {
+      await createOperationPlan("2025-PA-000001");
+      
       const createRes = await request(app).post("/api/vessel-visit-executions").send({
         vesselVisitNotificationCode: "2025-PA-000001",
         arrivalDate: new Date().toISOString()

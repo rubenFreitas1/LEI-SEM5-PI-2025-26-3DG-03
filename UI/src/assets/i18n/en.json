@@ -1499,5 +1499,111 @@
     "REFRESH": "Refresh",
     "LOADING": "Loading...",
     "CANCEL": "Cancel",
-    "PROCESSING": "Processing..."}
+    "PROCESSING": "Processing..."},
+
+  "VESSEL_VISIT_EXECUTION": {
+    "TITLE": "Vessel Visit Executions",
+    "SEARCH_PLACEHOLDER": "Search by code, name, IMO or description",
+    "LOADING": "Loading...",
+    "NO_RESULTS": "No Vessel Visit Executions found.",
+    "NO_RESULTS_FOR": "No results found for ",
+
+    "BUTTON": {
+      "NEW": "New Execution",
+      "EDIT": "Edit",
+      "SELECT": "Select",
+      "UNSELECT": "Unselect",
+      "CANCEL": "Cancel",
+      "SAVE": "Save",
+      "SAVING": "Saving...",
+      "CREATE": "Create",
+      "CREATING": "Creating...",
+      "CLEAR_SEARCH": "Clear search",
+      "APPLY": "Apply",
+      "CLEAR": "Clear",
+      "CLOSE": "Close"
+    },
+
+    "TABLE": {
+      "CODE": "Code",
+      "VESSEL_IMO": "Vessel IMO",
+      "ARRIVAL_DATE": "Arrival Date",
+      "STATUS": "Status",
+      "ACTIONS": "Actions"
+    },
+
+    "STATUS": {
+      "ANY": "Any",
+      "IN_PROGRESS": "InProgress",
+      "COMPLETED": "Completed"
+    },
+
+    "FILTER": {
+      "STATUS_LABEL": "Status:",
+      "DATE_RANGE": "From - To"
+    },
+
+    "DETAILS": {
+      "TITLE": "Selected Vessel Visit Execution",
+      "CODE": "Code",
+      "VESSEL_IMO": "Vessel IMO",
+      "STATUS": "Status",
+      "ARRIVAL_DATE": "Arrival Date",
+      "DEPARTURE_DATE": "Departure Date",
+      "DOCK_ASSIGNED": "Dock Assigned",
+      "LAST_UPDATED": "Last Updated",
+      "CREATED_BY": "Created By System User ID",
+      "OPERATIONS": "Operations",
+      "OPERATIONS_COUNT": "Operations ({{count}})"
+    },
+
+    "OPERATION": {
+      "NUMBER": "Operation {{number}}",
+      "TYPE": "Type",
+      "CONTAINER": "Container",
+      "CRANE": "Crane",
+      "PLANNED": "Planned",
+      "ACTUAL": "Actual",
+      "PLANNED_START": "Planned Start",
+      "PLANNED_END": "Planned End",
+      "ACTUAL_START": "Actual Start",
+      "ACTUAL_END": "Actual End",
+      "STATUS": "Status",
+      "NA": "N/A",
+      "STATUS_PENDING": "Pending",
+      "STATUS_STARTED": "Started",
+      "STATUS_COMPLETED": "Completed",
+      "STATUS_DELAYED": "Delayed",
+      "STATUS_UNKNOWN": "Unknown"
+    },
+
+    "EDIT_MODAL": {
+      "TITLE": "Edit Execution",
+      "STATUS": "Status *",
+      "ARRIVAL_DATE": "Arrival Date *",
+      "ARRIVAL_DATE_HELP": "Date and time when the vessel arrived at the port",
+      "DOCK_ASSIGNED": "Dock Assigned",
+      "DOCK_ASSIGNED_PLACEHOLDER": "e.g., Dock A",
+      "DOCK_ASSIGNED_HELP": "Name of the dock assigned to the vessel",
+      "OPERATIONS": "Operations ({{count}})",
+      "NO_OPERATIONS": "No operations to display",
+      "OPERATIONS_HELP": "Edit operation status and actual times. Status can only be \"Completed\" if both actual times are set."
+    },
+
+    "CREATE_MODAL": {
+      "TITLE": "Create Execution",
+      "VVN": "Vessel Visit Notification",
+      "VVN_SELECT": "Select Notification",
+      "ARRIVAL_DATE": "Arrival Date",
+      "ONGOING_INCIDENTS": "Ongoing Incidents",
+      "NO_INCIDENTS": "No ongoing incidents for this date range",
+      "SELECT_DATE_HINT": "Select an arrival date to view ongoing incidents"
+    },
+
+    "MESSAGES": {
+      "CREATE_SUCCESS": "Vessel Visit Execution created successfully!",
+      "UPDATE_SUCCESS": "Vessel Visit Execution updated successfully!",
+      "ERROR": "An error occurred. Please try again."
+    }
+  }
 }

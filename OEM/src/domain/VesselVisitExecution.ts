@@ -1,4 +1,5 @@
 import { VesselVisitExecutionStatus } from "./VesselVisitExecutionStatus";
+import { OperationExecutionEntry } from "./OperationExecutionEntry";
 
 export class VesselVisitExecution {
 
@@ -10,6 +11,8 @@ export class VesselVisitExecution {
         public arrivalDate: Date,
         public lastUpdated: Date,
         public systemUserID: string,
+        public operations: OperationExecutionEntry[] = [],
+        public DockAssigned: string = "",
         public departureDate?: Date
     ) {
         this.validateCode(code);
@@ -75,6 +78,38 @@ export class VesselVisitExecution {
             }
             this.validateDepartureDate(this.departureDate);
         }
+        this.lastUpdated = new Date();
+    }
+
+    /**
+     * Update operations list
+     */
+    updateOperations(operations: OperationExecutionEntry[]) {
+        this.operations = operations;
+        this.lastUpdated = new Date();
+    }
+
+    /**
+     * Update a specific operation by id
+     */
+    updateOperation(operationId: string, updatedOperation: OperationExecutionEntry) {
+        const index = this.operations.findIndex(op => op.id === operationId);
+        if (index === -1) {
+            throw new Error(`Operation with id ${operationId} not found.`);
+        }
+        this.operations[index] = updatedOperation;
+        this.lastUpdated = new Date();
+    }
+
+    /**
+     * Get operation by id
+     */
+    getOperation(operationId: string): OperationExecutionEntry | undefined {
+        return this.operations.find(op => op.id === operationId);
+    }
+
+    updateAssignDock(dockName: string) {
+        this.DockAssigned = dockName;
         this.lastUpdated = new Date();
     }
 }

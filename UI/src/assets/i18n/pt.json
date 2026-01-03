@@ -30,7 +30,7 @@
     "PRIVACY_POLICY": "Política de Privacidade",
     "INCIDENT_TYPE": "Tipo de Incidente",
     "INCIDENT": "Incidente",
-    "VESSEL_VISIT_EXECUTION": "Execução de Visita",
+    "VESSEL_VISIT_EXECUTION": "Execução de Visita de Embarcação",
     "COMPLEMENTARY_TASK_CATEGORY": "Categoria de Tarefa Complementar",
     "COMPLEMENTARY_TASK": "Tarefas Complementares"
   },
@@ -1498,5 +1498,111 @@
     "REFRESH": "Atualizar",
     "LOADING": "A carregar...",
     "CANCEL": "Cancelar",
-    "PROCESSING": "A processar..."}
+    "PROCESSING": "A processar..."},
+
+  "VESSEL_VISIT_EXECUTION": {
+    "TITLE": "Execuções de Visita de Embarcação",
+    "SEARCH_PLACEHOLDER": "Pesquisar por código, nome, IMO ou descrição",
+    "LOADING": "A carregar...",
+    "NO_RESULTS": "Nenhuma Execução de Visita encontrada.",
+    "NO_RESULTS_FOR": "Nenhum resultado encontrado para ",
+
+    "BUTTON": {
+      "NEW": "Nova Execução",
+      "EDIT": "Editar",
+      "SELECT": "Selecionar",
+      "UNSELECT": "Desselecionar",
+      "CANCEL": "Cancelar",
+      "SAVE": "Guardar",
+      "SAVING": "A guardar...",
+      "CREATE": "Criar",
+      "CREATING": "A criar...",
+      "CLEAR_SEARCH": "Limpar pesquisa",
+      "APPLY": "Aplicar",
+      "CLEAR": "Limpar",
+      "CLOSE": "Fechar"
+    },
+
+    "TABLE": {
+      "CODE": "Código",
+      "VESSEL_IMO": "IMO da Embarcação",
+      "ARRIVAL_DATE": "Data de Chegada",
+      "STATUS": "Estado",
+      "ACTIONS": "Ações"
+    },
+
+    "STATUS": {
+      "ANY": "Qualquer",
+      "IN_PROGRESS": "Em Progresso",
+      "COMPLETED": "Concluído"
+    },
+
+    "FILTER": {
+      "STATUS_LABEL": "Estado:",
+      "DATE_RANGE": "From - To"
+    },
+
+    "DETAILS": {
+      "TITLE": "Execução de Visita de Embarcação Selecionada",
+      "CODE": "Código",
+      "VESSEL_IMO": "IMO da Embarcação",
+      "STATUS": "Estado",
+      "ARRIVAL_DATE": "Data de Chegada",
+      "DEPARTURE_DATE": "Data de Partida",
+      "DOCK_ASSIGNED": "Doca Atribuída",
+      "LAST_UPDATED": "Última Atualização",
+      "CREATED_BY": "Criado por ID de Utilizador do Sistema",
+      "OPERATIONS": "Operações",
+      "OPERATIONS_COUNT": "Operações ({{count}})"
+    },
+
+    "OPERATION": {
+      "NUMBER": "Operação {{number}}",
+      "TYPE": "Tipo",
+      "CONTAINER": "Contentor",
+      "CRANE": "Guindaste",
+      "PLANNED": "Planeado",
+      "ACTUAL": "Real",
+      "PLANNED_START": "Início Planeado",
+      "PLANNED_END": "Fim Planeado",
+      "ACTUAL_START": "Início Real",
+      "ACTUAL_END": "Fim Real",
+      "STATUS": "Estado",
+      "NA": "N/D",
+      "STATUS_PENDING": "Pendente",
+      "STATUS_STARTED": "Iniciado",
+      "STATUS_COMPLETED": "Concluído",
+      "STATUS_DELAYED": "Atrasado",
+      "STATUS_UNKNOWN": "Desconhecido"
+    },
+
+    "EDIT_MODAL": {
+      "TITLE": "Editar Execução",
+      "STATUS": "Estado *",
+      "ARRIVAL_DATE": "Data de Chegada *",
+      "ARRIVAL_DATE_HELP": "Data e hora em que a embarcação chegou ao porto",
+      "DOCK_ASSIGNED": "Doca Atribuída",
+      "DOCK_ASSIGNED_PLACEHOLDER": "ex.: Doca A",
+      "DOCK_ASSIGNED_HELP": "Nome da doca atribuída à embarcação",
+      "OPERATIONS": "Operações ({{count}})",
+      "NO_OPERATIONS": "Nenhuma operação para exibir",
+      "OPERATIONS_HELP": "Edite o estado da operação e os tempos reais. O estado só pode ser \"Concluído\" se ambos os tempos reais estiverem definidos."
+    },
+
+    "CREATE_MODAL": {
+      "TITLE": "Criar Execução",
+      "VVN": "Notificação de Visita de Embarcação",
+      "VVN_SELECT": "Selecionar Notificação",
+      "ARRIVAL_DATE": "Data de Chegada",
+      "ONGOING_INCIDENTS": "Incidentes em Curso",
+      "NO_INCIDENTS": "Nenhum incidente em curso para este intervalo de datas",
+      "SELECT_DATE_HINT": "Selecione uma data de chegada para ver os incidentes em curso"
+    },
+
+    "MESSAGES": {
+      "CREATE_SUCCESS": "Execução de Visita criada com sucesso!",
+      "UPDATE_SUCCESS": "Execução de Visita atualizada com sucesso!",
+      "ERROR": "Ocorreu um erro. Por favor, tente novamente."
+    }
+  }
 }

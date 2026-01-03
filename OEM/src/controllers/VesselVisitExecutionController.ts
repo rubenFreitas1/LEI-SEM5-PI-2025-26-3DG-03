@@ -123,16 +123,9 @@ export default class VesselVisitExecutionController implements IVesselVisitExecu
             this.logger.silly('Creating vessel visit execution');
 
             const vesselVisitExecutionDTO: VesselVisitExecutionDTO = req.body;
-            
-            // Get API base URL from environment
-            const apiBaseUrl = config.env === 'production' 
-                ? (process.env.API_URL || '/api')
-                : (process.env.API_URL || 'http://localhost:5000/api');
-            
-            // Extract Auth header from request
             const authHeader = req.headers.authorization;
             
-            const result = await this.vesselVisitExecutionService.createVesselVisitExecution(vesselVisitExecutionDTO, apiBaseUrl, authHeader);
+            const result = await this.vesselVisitExecutionService.createVesselVisitExecution(vesselVisitExecutionDTO, authHeader);
             if (result.isSuccess) {
                 res.status(201).json(result.getValue());
             } else {
@@ -148,23 +141,32 @@ export default class VesselVisitExecutionController implements IVesselVisitExecu
         try {
             this.logger.silly('Updating vessel visit execution');
             const code: string = req.params.code;
-            const status: VesselVisitExecutionStatus = req.body && req.body.status;
-
-            if (!status) {
-                res.status(400).json({ error: 'Missing status in request body' });
-                return;
+            
+            // Build payload from request body
+            const payload: any = {};
+            
+            // Validate and add status if provided
+            if (req.body.status) {
+                const allowedStatuses = Object.values(VesselVisitExecutionStatus) as string[];
+                if (!allowedStatuses.includes(String(req.body.status))) {
+                    res.status(400).json({ error: 'Invalid status value' });
+                    return;
+                }
+                payload.status = req.body.status;
+                
+                // Auto-set departureDate if status is Completed
+                if (String(req.body.status) === String(VesselVisitExecutionStatus.Completed)) {
+                    payload.departureDate = payload.departureDate || new Date();
+                }
             }
-
-            const allowedStatuses = Object.values(VesselVisitExecutionStatus) as string[];
-            if (!allowedStatuses.includes(String(status))) {
-                res.status(400).json({ error: 'Invalid status value' });
-                return;
-            }
-
-            const payload: any = { status };
-            if (String(status) === String(VesselVisitExecutionStatus.Completed)) {
-                payload.departureDate = new Date();
-            }
+            
+            // Add other optional fields if provided
+            if (req.body.arrivalDate !== undefined) payload.arrivalDate = req.body.arrivalDate;
+            if (req.body.departureDate !== undefined) payload.departureDate = req.body.departureDate;
+            if (req.body.DockAssigned !== undefined) payload.DockAssigned = req.body.DockAssigned;
+            if (req.body.operations !== undefined) payload.operations = req.body.operations;
+            if (req.body.operationId !== undefined) payload.operationId = req.body.operationId;
+            if (req.body.operation !== undefined) payload.operation = req.body.operation;
 
             const result = await this.vesselVisitExecutionService.updateVesselVisitExecution(code, payload);
             if (result.isSuccess) {

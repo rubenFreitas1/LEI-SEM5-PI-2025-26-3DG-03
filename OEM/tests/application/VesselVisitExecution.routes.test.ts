@@ -549,7 +549,6 @@ describe("VesselVisitExecution Routes (Application Tests)", () => {
           vesselVisitNotificationCode: "2025-PA-000005",
           arrivalDate: expect.any(Date)
         }),
-        expect.any(String),
         "Bearer test-token"
       );
     });

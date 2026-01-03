@@ -1,4 +1,5 @@
 import { VesselVisitExecutionStatus } from "../domain/VesselVisitExecutionStatus";
+import { OperationExecutionEntryDTO } from "./OperationExecutionEntryDTO";
 
 /**
  * components:
@@ -56,6 +57,21 @@ import { VesselVisitExecutionStatus } from "../domain/VesselVisitExecutionStatus
  *             type: string
  *           nullable: true
  *           example: ["INC-001", "INC-002"]
+ *         operations:
+ *           type: array
+ *           description: List of operations from the associated OperationPlan with execution tracking
+ *           items:
+ *             $ref: '#/components/schemas/OperationExecutionEntryDTO'
+ *           example: []
+ *        berthTime:
+ *          type: string
+ *          format: date-time
+ *         description: Actual date and time when the vessel was berthed at the dock
+ *        example: "2025-12-17T09:15:00Z"
+ *        DockAssigned:
+ *          type: string
+ *         description: Name of the dock assigned to the vessel
+ *        example: "Dock A"
  */
 
 export interface VesselVisitExecutionDTO {
@@ -69,4 +85,6 @@ export interface VesselVisitExecutionDTO {
     departureDate?: Date;
     systemUserID: string;
     incidentIDs?: string[] | null;
+    operations?: OperationExecutionEntryDTO[];
+    DockAssigned?: string;
 }

@@ -9,6 +9,6 @@ export default interface IVesselVisitExecutionService {
     getVesselVisitExecutionsByStatus(status: string): Promise<Result<VesselVisitExecutionDTO[]>>;
     getVesselVisitExecutionsByVesselIMO(vesselIMO: string): Promise<Result<VesselVisitExecutionDTO[]>>;
     getVesselVisitExecutions(filters: { from?: string; to?: string; vesselIMO?: string; status?: string }): Promise<Result<VesselVisitExecutionDTO[]>>;
-    createVesselVisitExecution(dto: VesselVisitExecutionDTO, apiBaseUrl?: string, authHeader?: string): Promise<Result<VesselVisitExecutionDTO>>;
+    createVesselVisitExecution(dto: VesselVisitExecutionDTO, authHeader?: string): Promise<Result<VesselVisitExecutionDTO>>;
     updateVesselVisitExecution(code: string, payload: any): Promise<Result<VesselVisitExecutionDTO>>;
 }

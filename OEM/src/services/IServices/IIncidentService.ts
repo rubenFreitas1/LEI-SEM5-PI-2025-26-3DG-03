@@ -15,7 +15,7 @@ export default interface IIncidentService {
 
     getIncidentsByStatus(status: string): Promise<Result<IncidentDTO[]>>;
 
-    createIncident(incidentDTO: IncidentDTO, apiBaseUrl: string, authHeader: string): Promise<Result<IncidentDTO>>;
+    createIncident(incidentDTO: IncidentDTO, authHeader?: string): Promise<Result<IncidentDTO>>;
 
     updateIncident(id: string, incidentDTO: IncidentDTO): Promise<Result<IncidentDTO>>;
 }

@@ -1,5 +1,5 @@
 <div class="page-container">
-  <h1 class="page-title">Vessel Visit Execution</h1>
+  <h1 class="page-title">{{ 'VESSEL_VISIT_EXECUTION.TITLE' | translate }}</h1>
 
   <div class="top-bar">
     <div class="search-container">
@@ -7,10 +7,10 @@
         type="text"
         [(ngModel)]="searchTerm"
         (input)="onSearch()"
-        placeholder="Search by code, name, IMO or description"
+        [placeholder]="'VESSEL_VISIT_EXECUTION.SEARCH_PLACEHOLDER' | translate"
         class="search-input"
       >
-      <button *ngIf="searchTerm" (click)="clearSearchAndNotify()" class="clear-button" title="Clear search">✕</button>
+      <button *ngIf="searchTerm" (click)="clearSearchAndNotify()" class="clear-button" [title]="'VESSEL_VISIT_EXECUTION.BUTTON.CLEAR_SEARCH' | translate">✕</button>
       <div class="calendar-wrapper">
         <button class="calendar-button" (click)="toggleDatePicker(); $event.stopPropagation()" title="Select date range" aria-label="Select date range">
           <span class="calendar-icon">
@@ -24,15 +24,15 @@
         </button>
 
         <div *ngIf="showDatePicker" class="datepicker-popover" (click)="$event.stopPropagation()">
-        <div class="dp-header">From - To</div>
+        <div class="dp-header">{{ 'VESSEL_VISIT_EXECUTION.FILTER.DATE_RANGE' | translate }}</div>
         <div class="dp-row">
           <label>From: <input type="date" [(ngModel)]="filterFrom" /></label>
           <label>To: <input type="date" [(ngModel)]="filterTo" /></label>
         </div>
         <div class="dp-actions">
-          <button class="btn btn-compact" (click)="applyDateRange()">Apply</button>
-          <button class="btn btn-compact" (click)="clearDateRange()">Clear</button>
-          <button class="btn btn-compact" (click)="closeDatePicker()">Close</button>
+          <button class="btn btn-compact" (click)="applyDateRange()">{{ 'VESSEL_VISIT_EXECUTION.BUTTON.APPLY' | translate }}</button>
+          <button class="btn btn-compact" (click)="clearDateRange()">{{ 'VESSEL_VISIT_EXECUTION.BUTTON.CLEAR' | translate }}</button>
+          <button class="btn btn-compact" (click)="closeDatePicker()">{{ 'VESSEL_VISIT_EXECUTION.BUTTON.CLOSE' | translate }}</button>
         </div>
         </div>
       </div>
@@ -41,19 +41,19 @@
       <div class="filter-row">
           <div class="schedule-controls">
             <div class="algorithm-select">
-              <label class="alg-label">Status:</label>
+              <label class="alg-label">{{ 'VESSEL_VISIT_EXECUTION.FILTER.STATUS_LABEL' | translate }}</label>
               <select class="algorithm-dropdown" [(ngModel)]="filterStatus" (change)="onFilterChange()">
-                <option value="">Any</option>
-                <option value="InProgress">InProgress</option>
-                <option value="Completed">Completed</option>
+                <option value="">{{ 'VESSEL_VISIT_EXECUTION.STATUS.ANY' | translate }}</option>
+                <option value="InProgress">{{ 'VESSEL_VISIT_EXECUTION.STATUS.IN_PROGRESS' | translate }}</option>
+                <option value="Completed">{{ 'VESSEL_VISIT_EXECUTION.STATUS.COMPLETED' | translate }}</option>
               </select>
             </div>
           </div>
       </div>
     </div>
     <div class="action-buttons">
-      <button (click)="onCreateNew()" class="btn btn-primary" title="New Execution">New Execution</button>
-      <button (click)="onUpdate()" class="btn btn-secondary" [disabled]="!selected" title="Edit Execution">Edit</button>
+      <button (click)="onCreateNew()" class="btn btn-primary" [title]="'VESSEL_VISIT_EXECUTION.BUTTON.NEW' | translate">{{ 'VESSEL_VISIT_EXECUTION.BUTTON.NEW' | translate }}</button>
+      <button (click)="onUpdate()" class="btn btn-secondary" [disabled]="!selected" [title]="'VESSEL_VISIT_EXECUTION.BUTTON.EDIT' | translate">{{ 'VESSEL_VISIT_EXECUTION.BUTTON.EDIT' | translate }}</button>
     </div>
   </div>
 
@@ -63,17 +63,17 @@
     <button (click)="clearStatusMessage()" class="close-error">✕</button>
   </div>
 
-  <div *ngIf="isLoading" class="loading">Loading...</div>
+  <div *ngIf="isLoading" class="loading">{{ 'VESSEL_VISIT_EXECUTION.LOADING' | translate }}</div>
 
   <div *ngIf="!isLoading" class="table-container">
     <table class="data-table">
       <thead>
         <tr>
-          <th>Code</th>
-          <th>Vessel IMO</th>
-          <th>Arrival Date</th>
-          <th>Status</th>
-          <th>Actions</th>
+          <th>{{ 'VESSEL_VISIT_EXECUTION.TABLE.CODE' | translate }}</th>
+          <th>{{ 'VESSEL_VISIT_EXECUTION.TABLE.VESSEL_IMO' | translate }}</th>
+          <th>{{ 'VESSEL_VISIT_EXECUTION.TABLE.ARRIVAL_DATE' | translate }}</th>
+          <th>{{ 'VESSEL_VISIT_EXECUTION.TABLE.STATUS' | translate }}</th>
+          <th>{{ 'VESSEL_VISIT_EXECUTION.TABLE.ACTIONS' | translate }}</th>
         </tr>
       </thead>
       <tbody>
@@ -84,7 +84,7 @@
           <td><span [ngClass]="getStatusClass(item.status || item.description)">{{ item.status || item.description }}</span></td>
           <td>
             <button (click)="select(item); $event.stopPropagation()" class="btn-select" [class.selected]="selected?.id === item.id">
-              {{ selected?.id === item.id ? 'Unselect' : 'Select' }}
+              {{ selected?.id === item.id ? ('VESSEL_VISIT_EXECUTION.BUTTON.UNSELECT' | translate) : ('VESSEL_VISIT_EXECUTION.BUTTON.SELECT' | translate) }}
             </button>
           </td>
         </tr>
@@ -97,15 +97,49 @@
   </div>
 
   <div *ngIf="selected" class="selected-info">
-    <h3>Selected Vessel Visit Execution</h3>
+    <h3>{{ 'VESSEL_VISIT_EXECUTION.DETAILS.TITLE' | translate }}</h3>
     <div class="info-card">
-      <p *ngIf="selected.code"><strong>Code:</strong> {{ selected.code }}</p>
-      <p *ngIf="selected.name"><strong>Vessel IMO:</strong> {{ selected.name }}</p>
-      <p *ngIf="selected.status || selected.description"><strong>Status:</strong> <span [ngClass]="getStatusClass(selected.status || selected.description)">{{ selected.status || selected.description }}</span></p>
-      <p *ngIf="selected.arrivalDate"><strong>Arrival Date:</strong> {{ selected.arrivalDate | date: 'dd/MM/yyyy, HH:mm:ss' }}</p>
-      <p *ngIf="selected.departureDate"><strong>Departure Date:</strong> {{ selected.departureDate | date: 'dd/MM/yyyy, HH:mm:ss' }}</p>
-      <p *ngIf="selected.lastUpdated"><strong>Last Updated:</strong> {{ selected.lastUpdated | date: 'dd/MM/yyyy, HH:mm:ss' }}</p>
-      <p *ngIf="selected.systemUserID"><strong>Created By System User ID:</strong> {{ selected.systemUserID }}</p>
+      <p *ngIf="selected.code"><strong>{{ 'VESSEL_VISIT_EXECUTION.DETAILS.CODE' | translate }}:</strong> {{ selected.code }}</p>
+      <p *ngIf="selected.name"><strong>{{ 'VESSEL_VISIT_EXECUTION.DETAILS.VESSEL_IMO' | translate }}:</strong> {{ selected.name }}</p>
+      <p *ngIf="selected.status || selected.description"><strong>{{ 'VESSEL_VISIT_EXECUTION.DETAILS.STATUS' | translate }}:</strong> <span [ngClass]="getStatusClass(selected.status || selected.description)">{{ selected.status || selected.description }}</span></p>
+      <p *ngIf="selected.arrivalDate"><strong>{{ 'VESSEL_VISIT_EXECUTION.DETAILS.ARRIVAL_DATE' | translate }}:</strong> {{ selected.arrivalDate | date: 'dd/MM/yyyy, HH:mm:ss' }}</p>
+      <p *ngIf="selected.departureDate"><strong>{{ 'VESSEL_VISIT_EXECUTION.DETAILS.DEPARTURE_DATE' | translate }}:</strong> {{ selected.departureDate | date: 'dd/MM/yyyy, HH:mm:ss' }}</p>
+      <p *ngIf="selected.DockAssigned"><strong>{{ 'VESSEL_VISIT_EXECUTION.DETAILS.DOCK_ASSIGNED' | translate }}:</strong> {{ selected.DockAssigned }}</p>
+      <p *ngIf="selected.lastUpdated"><strong>{{ 'VESSEL_VISIT_EXECUTION.DETAILS.LAST_UPDATED' | translate }}:</strong> {{ selected.lastUpdated | date: 'dd/MM/yyyy, HH:mm:ss' }}</p>
+      <p *ngIf="selected.systemUserID"><strong>{{ 'VESSEL_VISIT_EXECUTION.DETAILS.CREATED_BY' | translate }}:</strong> {{ selected.systemUserID }}</p>
+      <div *ngIf="selected.operations && selected.operations.length > 0" class="operations-section">
+        <strong>{{ 'VESSEL_VISIT_EXECUTION.DETAILS.OPERATIONS_COUNT' | translate: {count: selected.operations.length} }}:</strong>
+        <div class="operations-list-detailed">
+          <div *ngFor="let op of selected.operations; let i = index" class="operation-card-compact">
+            <div class="operation-card-header">
+              <span class="operation-number">#{{ i + 1 }}</span>
+              <span class="badge" [ngClass]="getOperationBadgeClass(op.status)">{{ op.status || 'Pending' }}</span>
+            </div>
+            <div class="operation-card-body">
+              <div class="operation-row">
+                <span class="operation-label">{{ 'VESSEL_VISIT_EXECUTION.OPERATION.TYPE' | translate }}:</span>
+                <span class="operation-value">{{ op.operationType || ('VESSEL_VISIT_EXECUTION.OPERATION.NA' | translate) }}</span>
+              </div>
+              <div class="operation-row">
+                <span class="operation-label">{{ 'VESSEL_VISIT_EXECUTION.OPERATION.CONTAINER' | translate }}:</span>
+                <span class="operation-value">{{ op.container || ('VESSEL_VISIT_EXECUTION.OPERATION.NA' | translate) }}</span>
+              </div>
+              <div class="operation-row">
+                <span class="operation-label">{{ 'VESSEL_VISIT_EXECUTION.OPERATION.CRANE' | translate }}:</span>
+                <span class="operation-value">{{ op.craneUsed || ('VESSEL_VISIT_EXECUTION.OPERATION.NA' | translate) }}</span>
+              </div>
+              <div class="operation-row" *ngIf="op.plannedStart">
+                <span class="operation-label">{{ 'VESSEL_VISIT_EXECUTION.OPERATION.PLANNED' | translate }}:</span>
+                <span class="operation-value">{{ op.plannedStart | date: 'dd/MM HH:mm' }} - {{ op.plannedEnd | date: 'HH:mm' }}</span>
+              </div>
+              <div class="operation-row" *ngIf="op.actualStart">
+                <span class="operation-label">{{ 'VESSEL_VISIT_EXECUTION.OPERATION.ACTUAL' | translate }}:</span>
+                <span class="operation-value">{{ op.actualStart | date: 'dd/MM HH:mm' }}<span *ngIf="op.actualEnd"> - {{ op.actualEnd | date: 'HH:mm' }}</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -114,7 +148,7 @@
 <div *ngIf="showEditModal" class="modal-overlay" (click)="closeEditModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>Edit Execution</h2>
+      <h2>{{ 'VESSEL_VISIT_EXECUTION.EDIT_MODAL.TITLE' | translate }}</h2>
       <button class="close-button" (click)="closeEditModal()">✕</button>
     </div>
 
@@ -123,16 +157,95 @@
 
       <form (ngSubmit)="onSaveEdit()" #editForm="ngForm">
         <div class="form-group">
-          <label for="status">Status</label>
+          <label for="status">{{ 'VESSEL_VISIT_EXECUTION.EDIT_MODAL.STATUS' | translate }}</label>
           <select id="status" name="status" [(ngModel)]="editItem.status" required class="form-input">
-            <option [ngValue]="'InProgress'">InProgress</option>
-            <option [ngValue]="'Completed'">Completed</option>
+            <option [ngValue]="'InProgress'">{{ 'VESSEL_VISIT_EXECUTION.STATUS.IN_PROGRESS' | translate }}</option>
+            <option [ngValue]="'Completed'">{{ 'VESSEL_VISIT_EXECUTION.STATUS.COMPLETED' | translate }}</option>
           </select>
         </div>
 
+        <div class="form-group">
+          <label for="arrivalDate">{{ 'VESSEL_VISIT_EXECUTION.EDIT_MODAL.ARRIVAL_DATE' | translate }}</label>
+          <input type="datetime-local" id="arrivalDate" name="arrivalDate" [(ngModel)]="editItem.arrivalDate" required class="form-input">
+          <small class="form-help">{{ 'VESSEL_VISIT_EXECUTION.EDIT_MODAL.ARRIVAL_DATE_HELP' | translate }}</small>
+        </div>
+
+        <div class="form-group">
+          <label for="DockAssigned">{{ 'VESSEL_VISIT_EXECUTION.EDIT_MODAL.DOCK_ASSIGNED' | translate }}</label>
+          <input type="text" id="DockAssigned" name="DockAssigned" [(ngModel)]="editItem.DockAssigned" class="form-input" [placeholder]="'VESSEL_VISIT_EXECUTION.EDIT_MODAL.DOCK_ASSIGNED_PLACEHOLDER' | translate">
+          <small class="form-help">{{ 'VESSEL_VISIT_EXECUTION.EDIT_MODAL.DOCK_ASSIGNED_HELP' | translate }}</small>
+        </div>
+
+        <div class="form-group">
+          <label>{{ 'VESSEL_VISIT_EXECUTION.EDIT_MODAL.OPERATIONS' | translate: {count: editItem.operations?.length || 0} }}</label>
+          <div class="operations-info">
+            <p *ngIf="!editItem.operations || editItem.operations.length === 0" class="text-muted">{{ 'VESSEL_VISIT_EXECUTION.EDIT_MODAL.NO_OPERATIONS' | translate }}</p>
+            <div *ngIf="editItem.operations && editItem.operations.length > 0" class="operations-editable-list">
+              <div *ngFor="let op of editItem.operations; let i = index" class="operation-editable-item">
+                <div class="operation-header">
+                  <strong>{{ 'VESSEL_VISIT_EXECUTION.OPERATION.NUMBER' | translate: {number: i + 1} }}</strong>
+                  <span class="badge" [ngClass]="getOperationBadgeClass(op.status)">{{ op.status || ('VESSEL_VISIT_EXECUTION.OPERATION.STATUS_UNKNOWN' | translate) }}</span>
+                </div>
+
+                <div class="operation-details">
+                  <div class="detail-row">
+                    <span class="detail-label">{{ 'VESSEL_VISIT_EXECUTION.OPERATION.TYPE' | translate }}:</span>
+                    <span class="detail-value">{{ op.operationType || ('VESSEL_VISIT_EXECUTION.OPERATION.NA' | translate) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">{{ 'VESSEL_VISIT_EXECUTION.OPERATION.CONTAINER' | translate }}:</span>
+                    <span class="detail-value">{{ op.container || ('VESSEL_VISIT_EXECUTION.OPERATION.NA' | translate) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">{{ 'VESSEL_VISIT_EXECUTION.OPERATION.CRANE' | translate }}:</span>
+                    <span class="detail-value">{{ op.craneUsed || ('VESSEL_VISIT_EXECUTION.OPERATION.NA' | translate) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">{{ 'VESSEL_VISIT_EXECUTION.OPERATION.PLANNED' | translate }}:</span>
+                    <span class="detail-value">
+                      {{ formatDateTime(op.plannedStart) }} - {{ formatDateTime(op.plannedEnd) }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="operation-editable-fields">
+                  <div class="form-row">
+                    <div class="form-group-inline">
+                      <label>{{ 'VESSEL_VISIT_EXECUTION.OPERATION.STATUS' | translate }}</label>
+                      <select [(ngModel)]="op.status" [name]="'opStatus' + i" class="form-control"
+                              (change)="onOperationStatusChange(op)">
+                        <option value="Pending">{{ 'VESSEL_VISIT_EXECUTION.OPERATION.STATUS_PENDING' | translate }}</option>
+                        <option value="Started">{{ 'VESSEL_VISIT_EXECUTION.OPERATION.STATUS_STARTED' | translate }}</option>
+                        <option value="Completed" [disabled]="!canSetCompleted(op)">{{ 'VESSEL_VISIT_EXECUTION.OPERATION.STATUS_COMPLETED' | translate }}</option>
+                        <option value="Delayed">{{ 'VESSEL_VISIT_EXECUTION.OPERATION.STATUS_DELAYED' | translate }}</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group-inline">
+                      <label>{{ 'VESSEL_VISIT_EXECUTION.OPERATION.ACTUAL_START' | translate }}</label>
+                      <input type="datetime-local" [(ngModel)]="op.actualStart" [name]="'opActualStart' + i"
+                             class="form-control" [disabled]="op.status === 'Pending'"
+                             [value]="formatDateForInput(op.actualStart)">
+                    </div>
+                    <div class="form-group-inline">
+                      <label>{{ 'VESSEL_VISIT_EXECUTION.OPERATION.ACTUAL_END' | translate }}</label>
+                      <input type="datetime-local" [(ngModel)]="op.actualEnd" [name]="'opActualEnd' + i"
+                             class="form-control" [disabled]="op.status === 'Pending'"
+                             [value]="formatDateForInput(op.actualEnd)">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <small class="form-help">{{ 'VESSEL_VISIT_EXECUTION.EDIT_MODAL.OPERATIONS_HELP' | translate }}</small>
+          </div>
+        </div>
+
         <div class="modal-footer">
-          <button type="button" (click)="closeEditModal()" class="btn btn-secondary" [disabled]="isEditing">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="isEditing || !editForm.form.valid">{{ isEditing ? 'Saving...' : 'Save' }}</button>
+          <button type="button" (click)="closeEditModal()" class="btn btn-secondary" [disabled]="isEditing">{{ 'VESSEL_VISIT_EXECUTION.BUTTON.CANCEL' | translate }}</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isEditing || !editForm.form.valid">{{ isEditing ? ('VESSEL_VISIT_EXECUTION.BUTTON.SAVING' | translate) : ('VESSEL_VISIT_EXECUTION.BUTTON.SAVE' | translate) }}</button>
         </div>
       </form>
     </div>
@@ -143,7 +256,7 @@
 <div *ngIf="showCreateModal" class="modal-overlay" (click)="closeCreateModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>Create Execution</h2>
+      <h2>{{ 'VESSEL_VISIT_EXECUTION.CREATE_MODAL.TITLE' | translate }}</h2>
       <button class="close-button" (click)="closeCreateModal()">✕</button>
     </div>
 
@@ -152,26 +265,26 @@
 
       <form (ngSubmit)="onSaveNew()" #form="ngForm">
         <div class="form-group">
-          <label for="vesselVisitNotificationCode">Vessel Visit Notification</label>
+          <label for="vesselVisitNotificationCode">{{ 'VESSEL_VISIT_EXECUTION.CREATE_MODAL.VVN' | translate }}</label>
           <select id="vesselVisitNotificationCode" name="vesselVisitNotificationCode" [(ngModel)]="newItem.vesselVisitNotificationCode" required class="form-input" [class.error]="hasFieldError('vesselVisitNotificationCode')">
-            <option [ngValue]="''" disabled>Select Notification</option>
+            <option [ngValue]="''" disabled>{{ 'VESSEL_VISIT_EXECUTION.CREATE_MODAL.VVN_SELECT' | translate }}</option>
             <option *ngFor="let n of approvedNotifications" [ngValue]="n.code">{{ n.code }} - {{ n.vesselIMO }}</option>
           </select>
           <div *ngIf="hasFieldError('vesselVisitNotificationCode')" class="field-error">{{ getFieldError('vesselVisitNotificationCode') }}</div>
         </div>
 
         <div class="form-group">
-          <label for="arrivalDate">Arrival Date</label>
+          <label for="arrivalDate">{{ 'VESSEL_VISIT_EXECUTION.CREATE_MODAL.ARRIVAL_DATE' | translate }}</label>
           <input id="arrivalDate" name="arrivalDate" type="datetime-local" [(ngModel)]="newItem.arrivalDate" (change)="loadOngoingIncidents()" required class="form-input" [class.error]="hasFieldError('arrivalDate')">
           <div *ngIf="hasFieldError('arrivalDate')" class="field-error">{{ getFieldError('arrivalDate') }}</div>
         </div>
 
         <div class="form-group">
-          <label>Ongoing Incidents</label>
+          <label>{{ 'VESSEL_VISIT_EXECUTION.CREATE_MODAL.ONGOING_INCIDENTS' | translate }}</label>
           <div class="incidents-list" *ngIf="ongoingIncidents && ongoingIncidents.length > 0; else noIncidents">
             <div *ngFor="let incident of ongoingIncidents" class="incident-item">
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 [id]="'incident-' + incident.id"
                 [value]="incident.id"
                 [checked]="incident.id ? selectedIncidentIds.includes(incident.id) : false"
@@ -180,22 +293,22 @@
                 class="incident-checkbox"
               >
               <label [for]="'incident-' + incident.id" class="incident-label">
-                {{ incident.description || 'No description' }} 
+                {{ incident.description || 'No description' }}
                 <span class="incident-dates">({{ incident.startDate | date: 'dd/MM/yyyy HH:mm' }} - {{ incident.endDate ? (incident.endDate | date: 'dd/MM/yyyy HH:mm') : 'Ongoing' }})</span>
               </label>
             </div>
           </div>
           <ng-template #noIncidents>
             <div class="no-incidents-message">
-              <p *ngIf="newItem.arrivalDate">No ongoing incidents for this date range</p>
-              <p *ngIf="!newItem.arrivalDate" class="hint-text">Select an arrival date to view ongoing incidents</p>
+              <p *ngIf="newItem.arrivalDate">{{ 'VESSEL_VISIT_EXECUTION.CREATE_MODAL.NO_INCIDENTS' | translate }}</p>
+              <p *ngIf="!newItem.arrivalDate" class="hint-text">{{ 'VESSEL_VISIT_EXECUTION.CREATE_MODAL.SELECT_DATE_HINT' | translate }}</p>
             </div>
           </ng-template>
         </div>
 
         <div class="modal-footer">
-          <button type="button" (click)="closeCreateModal()" class="btn btn-secondary" [disabled]="isCreating">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="isCreating || !form.form.valid">{{ isCreating ? 'Creating...' : 'Create' }}</button>
+          <button type="button" (click)="closeCreateModal()" class="btn btn-secondary" [disabled]="isCreating">{{ 'VESSEL_VISIT_EXECUTION.BUTTON.CANCEL' | translate }}</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isCreating || !form.form.valid">{{ isCreating ? ('VESSEL_VISIT_EXECUTION.BUTTON.CREATING' | translate) : ('VESSEL_VISIT_EXECUTION.BUTTON.CREATE' | translate) }}</button>
         </div>
       </form>
     </div>

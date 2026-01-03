@@ -26,6 +26,7 @@ describe("IncidentService (unit tests)", () => {
   let vesselVisitExecutionRepo: any;
   let logger: any;
   let service: IncidentService;
+  let mockSystemUserClient: any;
 
   const mockIncidentType = new IncidentType(
     "1",
@@ -39,6 +40,15 @@ describe("IncidentService (unit tests)", () => {
   const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
 
   beforeEach(() => {
+    // Setup mock instance for SystemUserClient
+    mockSystemUserClient = {
+      getMyIsFirstTime: jest.fn(),
+      getByEmail: jest.fn()
+    };
+
+    // Mock the constructor to return our mock instance
+    (SystemUserClient as jest.Mock).mockImplementation(() => mockSystemUserClient);
+
     incidentRepo = {
       findAll: jest.fn(),
       findById: jest.fn(),
@@ -411,12 +421,8 @@ describe("IncidentService (unit tests)", () => {
   // ---------------------------------------------------
 
   it("should create an incident successfully", async () => {
-    const mockSystemUser = {
-      getMyIsFirstTime: jest.fn().mockResolvedValue({ email: "test@example.com" }),
-      getByEmail: jest.fn().mockResolvedValue({ id: "user123", email: "test@example.com" })
-    };
-
-    (SystemUserClient as jest.Mock).mockImplementation(() => mockSystemUser);
+    mockSystemUserClient.getMyIsFirstTime.mockResolvedValue({ email: "test@example.com" });
+    mockSystemUserClient.getByEmail.mockResolvedValue({ id: "user123", email: "test@example.com" });
 
     const dto = {
       incidentTypeByCode: "TYPE001",
@@ -452,18 +458,14 @@ describe("IncidentService (unit tests)", () => {
       description: "New incident description"
     });
 
-    const result = await service.createIncident(dto as any, "http://test.com", "Bearer token");
+    const result = await service.createIncident(dto as any, "Bearer token");
 
     expect(result.isSuccess).toBe(true);
     expect(result.getValue()).toEqual({ id: "8", description: "New incident description" });
   });
 
   it("should fail when no email claim found", async () => {
-    const mockSystemUser = {
-      getMyIsFirstTime: jest.fn().mockResolvedValue(null)
-    };
-
-    (SystemUserClient as jest.Mock).mockImplementation(() => mockSystemUser);
+    mockSystemUserClient.getMyIsFirstTime.mockResolvedValue(null);
 
     const dto = {
       incidentTypeByCode: "TYPE001",
@@ -473,19 +475,15 @@ describe("IncidentService (unit tests)", () => {
       description: "Test incident"
     };
 
-    const result = await service.createIncident(dto as any, "http://test.com", "Bearer token");
+    const result = await service.createIncident(dto as any, "Bearer token");
 
     expect(result.isFailure).toBe(true);
     expect(result.errorValue()).toBe("No email claim found in Auth0 token.");
   });
 
   it("should fail when authenticated user not found", async () => {
-    const mockSystemUser = {
-      getMyIsFirstTime: jest.fn().mockResolvedValue({ email: "test@example.com" }),
-      getByEmail: jest.fn().mockResolvedValue(null)
-    };
-
-    (SystemUserClient as jest.Mock).mockImplementation(() => mockSystemUser);
+    mockSystemUserClient.getMyIsFirstTime.mockResolvedValue({ email: "test@example.com" });
+    mockSystemUserClient.getByEmail.mockResolvedValue(null);
 
     const dto = {
       incidentTypeByCode: "TYPE001",
@@ -495,19 +493,15 @@ describe("IncidentService (unit tests)", () => {
       description: "Test incident"
     };
 
-    const result = await service.createIncident(dto as any, "http://test.com", "Bearer token");
+    const result = await service.createIncident(dto as any, "Bearer token");
 
     expect(result.isFailure).toBe(true);
     expect(result.errorValue()).toBe("Authenticated user not found.");
   });
 
   it("should fail when incident type code is missing", async () => {
-    const mockSystemUser = {
-      getMyIsFirstTime: jest.fn().mockResolvedValue({ email: "test@example.com" }),
-      getByEmail: jest.fn().mockResolvedValue({ id: "user123" })
-    };
-
-    (SystemUserClient as jest.Mock).mockImplementation(() => mockSystemUser);
+    mockSystemUserClient.getMyIsFirstTime.mockResolvedValue({ email: "test@example.com" });
+    mockSystemUserClient.getByEmail.mockResolvedValue({ id: "user123" });
 
     const dto = {
       startDate: yesterday,
@@ -516,19 +510,15 @@ describe("IncidentService (unit tests)", () => {
       description: "Test incident"
     };
 
-    const result = await service.createIncident(dto as any, "http://test.com", "Bearer token");
+    const result = await service.createIncident(dto as any, "Bearer token");
 
     expect(result.isFailure).toBe(true);
     expect(result.errorValue()).toBe("Incident type code is required.");
   });
 
   it("should fail when incident type not found", async () => {
-    const mockSystemUser = {
-      getMyIsFirstTime: jest.fn().mockResolvedValue({ email: "test@example.com" }),
-      getByEmail: jest.fn().mockResolvedValue({ id: "user123" })
-    };
-
-    (SystemUserClient as jest.Mock).mockImplementation(() => mockSystemUser);
+    mockSystemUserClient.getMyIsFirstTime.mockResolvedValue({ email: "test@example.com" });
+    mockSystemUserClient.getByEmail.mockResolvedValue({ id: "user123" });
 
     const dto = {
       incidentTypeByCode: "UNKNOWN",
@@ -540,19 +530,15 @@ describe("IncidentService (unit tests)", () => {
 
     incidentTypeRepo.findByCode.mockResolvedValue(null);
 
-    const result = await service.createIncident(dto as any, "http://test.com", "Bearer token");
+    const result = await service.createIncident(dto as any, "Bearer token");
 
     expect(result.isFailure).toBe(true);
     expect(result.errorValue()).toContain("not found");
   });
 
   it("should fail when VesselVisitExecution codes not found", async () => {
-    const mockSystemUser = {
-      getMyIsFirstTime: jest.fn().mockResolvedValue({ email: "test@example.com" }),
-      getByEmail: jest.fn().mockResolvedValue({ id: "user123" })
-    };
-
-    (SystemUserClient as jest.Mock).mockImplementation(() => mockSystemUser);
+    mockSystemUserClient.getMyIsFirstTime.mockResolvedValue({ email: "test@example.com" });
+    mockSystemUserClient.getByEmail.mockResolvedValue({ id: "user123" });
 
     const dto = {
       incidentTypeByCode: "TYPE001",
@@ -566,7 +552,7 @@ describe("IncidentService (unit tests)", () => {
     incidentTypeRepo.findByCode.mockResolvedValue(mockIncidentType);
     vesselVisitExecutionRepo.findByCodes.mockResolvedValue([]);
 
-    const result = await service.createIncident(dto as any, "http://test.com", "Bearer token");
+    const result = await service.createIncident(dto as any, "Bearer token");
 
     expect(result.isFailure).toBe(true);
     expect(result.errorValue()).toContain("not found");

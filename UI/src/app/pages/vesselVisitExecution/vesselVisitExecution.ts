@@ -30,7 +30,7 @@ export class VesselVisitExecution implements OnInit, OnDestroy {
   // Edit modal
   showEditModal = false;
   isEditing = false;
-  editItem: any = { status: '' };
+  editItem: any = { status: '', arrivalDate: '', DockAssigned: '', operations: [] };
   editModalErrorMessage = '';
   editFieldErrors: { [key: string]: string } = {};
 
@@ -293,18 +293,78 @@ export class VesselVisitExecution implements OnInit, OnDestroy {
 
   onUpdate() {
     if (this.selected) {
+      // Deep copy operations and format dates for datetime-local inputs
+      const operationsCopy = this.selected.operations
+        ? JSON.parse(JSON.stringify(this.selected.operations)).map((op: any) => ({
+            ...op,
+            actualStart: this.formatDateForInput(op.actualStart),
+            actualEnd: this.formatDateForInput(op.actualEnd)
+          }))
+        : [];
+
+      this.editItem = {
+        status: this.selected.status || '',
+        arrivalDate: this.formatDateForInput(this.selected.arrivalDate),
+        DockAssigned: this.selected.DockAssigned || '',
+        operations: operationsCopy
+      };
       this.showEditModal = true;
-      this.resetEditItem();
-      this.editItem = { status: this.selected.status ?? '' };
     } else {
       alert('Please select a vessel visit execution to update.');
     }
   }
 
   resetEditItem() {
-    this.editItem = { status: '' };
+    this.editItem = { status: '', arrivalDate: '', DockAssigned: '', operations: [] };
     this.editModalErrorMessage = '';
     this.editFieldErrors = {};
+  }
+
+  formatDateForInput(date: any): string {
+    if (!date) return '';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '';
+    // Format to "YYYY-MM-DDTHH:mm" for datetime-local input
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  formatDateTime(date: any): string {
+    if (!date) return 'N/A';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return 'N/A';
+    return d.toLocaleString();
+  }
+
+  getOperationBadgeClass(status: string | undefined): string {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'badge-success';
+      case 'started':
+      case 'in progress':
+        return 'badge-warning';
+      case 'delayed':
+        return 'badge-danger';
+      case 'pending':
+      default:
+        return 'badge-pending';
+    }
+  }
+
+  canSetCompleted(operation: any): boolean {
+    return !!(operation.actualStart && operation.actualEnd);
+  }
+
+  onOperationStatusChange(operation: any): void {
+    // If status is set to Pending, clear actual times
+    if (operation.status === 'Pending') {
+      operation.actualStart = null;
+      operation.actualEnd = null;
+    }
   }
 
   closeEditModal() {
@@ -322,23 +382,131 @@ export class VesselVisitExecution implements OnInit, OnDestroy {
       return;
     }
 
+    if (!this.editItem.arrivalDate) {
+      this.editModalErrorMessage = 'Arrival date is required.';
+      return;
+    }
+
+    // Validate: VVE status can only be Completed if all operations are completed
+    if (this.editItem.status === 'Completed') {
+      if (this.editItem.operations && this.editItem.operations.length > 0) {
+        const incompleteOps = this.editItem.operations.filter((op: any) => op.status !== 'Completed');
+        if (incompleteOps.length > 0) {
+          this.editModalErrorMessage = `Cannot set status to Completed: ${incompleteOps.length} operation(s) are not yet completed.`;
+          return;
+        }
+      }
+    }
+
     if (!this.selected) {
       this.editModalErrorMessage = 'No execution selected.';
       return;
     }
 
     this.isEditing = true;
-    const payload = { status: this.editItem.status };
+    const payload: any = {
+      status: this.editItem.status,
+      arrivalDate: new Date(this.editItem.arrivalDate).toISOString()
+    };
+
+    // Add DockAssigned if provided
+    if (this.editItem.DockAssigned && this.editItem.DockAssigned.trim()) {
+      payload.DockAssigned = this.editItem.DockAssigned.trim();
+    }
+
+    // Add operations if provided
+    if (this.editItem.operations && this.editItem.operations.length > 0) {
+      // Validate operations before sending
+      const arrivalDate = new Date(this.editItem.arrivalDate);
+      for (let i = 0; i < this.editItem.operations.length; i++) {
+        const op = this.editItem.operations[i];
+
+        // Validate: Started status requires actualStart
+        if (op.status === 'Started' && !op.actualStart) {
+          this.editModalErrorMessage = `Operation ${i + 1}: Status 'Started' requires actual start time.`;
+          this.isEditing = false;
+          return;
+        }
+
+        // Check if actualStart is before arrivalDate
+        if (op.actualStart) {
+          const actualStart = new Date(op.actualStart);
+          if (actualStart.getTime() < arrivalDate.getTime()) {
+            this.editModalErrorMessage = `Operation ${i + 1}: Actual start time cannot be before vessel arrival date.`;
+            this.isEditing = false;
+            return;
+          }
+        }
+
+        // Check if actualEnd is before actualStart
+        if (op.actualStart && op.actualEnd) {
+          const actualStart = new Date(op.actualStart);
+          const actualEnd = new Date(op.actualEnd);
+          if (actualEnd.getTime() <= actualStart.getTime()) {
+            this.editModalErrorMessage = `Operation ${i + 1}: Actual end time must be after actual start time.`;
+            this.isEditing = false;
+            return;
+          }
+        }
+      }
+
+      // Validate crane overlap: operations with same crane cannot have overlapping times
+      for (let i = 0; i < this.editItem.operations.length; i++) {
+        const op1 = this.editItem.operations[i];
+        if (!op1.actualStart || !op1.actualEnd || !op1.craneUsed) continue;
+
+        const start1 = new Date(op1.actualStart).getTime();
+        const end1 = new Date(op1.actualEnd).getTime();
+
+        for (let j = i + 1; j < this.editItem.operations.length; j++) {
+          const op2 = this.editItem.operations[j];
+          if (!op2.actualStart || !op2.actualEnd || !op2.craneUsed) continue;
+
+          // Check if same crane
+          if (op1.craneUsed === op2.craneUsed) {
+            const start2 = new Date(op2.actualStart).getTime();
+            const end2 = new Date(op2.actualEnd).getTime();
+
+            // Check for overlap: start1 < end2 AND start2 < end1
+            if (start1 < end2 && start2 < end1) {
+              this.editModalErrorMessage = `Operations ${i + 1} and ${j + 1} use the same crane (${op1.craneUsed}) and have overlapping time ranges.`;
+              this.isEditing = false;
+              return;
+            }
+          }
+        }
+      }
+
+      // Convert operation dates to ISO format before sending
+      payload.operations = this.editItem.operations.map((op: any) => ({
+        ...op,
+        actualStart: op.actualStart ? new Date(op.actualStart).toISOString() : null,
+        actualEnd: op.actualEnd ? new Date(op.actualEnd).toISOString() : null
+      }));
+    }
+
     this.vveService.update(this.selected.code || this.selected.vesselVisitNotificationCode || '', payload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
+          const selectedCode = this.selected?.code;
           this.closeEditModal();
           this.statusHiding = false;
-          this.statusMessage = `Execution "${this.selected?.code}" updated successfully!`;
+          this.statusMessage = `Execution "${selectedCode}" updated successfully!`;
           this.statusMessageType = 'success';
           setTimeout(() => this.clearStatusMessage(), 3000);
+
+          // Reload items and update selected item with fresh data
           this.loadItems();
+          if (selectedCode) {
+            // Re-select the updated item after data loads
+            setTimeout(() => {
+              const updatedItem = this.items.find(item => item.code === selectedCode);
+              if (updatedItem) {
+                this.selected = updatedItem;
+              }
+            }, 100);
+          }
         },
         error: (err) => {
           console.error('Error updating VVE:', err);
@@ -373,7 +541,7 @@ export class VesselVisitExecution implements OnInit, OnDestroy {
     }
 
     let arrivalDate: Date;
-    
+
     if (typeof this.newItem.arrivalDate === 'string') {
       // datetime-local format: "2025-12-19T10:30"
       arrivalDate = new Date(this.newItem.arrivalDate);
@@ -388,7 +556,7 @@ export class VesselVisitExecution implements OnInit, OnDestroy {
     }
 
     console.log('Loading incidents for arrival date:', arrivalDate);
-    
+
     this.incidentService
       .getOngoingIncidents(arrivalDate)
       .pipe(takeUntil(this.destroy$))
@@ -427,7 +595,7 @@ export class VesselVisitExecution implements OnInit, OnDestroy {
     }
 
     this.isCreating = true;
-    
+
     // Add selected incident IDs to the payload
     const payload: any = {
       ...this.newItem,

@@ -72,9 +72,32 @@ describe("ComplementaryTask – System Tests (MongoDB Atlas)", () => {
   }, 30000);
 
   // =========================================
+  // HELPER: Create Operation Plan
+  // =========================================
+  const createOperationPlan = async (vvnCode: string) => {
+    const now = new Date();
+    const response = await request(app)
+      .post("/api/operation-plans")
+      .send({
+        vvns: [vvnCode],
+        assignedCranes: [[]],
+        arrivalTimes: [now.toISOString()],
+        departureTimes: [new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString()],
+        targetDays: [now.toISOString()],
+        author: "test-user",
+        algorithm: "Manual"
+      });
+    
+    return response;
+  };
+
+  // =========================================
   // HELPER: Create Vessel Visit Execution
   // =========================================
   const createVesselVisitExecution = async (code: string) => {
+    // First create the OperationPlan
+    await createOperationPlan(code);
+    
     const response = await request(app)
       .post("/api/vessel-visit-executions")
       .send({

@@ -146,7 +146,7 @@ describe("IncidentService – Aggregate Tests", () => {
       const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
       const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
 
-      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival, new Date(), "user1", vveDeparture);
+      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival, new Date(), "user1", [], "", vveDeparture);
       vesselVisitExecutionRepo.addVesselVisitExecution(vve);
 
       const incident = new Incident(
@@ -287,7 +287,7 @@ describe("IncidentService – Aggregate Tests", () => {
         vesselVisitExecutionsCodes: []
       };
 
-      const result = await service.createIncident(dto, "http://localhost", "Bearer token");
+      const result = await service.createIncident(dto, "Bearer token");
 
       expect(result.isSuccess).toBe(true);
       expect(result.getValue().description).toBe("Test description one");
@@ -311,7 +311,7 @@ describe("IncidentService – Aggregate Tests", () => {
         vesselVisitExecutionsCodes: []
       };
 
-      const result = await service.createIncident(dto, "http://localhost", "Bearer token");
+      const result = await service.createIncident(dto, "Bearer token");
 
       expect(result.isFailure).toBe(true);
       expect(result.errorValue()).toContain("No email claim");
@@ -334,7 +334,7 @@ describe("IncidentService – Aggregate Tests", () => {
         vesselVisitExecutionsCodes: []
       };
 
-      const result = await service.createIncident(dto, "http://localhost", "Bearer token");
+      const result = await service.createIncident(dto, "Bearer token");
 
       expect(result.isFailure).toBe(true);
       expect(result.errorValue()).toContain("Authenticated user not found");
@@ -355,7 +355,7 @@ describe("IncidentService – Aggregate Tests", () => {
         vesselVisitExecutionsCodes: []
       };
 
-      const result = await service.createIncident(dto, "http://localhost", "Bearer token");
+      const result = await service.createIncident(dto, "Bearer token");
 
       expect(result.isFailure).toBe(true);
       expect(result.errorValue()).toContain("Incident type code is required");
@@ -376,7 +376,7 @@ describe("IncidentService – Aggregate Tests", () => {
         vesselVisitExecutionsCodes: []
       };
 
-      const result = await service.createIncident(dto, "http://localhost", "Bearer token");
+      const result = await service.createIncident(dto, "Bearer token");
 
       expect(result.isFailure).toBe(true);
       expect(result.errorValue()).toContain("not found");
@@ -392,7 +392,7 @@ describe("IncidentService – Aggregate Tests", () => {
       const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
       const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
 
-      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival, new Date(), "user1", vveDeparture);
+      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival, new Date(), "user1", [], "", vveDeparture);
       vesselVisitExecutionRepo.addVesselVisitExecution(vve);
 
       const dto: IncidentDTO = {
@@ -409,7 +409,7 @@ describe("IncidentService – Aggregate Tests", () => {
         vesselVisitExecutionsCodes: ["2025-PA-000001"]
       };
 
-      const result = await service.createIncident(dto, "http://localhost", "Bearer token");
+      const result = await service.createIncident(dto, "Bearer token");
 
       expect(result.isSuccess).toBe(true);
     });
@@ -432,7 +432,7 @@ describe("IncidentService – Aggregate Tests", () => {
         vesselVisitExecutionsCodes: ["NONEXISTENT"]
       };
 
-      const result = await service.createIncident(dto, "http://localhost", "Bearer token");
+      const result = await service.createIncident(dto, "Bearer token");
 
       expect(result.isFailure).toBe(true);
       expect(result.errorValue()).toContain("not found");
@@ -448,7 +448,7 @@ describe("IncidentService – Aggregate Tests", () => {
       const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
       const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
 
-      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival, new Date(), "user1", vveDeparture);
+      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival, new Date(), "user1", [], "", vveDeparture);
       vesselVisitExecutionRepo.addVesselVisitExecution(vve);
 
       const dto: IncidentDTO = {
@@ -465,7 +465,7 @@ describe("IncidentService – Aggregate Tests", () => {
         vesselVisitExecutionsCodes: ["2025-PA-000001"]
       };
 
-      const result = await service.createIncident(dto, "http://localhost", "Bearer token");
+      const result = await service.createIncident(dto, "Bearer token");
 
       expect(result.isFailure).toBe(true);
       expect(result.errorValue()).toContain("not affected");
@@ -494,7 +494,7 @@ describe("IncidentService – Aggregate Tests", () => {
         vesselVisitExecutionsCodes: []
       };
 
-      const result = await service.createIncident(dto, "http://localhost", "Bearer token");
+      const result = await service.createIncident(dto, "Bearer token");
 
       expect(result.isSuccess).toBe(true);
       expect(result.getValue().duration).toBe(4);
@@ -752,7 +752,7 @@ describe("IncidentService – Aggregate Tests", () => {
       const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
       const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
 
-      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival, new Date(), "user1", vveDeparture);
+      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival, new Date(), "user1", [], "", vveDeparture);
       vesselVisitExecutionRepo.addVesselVisitExecution(vve);
 
       const incident = new Incident(
@@ -801,8 +801,8 @@ describe("IncidentService – Aggregate Tests", () => {
       const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
       const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
 
-      const vve1 = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival1, new Date(), "user1", vveDeparture);
-      const vve2 = new VesselVisitExecution("VVE2", "2025-PA-000002", "IMO7654321", VesselVisitExecutionStatus.Completed, vveArrival2, new Date(), "user1", vveDeparture);
+      const vve1 = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival1, new Date(), "user1", [], "", vveDeparture);
+      const vve2 = new VesselVisitExecution("VVE2", "2025-PA-000002", "IMO7654321", VesselVisitExecutionStatus.Completed, vveArrival2, new Date(), "user1", [], "", vveDeparture);
       vesselVisitExecutionRepo.addVesselVisitExecution(vve1);
       vesselVisitExecutionRepo.addVesselVisitExecution(vve2);
 
@@ -850,7 +850,7 @@ describe("IncidentService – Aggregate Tests", () => {
       const startDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
       const endDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
 
-      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival, new Date(), "user1", vveDeparture);
+      const vve = new VesselVisitExecution("VVE1", "2025-PA-000001", "IMO1234567", VesselVisitExecutionStatus.Completed, vveArrival, new Date(), "user1", [], "", vveDeparture);
       vesselVisitExecutionRepo.addVesselVisitExecution(vve);
 
       const incident = new Incident(

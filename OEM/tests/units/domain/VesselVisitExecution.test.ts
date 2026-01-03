@@ -26,7 +26,8 @@ describe("VesselVisitExecution (unit tests)", () => {
       validData.status,
       validData.arrivalDate,
       validData.lastUpdated,
-      validData.systemUserID
+      validData.systemUserID,
+      []
     );
 
     expect(execution.id).toBe("1");
@@ -48,10 +49,28 @@ describe("VesselVisitExecution (unit tests)", () => {
       validData.arrivalDate,
       validData.lastUpdated,
       validData.systemUserID,
+      [],
+      "",
       departureDatePast
     );
 
     expect(execution.departureDate).toBe(departureDatePast);
+  });
+
+  it("should create a VesselVisitExecution with DockAssigned", () => {
+    const execution = new VesselVisitExecution(
+      validData.id,
+      validData.code,
+      validData.vesselIMO,
+      validData.status,
+      validData.arrivalDate,
+      validData.lastUpdated,
+      validData.systemUserID,
+      [],
+      "DOCK-A1"
+    );
+
+    expect(execution.DockAssigned).toBe("DOCK-A1");
   });
 
   it("should throw error if code is empty", () => {
@@ -63,7 +82,8 @@ describe("VesselVisitExecution (unit tests)", () => {
         validData.status,
         validData.arrivalDate,
         validData.lastUpdated,
-        validData.systemUserID
+        validData.systemUserID,
+        []
       )
     ).toThrow("Vessel Visit Execution code cannot be null or empty.");
   });
@@ -77,7 +97,8 @@ describe("VesselVisitExecution (unit tests)", () => {
         validData.status,
         validData.arrivalDate,
         validData.lastUpdated,
-        validData.systemUserID
+        validData.systemUserID,
+        []
       )
     ).toThrow("Vessel Visit Execution code must match pattern 'YYYY-PA-XXXXXX'.");
   });
@@ -91,7 +112,8 @@ describe("VesselVisitExecution (unit tests)", () => {
         validData.status,
         validData.arrivalDate,
         validData.lastUpdated,
-        validData.systemUserID
+        validData.systemUserID,
+        []
       )
     ).toThrow("Vessel Visit Execution code must match pattern 'YYYY-PA-XXXXXX'.");
   });
@@ -105,7 +127,8 @@ describe("VesselVisitExecution (unit tests)", () => {
         validData.status,
         validData.arrivalDate,
         validData.lastUpdated,
-        validData.systemUserID
+        validData.systemUserID,
+        []
       )
     ).toThrow("Vessel Visit Execution code must match pattern 'YYYY-PA-XXXXXX'.");
   });
@@ -119,7 +142,8 @@ describe("VesselVisitExecution (unit tests)", () => {
         validData.status,
         validData.arrivalDate,
         validData.lastUpdated,
-        validData.systemUserID
+        validData.systemUserID,
+        []
       )
     ).toThrow("Vessel IMO cannot be null or empty.");
   });
@@ -133,7 +157,8 @@ describe("VesselVisitExecution (unit tests)", () => {
         "InvalidStatus" as VesselVisitExecutionStatus,
         validData.arrivalDate,
         validData.lastUpdated,
-        validData.systemUserID
+        validData.systemUserID,
+        []
       )
     ).toThrow("Invalid Vessel Visit Execution status.");
   });
@@ -147,7 +172,8 @@ describe("VesselVisitExecution (unit tests)", () => {
         validData.status,
         new Date("invalid"),
         validData.lastUpdated,
-        validData.systemUserID
+        validData.systemUserID,
+        []
       )
     ).toThrow("Arrival date must be a valid date.");
   });
@@ -164,7 +190,8 @@ describe("VesselVisitExecution (unit tests)", () => {
         validData.status,
         futureDate,
         validData.lastUpdated,
-        validData.systemUserID
+        validData.systemUserID,
+        []
       )
     ).toThrow("Arrival date cannot be in the future.");
   });
@@ -179,6 +206,8 @@ describe("VesselVisitExecution (unit tests)", () => {
         validData.arrivalDate,
         validData.lastUpdated,
         validData.systemUserID,
+        [],
+        "",
         new Date("invalid")
       )
     ).toThrow("Departure date must be a valid date.");
@@ -197,6 +226,8 @@ describe("VesselVisitExecution (unit tests)", () => {
         validData.arrivalDate,
         validData.lastUpdated,
         validData.systemUserID,
+        [],
+        "",
         futureDate
       )
     ).toThrow("Departure date cannot be in the future.");
@@ -215,6 +246,8 @@ describe("VesselVisitExecution (unit tests)", () => {
         arrivalDate,
         validData.lastUpdated,
         validData.systemUserID,
+        [],
+        "",
         departureDate
       )
     ).toThrow("Departure date cannot be before arrival date.");
@@ -232,7 +265,8 @@ describe("VesselVisitExecution (unit tests)", () => {
       validData.status,
       validData.arrivalDate,
       validData.lastUpdated,
-      validData.systemUserID
+      validData.systemUserID,
+      []
     );
 
     const beforeUpdate = execution.lastUpdated;
@@ -256,6 +290,8 @@ describe("VesselVisitExecution (unit tests)", () => {
       validData.arrivalDate,
       validData.lastUpdated,
       validData.systemUserID,
+      [],
+      "",
       new Date("2025-01-20")
     );
 
@@ -272,7 +308,8 @@ describe("VesselVisitExecution (unit tests)", () => {
       validData.status,
       validData.arrivalDate,
       validData.lastUpdated,
-      validData.systemUserID
+      validData.systemUserID,
+      []
     );
 
     expect(execution.departureDate).toBeUndefined();
@@ -293,6 +330,8 @@ describe("VesselVisitExecution (unit tests)", () => {
       validData.arrivalDate,
       validData.lastUpdated,
       validData.systemUserID,
+      [],
+      "",
       existingDepartureDate
     );
 
@@ -309,7 +348,8 @@ describe("VesselVisitExecution (unit tests)", () => {
       validData.status,
       validData.arrivalDate,
       new Date("2025-01-10"),
-      validData.systemUserID
+      validData.systemUserID,
+      []
     );
 
     const originalLastUpdated = execution.lastUpdated;
@@ -328,7 +368,8 @@ describe("VesselVisitExecution (unit tests)", () => {
       validData.status,
       validData.arrivalDate,
       validData.lastUpdated,
-      validData.systemUserID
+      validData.systemUserID,
+      []
     );
 
     expect(() =>
