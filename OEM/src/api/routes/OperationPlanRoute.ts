@@ -341,5 +341,85 @@ export default (app: Router) => {
     route.get('/algorithm/:algorithm', (req, res, next) =>
         ctrl.getOperationPlansByAlgorithm(req, res, next)
     );
+
+    /**
+     * @swagger
+     * /operation-plans/missing:
+     *   get:
+     *     tags: [OperationPlans]
+     *     summary: Get VVNs without associated Operation Plans
+     *     description: Returns all Vessel Visit Notifications that do not have an Operation Plan
+     *     responses:
+     *       200:
+     *         description: Array of VVNs without operation plans
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *       500:
+     *         description: Internal server error
+     */
+    route.get('/missing', (req, res, next) =>
+        ctrl.getVvnsWithoutOperationPlan(req, res, next)
+    );
+
+    /**
+     * @swagger
+     * /operation-plans/regenerate:
+     *   post:
+     *     tags: [OperationPlans]
+     *     summary: Regenerate all operation plans for a specific day
+     *     description: Deletes all existing operation plans for the specified day and creates new ones
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - targetDay
+     *               - author
+     *               - algorithm
+     *             properties:
+     *               targetDay:
+     *                 type: string
+     *                 format: date
+     *                 example: "2025-01-10"
+     *               author:
+     *                 type: string
+     *                 example: "operator@example.com"
+     *               algorithm:
+     *                 type: string
+     *                 example: "GENETIC_ALGORITHM"
+     *     responses:
+     *       200:
+     *         description: Operation plans regenerated successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                 plans:
+     *                   type: array
+     *                   items:
+     *                     $ref: '#/components/schemas/OperationPlanDTO'
+     *       400:
+     *         description: Missing required parameters
+     *       500:
+     *         description: Internal server error
+     */
+    route.post('/regenerate', celebrate({
+        body: Joi.object({
+            targetDay: Joi.date().required(),
+            author: Joi.string().required(),
+            algorithm: Joi.string().required()
+        })
+    }), (req, res, next) =>
+        ctrl.regenerateOperationPlansForDay(req, res, next)
+    );
 }
 

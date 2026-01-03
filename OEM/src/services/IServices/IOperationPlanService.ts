@@ -1,5 +1,6 @@
 import { Result } from "../../core/logic/Result";
 import { OperationPlanDTO } from "../../dto/OperationPlanDTO";
+import { VesselVisitNotificationDTO } from "../clients/VesselVisitNotificationClient";
 
 export default interface IOperationPlanService {
 
@@ -22,4 +23,8 @@ export default interface IOperationPlanService {
     create(dto: OperationPlanDTO): Promise<Result<OperationPlanDTO>>;
 
     update(id: string, dto: OperationPlanDTO): Promise<Result<OperationPlanDTO>>;
+
+    getVvnsWithoutOperationPlan(authHeader?: string): Promise<Result<VesselVisitNotificationDTO[]>>;
+
+    regenerateOperationPlansForDay(targetDay: Date, author: string, algorithm: string, authHeader?: string): Promise<Result<OperationPlanDTO[]>>;
 }

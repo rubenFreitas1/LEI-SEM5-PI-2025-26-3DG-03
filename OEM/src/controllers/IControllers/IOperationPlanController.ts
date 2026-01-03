@@ -11,4 +11,6 @@ export default interface IOperationPlanController {
     getOperationPlansByAlgorithm(req: Request, res: Response, next: NextFunction): Promise<void>;
     createOperationPlan(req: Request, res: Response, next: NextFunction): Promise<void>;
     updateOperationPlan(req: Request, res: Response, next: NextFunction): Promise<void>;
+    getVvnsWithoutOperationPlan(req: Request, res: Response, next: NextFunction): Promise<void>;
+    regenerateOperationPlansForDay(req: Request, res: Response, next: NextFunction): Promise<void>;
 }

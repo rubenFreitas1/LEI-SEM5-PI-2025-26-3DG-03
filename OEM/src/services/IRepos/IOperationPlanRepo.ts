@@ -22,4 +22,6 @@ export default interface IOperationPlanRepo extends Repo<OperationPlan> {
     update(operationPlan: OperationPlan): Promise<boolean>;
 
     findByIds(ids: string[]): Promise<OperationPlan[]>;
+
+    delete(id: string): Promise<boolean>;
 }

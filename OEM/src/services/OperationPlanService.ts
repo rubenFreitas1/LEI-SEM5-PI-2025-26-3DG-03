@@ -445,5 +445,137 @@ export default class OperationPlanService implements IOperationPlanService {
         }
     }
 
+    /**
+     * Get all VVNs that don't have an associated Operation Plan
+     */
+    public async getVvnsWithoutOperationPlan(authHeader?: string): Promise<Result<VesselVisitNotificationDTO[]>> 
+    {
+        try {
+            // Get all VVNs from the API
+            const allVvns = await this.vvnClient.getAll(authHeader);
+            this.logger.info(`Fetched ${allVvns.length} VVNs from API`);
 
+            // Get all operation plans
+            const operationPlans = await this.operationPlanRepo.findAll();
+            const vvnCodesWithPlans = new Set(operationPlans.map(op => op.vvn));
+            
+            this.logger.info(`VVN codes with plans: ${Array.from(vvnCodesWithPlans).join(', ')}`);
+            
+            // Filter VVNs that don't have operation plans AND have status "Approved"
+            const vvnsWithoutPlans = allVvns.filter(vvn => {
+                const hasNoPlan = !vvnCodesWithPlans.has(vvn.code);
+                const isApproved = vvn.visitStatus === 'Approved' || vvn.status === 'Approved';
+                
+                // Debug log for VVN 2025-PA-000003
+                if (vvn.code === '2025-PA-000003') {
+                    this.logger.info(`DEBUG VVN 2025-PA-000003: hasNoPlan=${hasNoPlan}, visitStatus=${vvn.visitStatus}, status=${vvn.status}, isApproved=${isApproved}`);
+                }
+                
+                return hasNoPlan && isApproved;
+            });
+            
+            this.logger.info(`Found ${vvnsWithoutPlans.length} approved VVNs without operation plans`);
+            this.logger.info(`VVNs without plans: ${vvnsWithoutPlans.map(v => v.code).join(', ')}`);
+            
+            return Result.ok(vvnsWithoutPlans);
+        } catch (error) {
+            this.logger.error('Error getting VVNs without operation plans:', error);
+            return Result.fail("Error retrieving VVNs without operation plans.");
+        }
+    }
+
+    /**
+     * Regenerate all operation plans for a specific day
+     * This will delete all existing plans for that day and create new ones
+     */
+    public async regenerateOperationPlansForDay(
+        targetDay: Date, 
+        author: string, 
+        algorithm: string, 
+        authHeader?: string
+    ): Promise<Result<OperationPlanDTO[]>> {
+        try {
+            this.logger.info(`Regenerating operation plans for day: ${targetDay.toISOString()}`);
+            
+            // Get all VVNs that should have plans for this day
+            const allVvns = await this.vvnClient.getAll(authHeader);
+            
+            // Normalize target day to start of day for comparison
+            const targetDayStart = new Date(targetDay);
+            targetDayStart.setHours(0, 0, 0, 0);
+            const targetDayEnd = new Date(targetDay);
+            targetDayEnd.setHours(23, 59, 59, 999);
+            
+            // Filter VVNs that fall on the target day
+            const vvnsForDay = allVvns.filter(vvn => {
+                const eta = new Date(vvn.eta);
+                return eta >= targetDayStart && eta <= targetDayEnd;
+            });
+            
+            this.logger.info(`Found ${vvnsForDay.length} VVNs for day ${targetDay.toISOString()}`);
+
+            // Delete existing operation plans for all these VVNs
+            const allPlans = await this.operationPlanRepo.findAll();
+            for (const vvn of vvnsForDay) {
+                const existingPlan = allPlans.find(p => p.vvn === vvn.code);
+                if (existingPlan) {
+                    await this.operationPlanRepo.delete(existingPlan.id);
+                    this.logger.info(`Deleted existing operation plan ${existingPlan.id} for VVN ${vvn.code}`);
+                }
+            }
+
+            if (vvnsForDay.length === 0) {
+                return Result.ok([]);
+            }
+
+            // Create new operation plans for each VVN
+            const createdPlans: OperationPlanDTO[] = [];
+            
+            for (const vvn of vvnsForDay) {
+                const arrivalTime = new Date(vvn.eta);
+                const departureTime = new Date(vvn.etd);
+                
+                // For simplicity, assign all available cranes
+                // In a real scenario, this would come from the scheduling algorithm
+                const assignedCranes = ['CRANE-1', 'CRANE-2', 'CRANE-3'];
+                
+                // Create operation entries
+                const result = await this.createOperationEntries(
+                    vvn.vessel?.vesselName || vvn.code,
+                    assignedCranes,
+                    arrivalTime,
+                    departureTime,
+                    authHeader
+                );
+
+                const operations = result.operations;
+
+                // Create the operation plan
+                const domain = OperationPlanMap.toDomain({
+                    _id: undefined,
+                    vvn: vvn.code,
+                    TargetDay: targetDay,
+                    arrivalTime: arrivalTime,
+                    departureTime: departureTime,
+                    operations: operations,
+                    author: author,
+                    algorithm: algorithm,
+                    createdAt: new Date()
+                } as any);
+
+                const saved = await this.operationPlanRepo.save(domain);
+                if (saved) {
+                    const createdDTO = OperationPlanMap.toDTO(saved);
+                    createdPlans.push(createdDTO);
+                    this.logger.info(`Created operation plan for VVN ${vvn.code}`);
+                }
+            }
+
+            this.logger.info(`Successfully regenerated ${createdPlans.length} operation plans`);
+            return Result.ok(createdPlans);
+        } catch (error) {
+            this.logger.error('Error regenerating operation plans:', error);
+            return Result.fail("Error regenerating operation plans for day.");
+        }
+    }
 }

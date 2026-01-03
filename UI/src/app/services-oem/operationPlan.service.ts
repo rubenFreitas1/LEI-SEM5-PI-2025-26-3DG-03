@@ -52,4 +52,32 @@ export class OperationPlanService {
       })
     );
   }
+
+  getVvnsWithoutOperationPlan(): Observable<any[]> {
+    return this.oemService.get<any[]>('/operation-plans/missing').pipe(
+      catchError((err) => {
+        console.error('Error fetching VVNs without operation plans:', err);
+        return throwError(() => ({
+          message: err?.error?.error || err?.message || 'Error fetching VVNs without operation plans',
+          originalError: err
+        }));
+      })
+    );
+  }
+
+  regenerateOperationPlansForDay(targetDay: Date, author: string, algorithm: string): Observable<any> {
+    return this.oemService.post<any>('/operation-plans/regenerate', {
+      targetDay: targetDay.toISOString().split('T')[0],
+      author,
+      algorithm
+    }).pipe(
+      catchError((err) => {
+        console.error('Error regenerating operation plans:', err);
+        return throwError(() => ({
+          message: err?.error?.error || err?.message || 'Error regenerating operation plans',
+          originalError: err
+        }));
+      })
+    );
+  }
 }

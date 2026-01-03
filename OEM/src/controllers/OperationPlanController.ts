@@ -195,4 +195,54 @@ export default class OperationPlanController implements IOperationPlanController
         }
     }
 
+    public async getVvnsWithoutOperationPlan(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            this.logger.silly('Getting VVNs without operation plans');
+            const authHeader = req.headers.authorization;
+            const result = await this.operationPlanService.getVvnsWithoutOperationPlan(authHeader);
+            if (result.isSuccess) {
+                res.status(200).json(result.getValue());
+            } else {
+                res.status(500).json({ error: result.error });
+            }
+        } catch (e) {
+            this.logger.error(e);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
+
+    public async regenerateOperationPlansForDay(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            this.logger.silly('Regenerating operation plans for day');
+            const { targetDay, author, algorithm } = req.body;
+            
+            if (!targetDay || !author || !algorithm) {
+                res.status(400).json({ error: 'targetDay, author, and algorithm are required' });
+                return;
+            }
+
+            const targetDayDate = new Date(targetDay);
+            const authHeader = req.headers.authorization;
+            
+            const result = await this.operationPlanService.regenerateOperationPlansForDay(
+                targetDayDate,
+                author,
+                algorithm,
+                authHeader
+            );
+            
+            if (result.isSuccess) {
+                res.status(200).json({
+                    message: `Successfully regenerated ${result.getValue().length} operation plans`,
+                    plans: result.getValue()
+                });
+            } else {
+                res.status(500).json({ error: result.error });
+            }
+        } catch (e: any) {
+            this.logger.error('Error regenerating operation plans:', e);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
+
 }

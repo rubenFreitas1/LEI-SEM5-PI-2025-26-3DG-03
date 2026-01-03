@@ -89,4 +89,9 @@ export default class OperationPlanRepo implements IOperationPlanRepo {
 
     return result.modifiedCount > 0;
   }
+
+  async delete(id: string): Promise<boolean> {
+    const result = await this.operationPlanSchema.deleteOne({ _id: id });
+    return result.deletedCount > 0;
+  }
 }

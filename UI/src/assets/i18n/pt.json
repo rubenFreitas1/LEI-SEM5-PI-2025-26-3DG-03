@@ -1389,6 +1389,18 @@
     "SUBTITLE": "Ver e gerir todos os planos de operação gerados a partir dos horários de embarcações",
     "SEARCH_PLACEHOLDER": "Pesquisar por VVN, autor, algoritmo ou ID...",
     "NO_PLANS": "Nenhum plano de operação encontrado.",
+    "NO_MISSING_PLANS": "Todos os VVNs têm planos de operação!",
+    "TAB_PLANS": "Planos de Operação",
+    "TAB_MISSING": "Planos em Falta",
+    "REGENERATE_BTN": "Regenerar Planos do Dia",
+    "REGENERATE_DAY": "Regenerar Dia",
+    "GENERATE_BTN": "Gerar Plano",
+    "NO_MISSING_VVNS": "Todos os VVNs têm planos de operação!",
+    "VVN_DETAILS": {
+      "VESSEL": "Embarcação",
+      "ETA": "Hora Estimada de Chegada",
+      "ETD": "Hora Estimada de Partida"
+    },
     "TABLE": {
       "ID": "ID",
       "VESSEL": "Embarcação",
@@ -1401,6 +1413,14 @@
       "ALGORITHM": "Algoritmo",
       "CREATED": "Criado Em",
       "ACTIONS": "Ações"
+    },
+    "MISSING": {
+      "CODE": "Código VVN",
+      "VESSEL": "Nome do Navio",
+      "IMO": "Número IMO",
+      "ETA": "Chegada Estimada",
+      "ETD": "Partida Estimada",
+      "STATUS": "Estado"
     },
     "DETAILS": {
       "TITLE": "Detalhes do Plano de Operação",
@@ -1445,6 +1465,16 @@
       "WARNING": "Aviso",
       "TIME_EXCEEDS_DEPARTURE": "A hora de fim da última operação excede a hora de partida da embarcação. Por favor, ajuste os tempos das operações."
     },
+    "REGENERATE": {
+      "TITLE": "Regenerar Planos de Operação",
+      "WARNING": "AVISO: Esta ação irá substituir TODOS os planos de operação existentes do dia selecionado. Esta ação não pode ser desfeita!",
+      "DATE": "Data Alvo",
+      "AUTHOR": "Autor",
+      "AUTHOR_PLACEHOLDER": "Introduza o seu nome ou email",
+      "ALGORITHM": "Algoritmo de Agendamento",
+      "CONFIRM": "Regenerar Planos",
+      "SUCCESS": "Planos de operação regenerados com sucesso!"
+    },
     "BUTTON": {
       "EDIT": "Editar",
       "CANCEL": "Cancelar",
@@ -1453,9 +1483,11 @@
     }
   },
 
-  "COMMON": {
+   "COMMON": {
     "BACK": "Voltar",
     "CLOSE": "Fechar",
     "REFRESH": "Atualizar",
-    "LOADING": "A carregar..."  }
+    "LOADING": "A carregar...",
+    "CANCEL": "Cancelar",
+    "PROCESSING": "A processar..."}
 }

@@ -1,6 +1,23 @@
 <div class="page-container">
   <h1 class="page-title">{{ 'OPERATION_PLANS.TITLE' | translate }}</h1>
 
+  <!-- Tabs -->
+  <div class="tabs-container">
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'plans'"
+      (click)="switchTab('plans')">
+      {{ 'OPERATION_PLANS.TAB_PLANS' | translate }}
+    </button>
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'missing'"
+      (click)="switchTab('missing')">
+      {{ 'OPERATION_PLANS.TAB_MISSING' | translate }}
+      <span *ngIf="vvnsWithoutPlans.length > 0" class="badge">{{ vvnsWithoutPlans.length }}</span>
+    </button>
+  </div>
+
   <div class="top-bar">
     <div class="search-container">
       <input
@@ -8,13 +25,18 @@
         class="search-input"
         [(ngModel)]="searchTerm"
         (ngModelChange)="onSearchChange()"
-        [placeholder]="'OPERATION_PLANS.SEARCH_PLACEHOLDER' | translate"
+        [placeholder]="activeTab === 'plans' ? ('OPERATION_PLANS.SEARCH_PLACEHOLDER' | translate) : ('OPERATION_PLANS.SEARCH_VVN_PLACEHOLDER' | translate)"
       />
     </div>
 
-    <div class="action-buttons">
+    <div *ngIf="activeTab === 'plans'" class="action-buttons">
       <button (click)="onUpdate()" class="btn btn-secondary" [disabled]="!selectedPlan">
         {{ 'OPERATION_PLANS.BUTTON.EDIT' | translate }}
+      </button>
+    </div>
+    <div *ngIf="activeTab === 'missing'" class="action-buttons">
+      <button class="btn btn-primary" (click)="openRegenerateModal()">
+        {{ 'OPERATION_PLANS.REGENERATE_BTN' | translate }}
       </button>
     </div>
   </div>
@@ -23,9 +45,59 @@
     {{ 'COMMON.LOADING' | translate }}
   </div>
 
-  <div *ngIf="!isLoading && filteredPlans.length === 0" class="no-data">
-    <p>{{ 'OPERATION_PLANS.NO_PLANS' | translate }}</p>
+  <!-- Missing VVNs Tab -->
+  <div *ngIf="activeTab === 'missing' && !isLoading">
+    <div *ngIf="groupedVvns.length === 0" class="no-data">
+      <p>{{ 'OPERATION_PLANS.NO_MISSING_VVNS' | translate }}</p>
+    </div>
+
+    <div *ngFor="let group of groupedVvns" class="date-group">
+      <div class="date-group-header">
+        <h3 class="date-title">{{ group.date }}</h3>
+        <div class="date-header-actions">
+          <span class="vvn-count">{{ group.vvns.length }} VVN(s)</span>
+          <button class="btn btn-primary btn-sm" (click)="openRegenerateDayModal(group.date)">
+            {{ 'OPERATION_PLANS.REGENERATE_DAY' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>{{ 'OPERATION_PLANS.MISSING.CODE' | translate }}</th>
+              <th>{{ 'OPERATION_PLANS.MISSING.VESSEL' | translate }}</th>
+              <th>{{ 'OPERATION_PLANS.MISSING.IMO' | translate }}</th>
+              <th>{{ 'OPERATION_PLANS.MISSING.ETA' | translate }}</th>
+              <th>{{ 'OPERATION_PLANS.MISSING.ETD' | translate }}</th>
+              <th>{{ 'OPERATION_PLANS.MISSING.STATUS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let vvn of group.vvns">
+              <td><span class="styled-field">{{ vvn.code }}</span></td>
+              <td>{{ vvn.vessel?.vesselName || vvn.vesselName || '-' }}</td>
+              <td>{{ vvn.vesselIMO || vvn.vessel?.imoNumber || '-' }}</td>
+              <td>{{ formatDate(vvn.eta) }}</td>
+              <td>{{ formatDate(vvn.etd) }}</td>
+              <td>
+                <span class="status-badge" [class]="'status-' + (vvn.status || vvn.visitStatus || 'unknown').toLowerCase()">
+                  {{ vvn.status || vvn.visitStatus || 'Unknown' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
+
+  <!-- Operation Plans Tab -->
+  <div *ngIf="activeTab === 'plans' && !isLoading">
+    <div *ngIf="filteredPlans.length === 0" class="no-data">
+      <p>{{ 'OPERATION_PLANS.NO_PLANS' | translate }}</p>
+    </div>
 
   <div *ngIf="!isLoading && filteredPlans.length > 0" class="table-container">
     <table class="data-table">
@@ -235,7 +307,10 @@
                 <tr *ngFor="let operation of selectedPlan.operations">
                   <td>{{ operation.id }}</td>
                   <td>
-                    <span class="operation-type-badge" [class.loading]="operation.operationType === 'LOADING'" [class.unloading]="operation.operationType === 'UNLOADING'" [class.maintenance]="operation.operationType === 'MAINTENANCE'">
+                    <span class="operation-type-badge"
+                          [class.loading]="operation.operationType === 'LOADING'"
+                          [class.unloading]="operation.operationType === 'UNLOADING'"
+                          [class.maintenance]="operation.operationType === 'MAINTENANCE'">
                       {{ operation.operationType }}
                     </span>
                   </td>
@@ -284,3 +359,72 @@
     </div>
   </div>
 </div>
+</div>
+
+<!-- Modals outside page-container -->
+<!-- Regenerate Modal -->
+<div *ngIf="showRegenerateModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>{{ 'OPERATION_PLANS.REGENERATE.TITLE' | translate }}</h2>
+        <button class="close-button" (click)="closeRegenerateModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="warning-message">
+          ⚠️ {{ 'OPERATION_PLANS.REGENERATE.WARNING' | translate }}
+        </div>
+
+        <div class="form-group">
+          <label for="regenerateDate">{{ 'OPERATION_PLANS.REGENERATE.DATE' | translate }}:</label>
+          <input
+            type="date"
+            id="regenerateDate"
+            class="form-input"
+            [(ngModel)]="regenerateDateString"
+            readonly
+            [disabled]="isRegenerating"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="regenerateAuthor">{{ 'OPERATION_PLANS.REGENERATE.AUTHOR' | translate }}:</label>
+          <input
+            type="text"
+            id="regenerateAuthor"
+            class="form-input readonly-input"
+            [(ngModel)]="regenerateAuthor"
+            readonly
+            [disabled]="isRegenerating"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="regenerateAlgorithm">{{ 'OPERATION_PLANS.REGENERATE.ALGORITHM' | translate }}:</label>
+          <select
+            id="regenerateAlgorithm"
+            class="form-input"
+            [(ngModel)]="regenerateAlgorithm"
+            [disabled]="isRegenerating"
+          >
+            <option value="automatic">{{ 'SCHEDULE.ALGORITHM.AUTOMATIC' | translate }}</option>
+            <option value="default">{{ 'SCHEDULE.ALGORITHM.DEFAULT' | translate }}</option>
+            <option value="improved">{{ 'SCHEDULE.ALGORITHM.HEURISTIC' | translate }}</option>
+            <option value="genetic">{{ 'SCHEDULE.ALGORITHM.GENETIC' | translate }}</option>
+          </select>
+        </div>
+
+        <div *ngIf="regenerateMessage" class="message" [class.error]="regenerateMessage.includes('Error')">
+          {{ regenerateMessage }}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeRegenerateModal()" [disabled]="isRegenerating">
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+        <button class="btn btn-primary" (click)="confirmRegenerate()" [disabled]="isRegenerating">
+          <span *ngIf="!isRegenerating">{{ 'OPERATION_PLANS.REGENERATE.CONFIRM' | translate }}</span>
+          <span *ngIf="isRegenerating">{{ 'COMMON.PROCESSING' | translate }}</span>
+        </button>
+      </div>
+    </div>
+  </div>

@@ -1390,6 +1390,18 @@
     "SUBTITLE": "View and manage all operation plans generated from vessel schedules",
     "SEARCH_PLACEHOLDER": "Search by VVN, author, algorithm or ID...",
     "NO_PLANS": "No operation plans found.",
+    "NO_MISSING_PLANS": "All VVNs have operation plans!",
+    "TAB_PLANS": "Operation Plans",
+    "TAB_MISSING": "Missing Plans",
+    "REGENERATE_BTN": "Regenerate Plans for Day",
+    "REGENERATE_DAY": "Regenerate Day",
+    "GENERATE_BTN": "Generate Plan",
+    "NO_MISSING_VVNS": "All VVNs have operation plans!",
+    "VVN_DETAILS": {
+      "VESSEL": "Vessel",
+      "ETA": "Estimated Arrival",
+      "ETD": "Estimated Departure"
+    },
     "TABLE": {
       "ID": "ID",
       "VESSEL": "Vessel",
@@ -1402,6 +1414,14 @@
       "ALGORITHM": "Algorithm",
       "CREATED": "Created At",
       "ACTIONS": "Actions"
+    },
+    "MISSING": {
+      "CODE": "VVN Code",
+      "VESSEL": "Vessel Name",
+      "IMO": "IMO Number",
+      "ETA": "Estimated Arrival",
+      "ETD": "Estimated Departure",
+      "STATUS": "Status"
     },
     "DETAILS": {
       "TITLE": "Operation Plan Details",
@@ -1451,13 +1471,24 @@
       "CANCEL": "Cancel",
       "SAVE": "Save Changes",
       "SAVING": "Saving..."
+    },
+    "REGENERATE": {
+      "TITLE": "Regenerate Operation Plans",
+      "WARNING": "WARNING: This action will overwrite ALL existing operation plans for the selected day. This action cannot be undone!",
+      "DATE": "Target Date",
+      "AUTHOR": "Author",
+      "AUTHOR_PLACEHOLDER": "Enter your name or email",
+      "ALGORITHM": "Scheduling Algorithm",
+      "CONFIRM": "Regenerate Plans",
+      "SUCCESS": "Operation plans regenerated successfully!"
     }
   },
 
-  "COMMON": {
+   "COMMON": {
     "BACK": "Back",
     "CLOSE": "Close",
     "REFRESH": "Refresh",
-    "LOADING": "Loading..."
-  }
+    "LOADING": "Loading...",
+    "CANCEL": "Cancel",
+    "PROCESSING": "Processing..."}
 }
