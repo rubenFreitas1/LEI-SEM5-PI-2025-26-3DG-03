@@ -9,12 +9,14 @@ import { AuthMechanism } from "mongodb";
 import { OperationPlanMap } from "../mappers/OperationPlanMap";
 import { OperationEntryMap } from "../mappers/OperationEntryMap";
 import VesselVisitNotificationClient, { VesselVisitNotificationDTO } from "./clients/VesselVisitNotificationClient";
+import ScheduleClient from "./clients/ScheduleClient";
 import config from "../../config";
 
 
 @Service()
 export default class OperationPlanService implements IOperationPlanService {
     private vvnClient: VesselVisitNotificationClient;
+    private scheduleClient: ScheduleClient;
 
     constructor(
         @Inject("operationPlanRepo") private operationPlanRepo: IOperationPlanRepo,
@@ -22,6 +24,9 @@ export default class OperationPlanService implements IOperationPlanService {
     ){
         const apiBaseUrl = process.env.API_URL || 'http://localhost:5000/api';
         this.vvnClient = new VesselVisitNotificationClient(apiBaseUrl);
+        
+        const schedulingBaseUrl = process.env.SCHEDULING_API_URL || 'http://localhost:6000';
+        this.scheduleClient = new ScheduleClient(schedulingBaseUrl);
     }
 
     public async getAllOperationPlans(): Promise<Result<OperationPlanDTO[]>> {
@@ -531,7 +536,7 @@ export default class OperationPlanService implements IOperationPlanService {
             // Get all VVNs that should have plans for this day
             const allVvns = await this.vvnClient.getAll(authHeader);
             
-            // Normalize target day to start of day for comparison
+            // Normalize target day to start of day (00:00:00) for comparison
             const targetDayStart = new Date(targetDay);
             targetDayStart.setHours(0, 0, 0, 0);
             const targetDayEnd = new Date(targetDay);
@@ -559,6 +564,39 @@ export default class OperationPlanService implements IOperationPlanService {
                 return Result.ok([]);
             }
 
+            // Call the scheduling algorithm (Prolog) for the target day at 00:00:00
+            this.logger.info(`Calling scheduling algorithm: ${algorithm} for day: ${targetDayStart.toISOString()}`);
+            const scheduleResponse = await this.scheduleClient.getScheduleByTargetDay(
+                targetDayStart, // Use 00:00:00 of the target day
+                algorithm,
+                undefined, // no timeLimit
+                authHeader
+            );
+
+            // Extract schedule entries from the response
+            let scheduleEntries = scheduleResponse?.schedule?.schedule || scheduleResponse?.entries || scheduleResponse?.scheduleEntries || [];
+            
+            if (scheduleEntries.length === 0) {
+                this.logger.warn('No schedule entries returned from scheduling algorithm');
+                return Result.ok([]);
+            }
+
+            this.logger.info(`Received ${scheduleEntries.length} schedule entries from Prolog`);
+
+            // Create a map of vessel -> schedule entry for quick lookup
+            // Prolog returns vessel as IMO number (integer or string)
+            const scheduleMap = new Map<string, any>();
+            for (const entry of scheduleEntries) {
+                const vesselKey = entry.vessel || entry.vesselName;
+                if (vesselKey) {
+                    // Add both string and number versions for matching
+                    scheduleMap.set(String(vesselKey), entry);
+                    scheduleMap.set(String(vesselKey).toLowerCase(), entry);
+                }
+            }
+
+            this.logger.info(`Schedule map keys: ${Array.from(scheduleMap.keys()).join(', ')}`);
+
             // Create new operation plans for each VVN
             const createdPlans: OperationPlanDTO[] = [];
             
@@ -566,13 +604,32 @@ export default class OperationPlanService implements IOperationPlanService {
                 const arrivalTime = new Date(vvn.eta);
                 const departureTime = new Date(vvn.etd);
                 
-                // For simplicity, assign all available cranes
-                // In a real scenario, this would come from the scheduling algorithm
-                const assignedCranes = ['CRANE-1', 'CRANE-2', 'CRANE-3'];
+                // Try to find the schedule entry for this vessel
+                // Prolog uses IMO number as vessel key
+                const vesselName = vvn.vessel?.vesselName || vvn.vesselName;
+                const vesselIMO = vvn.vesselIMO || vvn.vessel?.imoNumber;
+                
+                this.logger.info(`Looking for vessel: IMO=${vesselIMO}, Name=${vesselName}`);
+                
+                let scheduleEntry = scheduleMap.get(String(vesselIMO)) || 
+                                   scheduleMap.get(String(vesselIMO)?.toLowerCase()) ||
+                                   scheduleMap.get(String(vesselName)) ||
+                                   scheduleMap.get(String(vesselName)?.toLowerCase());
+                
+                // Extract cranes from the schedule entry
+                // Prolog returns craneNames as an array like ["STS Crane 1", "STS Crane 2", "STS Crane 3"]
+                let assignedCranes: string[] = [];
+                if (scheduleEntry) {
+                    assignedCranes = scheduleEntry.craneNames || scheduleEntry.assignedCranes || scheduleEntry.assignedCrane || [];
+                    this.logger.info(`✓ Found schedule entry for vessel ${vesselName} (IMO: ${vesselIMO}): ${JSON.stringify(assignedCranes)}`);
+                } else {
+                    this.logger.warn(`✗ No schedule entry found for vessel ${vesselName} (IMO: ${vesselIMO}), using default cranes`);
+                    assignedCranes = ['CRANE-1', 'CRANE-2'];
+                }
                 
                 // Create operation entries
                 const result = await this.createOperationEntries(
-                    vvn.vessel?.vesselName || vvn.code,
+                    vesselName,
                     assignedCranes,
                     arrivalTime,
                     departureTime,
@@ -585,7 +642,7 @@ export default class OperationPlanService implements IOperationPlanService {
                 const domain = OperationPlanMap.toDomain({
                     _id: undefined,
                     vvn: vvn.code,
-                    TargetDay: targetDay,
+                    TargetDay: targetDayStart, // Use 00:00:00 of the target day
                     arrivalTime: arrivalTime,
                     departureTime: departureTime,
                     operations: operations,

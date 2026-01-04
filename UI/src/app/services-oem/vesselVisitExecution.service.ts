@@ -59,21 +59,45 @@ export class VesselVisitExecutionService {
     );
   }
 
-  private mapDtoToVVE = (dto: any): VesselVisitExecutionModel => ({
-    id: dto?.id ?? dto?._id ?? undefined,
-    code: dto?.code ?? '',
-    name: dto?.vesselIMO ?? dto?.vessel?.imo ?? '',
-    vesselIMO: dto?.vesselIMO ?? dto?.vessel?.imo ?? '',
-    description: dto?.status ?? dto?.visitStatus ?? '',
-    status: dto?.status ?? dto?.visitStatus,
-    departureDate: dto?.departureDate,
-    arrivalDate: dto?.arrivalDate,
-    lastUpdated: dto?.lastUpdated,
-    systemUserID: dto?.systemUserID,
-    vesselVisitNotificationCode: dto?.vesselVisitNotificationCode ?? '',
-    DockAssigned: dto?.DockAssigned ?? dto?.dockAssigned,
-    operations: dto?.operations ?? []
-  });
+  private mapDtoToVVE = (dto: any): VesselVisitExecutionModel => {
+    console.log('🔧 Mapping DTO to VVE:', dto);
+
+    // Try multiple field name variations for dock assignment
+    const dockAssigned = dto?.DockAssigned
+      || dto?.dockAssigned
+      || dto?.dock
+      || dto?.assignedDock
+      || dto?.plannedDock
+      || dto?.dockName
+      || dto?.Dock
+      || '';
+
+    console.log('🏗️ Dock assignment found:', dockAssigned, 'from:', {
+      DockAssigned: dto?.DockAssigned,
+      dockAssigned: dto?.dockAssigned,
+      dock: dto?.dock,
+      assignedDock: dto?.assignedDock,
+      plannedDock: dto?.plannedDock,
+      dockName: dto?.dockName,
+      Dock: dto?.Dock
+    });
+
+    return {
+      id: dto?.id ?? dto?._id ?? undefined,
+      code: dto?.code ?? '',
+      name: dto?.vesselIMO ?? dto?.vessel?.imo ?? '',
+      vesselIMO: dto?.vesselIMO ?? dto?.vessel?.imo ?? '',
+      description: dto?.status ?? dto?.visitStatus ?? '',
+      status: dto?.status ?? dto?.visitStatus,
+      departureDate: dto?.departureDate,
+      arrivalDate: dto?.arrivalDate,
+      lastUpdated: dto?.lastUpdated,
+      systemUserID: dto?.systemUserID,
+      vesselVisitNotificationCode: dto?.vesselVisitNotificationCode ?? '',
+      DockAssigned: dockAssigned,
+      operations: dto?.operations ?? []
+    };
+  };
 
   private handleError(context: string, error: any) {
     const errorMessage = error?.error?.message || error?.message || `VVE service error in ${context}`;

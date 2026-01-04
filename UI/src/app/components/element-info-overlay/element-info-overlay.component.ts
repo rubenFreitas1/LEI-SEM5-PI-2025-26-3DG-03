@@ -8,7 +8,7 @@ import { ElementInfoService, ElementInfo } from '../../services/element-info.ser
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div 
+    <div
       *ngIf="isVisible && elementInfo"
       class="info-overlay"
       [class.fade-in]="isVisible">
@@ -16,7 +16,7 @@ import { ElementInfoService, ElementInfo } from '../../services/element-info.ser
         <h3>{{ elementInfo.name }}</h3>
         <span class="info-type">{{ elementInfo.type }}</span>
       </div>
-      
+
       <div class="info-body" (wheel)="onWheel($event)" (pointerdown)="$event.stopPropagation()" (touchmove)="$event.stopPropagation()">
         <div class="info-section">
           <h4>General Information</h4>
@@ -82,6 +82,19 @@ import { ElementInfoService, ElementInfo } from '../../services/element-info.ser
           <div class="info-item" *ngIf="elementInfo.vveCode">
             <span class="label">VVE Code:</span>
             <span class="value">{{ elementInfo.vveCode }}</span>
+          </div>
+
+          <!-- Operational Status Badge -->
+          <div class="info-item" *ngIf="elementInfo.operationalStatus">
+            <span class="label">Operational Status:</span>
+            <span class="value status-badge" [class]="'status-' + (elementInfo.operationalStatus ? elementInfo.operationalStatus.toLowerCase() : '')">
+              {{ elementInfo.operationalStatus }}
+            </span>
+          </div>
+
+          <div class="info-item" *ngIf="elementInfo.operationalStatusDescription">
+            <span class="label">Status Meaning:</span>
+            <span class="value status-description">{{ elementInfo.operationalStatusDescription }}</span>
           </div>
 
           <div class="info-item" *ngIf="elementInfo.vveStatus">
@@ -168,7 +181,7 @@ import { ElementInfoService, ElementInfo } from '../../services/element-info.ser
             <span class="label">Code:</span>
             <span class="value">{{ elementInfo.code }}</span>
           </div>
-          
+
           <!-- Dock specific fields -->
           <div class="info-item" *ngIf="elementInfo.location">
             <span class="label">Location:</span>
@@ -208,7 +221,7 @@ import { ElementInfoService, ElementInfo } from '../../services/element-info.ser
             <span class="value">{{ (elementInfo.currentCraneIndex || 0) + 1 }} / {{ elementInfo.cranesList.length }}</span>
           </div>
 
-          
+
 
           <div class="info-item" *ngIf="elementInfo.craneKind">
             <span class="label">Crane Type:</span>
@@ -428,6 +441,54 @@ import { ElementInfoService, ElementInfo } from '../../services/element-info.ser
       font-size: 0.9em;
     }
 
+    /* Status badge with specific styling */
+    .status-badge {
+      padding: 4px 12px !important;
+      border-radius: 6px;
+      font-weight: 600 !important;
+      font-size: 0.9em !important;
+      text-align: center !important;
+      display: inline-block;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Operational status colors */
+    .status-waiting {
+      background: rgba(255, 255, 0, 0.3);
+      color: #FFFF00;
+      border: 1px solid rgba(255, 255, 0, 0.5);
+    }
+
+    .status-loading {
+      background: rgba(0, 255, 0, 0.3);
+      color: #00FF00;
+      border: 1px solid rgba(0, 255, 0, 0.5);
+    }
+
+    .status-unloading {
+      background: rgba(255, 102, 0, 0.3);
+      color: #FF6600;
+      border: 1px solid rgba(255, 102, 0, 0.5);
+    }
+
+    .status-inprogress {
+      background: rgba(0, 153, 255, 0.3);
+      color: #0099FF;
+      border: 1px solid rgba(0, 153, 255, 0.5);
+    }
+
+    .status-completed {
+      background: rgba(128, 128, 128, 0.3);
+      color: #A0A0A0;
+      border: 1px solid rgba(128, 128, 128, 0.5);
+    }
+
+    .status-description {
+      font-size: 0.85em !important;
+      font-style: italic;
+      color: rgba(255, 255, 255, 0.8) !important;
+    }
+
     /* Make status badge fit content and not stretch full width */
     .info-item .value.status {
       flex: 0 0 auto;
@@ -443,8 +504,7 @@ import { ElementInfoService, ElementInfo } from '../../services/element-info.ser
       color: #4caf50;
     }
 
-    .status-busy,
-    .status-loading {
+    .status-busy {
       background: rgba(255, 152, 0, 0.3);
       color: #ff9800;
     }

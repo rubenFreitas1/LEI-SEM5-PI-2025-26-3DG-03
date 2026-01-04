@@ -1,10 +1,49 @@
 {
   "dockSlots": [
-    { "x": -50, "y": 20, "z": 100 },
-    { "x": -200,  "y": 20, "z": 100 },
-    { "x": -350,   "y": 20, "z": 100 },
-    { "x": -500,  "y": 20, "z": 100 },
-    { "x": -650,  "y": 20, "z": 100 }
+    { 
+      "x": -50, 
+      "y": 20, 
+      "z": 100,
+      "vesselDocked": { "x": 10, "y": 15, "z": 100 },
+      "vesselDockedRotation": 0,
+      "vesselWaiting": { "x": 60, "y": 15, "z": -30 }
+    },
+    { 
+      "x": -200, 
+      "y": 20, 
+      "z": 100,
+      "vesselDocked": { "x": -140, "y": 15, "z": 100 },
+      "vesselDockedRotation": 0,
+      "vesselWaiting": { "x": -80, "y": 15, "z": 290 },
+      "vesselWaitingRotation": -114.65
+    },
+    { 
+      "x": -350, 
+      "y": 20, 
+      "z": 100,
+      "vesselDocked": { "x": -290, "y": 15, "z": 100 },
+      "vesselDockedRotation": 0,
+      "vesselWaiting": { "x": -230, "y": 15, "z": 290 },
+      "vesselWaitingRotation": -114.65
+    },
+    { 
+      "x": -500, 
+      "y": 20, 
+      "z": 100,
+      "vesselDocked": { "x": -440, "y": 15, "z": 100 },
+      "vesselDockedRotation": 0,
+      "vesselWaiting": { "x": -390, "y": 15, "z": 290 },
+      "vesselWaitingRotation": -114.65
+    },
+    { 
+      "x": -650, 
+      "y": 20, 
+      "z": 100,
+      "vesselDocked": { "x": -590, "y": 15, "z": 100 },
+      "vesselDockedRotation": 0,
+      "vesselWaiting": { "x": -580, "y": 15, "z": 290 },
+      "vesselWaitingRotation": -114.65
+    }
   ],
   "warehouseSlots": [
     { "x": -70, "y": 35, "z": -120 },

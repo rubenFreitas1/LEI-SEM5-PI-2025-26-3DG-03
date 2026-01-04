@@ -235,8 +235,9 @@ export function createScene(
     // Registar vessels como pickable
     vessel.forEach((vesselObj, index) => {
       vesselObj.updateMatrixWorld(true);
-      const boundingBox = new THREE.Box3().setFromObject(vesselObj);
-      const center = boundingBox.getCenter(new THREE.Vector3());
+
+      // Use vessel's current position as center point instead of bounding box center
+      const center = vesselObj.position.clone();
 
       objectPicker.registerPickableObject({
         mesh: vesselObj,

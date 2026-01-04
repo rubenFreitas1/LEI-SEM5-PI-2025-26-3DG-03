@@ -10,6 +10,7 @@
 :- use_module('Modules/automatic_controller.pl').
 :- dynamic vessel/6.
 :- dynamic obtain_seq_shortest_delay_improved_multi/4.
+:- dynamic available_cranes/1.
 
 
 :- http_handler(root(api/scheduling/compute), handle_scheduling_request, []).
@@ -35,6 +36,15 @@ handle_scheduling_request_inner(Request) :-
     ),
     with_output_to(user_error, format('Selected algorithm: ~w~n', [Algorithm])),
     ( get_dict(maxCranes, Dict, MaxCranes) -> true ; MaxCranes = 1 ),
+    % Get cranes list from Dict (if provided)
+    ( get_dict(cranes, Dict, CranesList) -> 
+        (retractall(available_cranes(_)), assertz(available_cranes(CranesList)),
+         length(CranesList, NumCranes),
+         with_output_to(user_error, format('Received ~w real cranes from API~n', [NumCranes])))
+    ; 
+        (retractall(available_cranes(_)), assertz(available_cranes([])),
+         with_output_to(user_error, format('No cranes list provided, will use generated names~n', [])))
+    ),
     % TimeLimit can come from query parameter OR JSON body (query parameter takes precedence)
     ( var(TimeLimitParam) -> 
         ( get_dict(timeLimit, Dict, TimeLimit) -> true ; TimeLimit = 0 )
@@ -251,23 +261,54 @@ datetime_to_hour(DateTimeStr, HourDecimal) :-
     number_string(M, MStr),
     HourDecimal is H + (M / 60).
 
+% generate_crane_names/2: gera lista de nomes de cranes baseado no número OU usa lista fornecida
+generate_crane_names(Cranes, Names) :-
+    is_list(Cranes),
+    !,
+    maplist(extract_crane_name, Cranes, Names).
+
+generate_crane_names(N, Names) :-
+    number(N),
+    N > 0,
+    generate_crane_names_helper(1, N, Names).
+
+extract_crane_name(Crane, Name) :-
+    Name = Crane.get(name, 'Unknown Crane').
+
+generate_crane_names_helper(Current, Max, []) :- Current > Max, !.
+generate_crane_names_helper(Current, Max, [Name|Rest]) :-
+    Current =< Max,
+    format(atom(Name), 'STS Crane ~w', [Current]),
+    Next is Current + 1,
+    generate_crane_names_helper(Next, Max, Rest).
+
 
 triplets_to_dicts([], []).
 
 % handle 3-field tuples
 triplets_to_dicts([(V, TIn, TEnd)|Rest], [Dict|DictsRest]) :-
+    \+ (V, TIn, TEnd) = (_, _, _, _),
+    \+ (V, TIn, TEnd) = (_, _, _, _, _),
     sanitize_value(TIn, SIn), sanitize_value(TEnd, SEnd),
     Dict = _{ vessel: V, start: SIn, end: SEnd },
     triplets_to_dicts(Rest, DictsRest).
 
-% handle 4-field tuples (V, TIn, TEnd, Exec)
+% handle 5-field tuples (V, TIn, TEnd, Exec, N) - MUST come before 4-field
+triplets_to_dicts([(V, TIn, TEnd, _Exec, N)|Rest], [Dict|DictsRest]) :-
+    sanitize_value(TIn, SIn), sanitize_value(TEnd, SEnd),
+    sanitize_value(N, NumCranes),
+    % Try to use real cranes from available_cranes/1, otherwise generate names
+    ( available_cranes(CranesList), CranesList \= [] ->
+        generate_crane_names(CranesList, CraneNames)
+    ;
+        generate_crane_names(NumCranes, CraneNames)
+    ),
+    with_output_to(user_error, format('~nDEBUG triplets_to_dicts: Vessel=~w, N=~w, NumCranes=~w, CraneNames=~w~n', [V, N, NumCranes, CraneNames])),
+    Dict = _{ vessel: V, start: SIn, end: SEnd, numCranes: NumCranes, craneNames: CraneNames },
+    triplets_to_dicts(Rest, DictsRest).
+
+% handle 4-field tuples (V, TIn, TEnd, Exec) - comes after 5-field
 triplets_to_dicts([(V, TIn, TEnd, _Exec)|Rest], [Dict|DictsRest]) :-
-    sanitize_value(TIn, SIn), sanitize_value(TEnd, SEnd),
-    Dict = _{ vessel: V, start: SIn, end: SEnd },
-    triplets_to_dicts(Rest, DictsRest).
-
-% handle 5-field tuples (V, TIn, TEnd, Exec, N)
-triplets_to_dicts([(V, TIn, TEnd, _Exec, _N)|Rest], [Dict|DictsRest]) :-
     sanitize_value(TIn, SIn), sanitize_value(TEnd, SEnd),
     Dict = _{ vessel: V, start: SIn, end: SEnd },
     triplets_to_dicts(Rest, DictsRest).

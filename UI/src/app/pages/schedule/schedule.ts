@@ -227,13 +227,25 @@ export class Schedule implements OnInit, OnDestroy {
           const normalized: any = schedule || { entries: [], totalDelay: 0 };
 
           const rawEntries = normalized.entries || normalized.scheduleEntries || normalized.schedule?.schedule || [];
-          const entries = (rawEntries || []).map((e: any) => ({
-            vesselName: e.vesselName || e.vessel || '',
-            arrivalTime: e.startTime ? new Date(e.startTime) : (e.startTimeIso ? new Date(e.startTimeIso) : null),
-            departureTime: e.endTime ? new Date(e.endTime) : (e.endTimeIso ? new Date(e.endTimeIso) : null),
-            assignedCrane: e.assignedCranes || e.assignedCrane || [],
-            assignedStaff: e.staffNames || e.assignedStaff || []
-          }));
+          const entries = (rawEntries || []).map((e: any) => {
+            // Process crane assignments - handle both craneNames array and assignedCranes
+            let cranes: any[] = [];
+            if (e.craneNames && Array.isArray(e.craneNames)) {
+              cranes = e.craneNames;
+            } else if (e.assignedCranes && Array.isArray(e.assignedCranes)) {
+              cranes = e.assignedCranes;
+            } else if (e.assignedCrane && Array.isArray(e.assignedCrane)) {
+              cranes = e.assignedCrane;
+            }
+
+            return {
+              vesselName: e.vesselName || e.vessel || '',
+              arrivalTime: e.startTime ? new Date(e.startTime) : (e.startTimeIso ? new Date(e.startTimeIso) : null),
+              departureTime: e.endTime ? new Date(e.endTime) : (e.endTimeIso ? new Date(e.endTimeIso) : null),
+              assignedCrane: cranes,
+              assignedStaff: e.staffNames || e.assignedStaff || []
+            };
+          });
 
           const totalDelay = normalized.totalDelay ?? normalized.TotalDelay ?? normalized.schedule?.totalDelay ?? 0;
           const executionTime = normalized.executionTime ?? normalized.ExecutionTime ?? normalized.schedule?.executionTime ?? 0;
@@ -456,13 +468,13 @@ export class Schedule implements OnInit, OnDestroy {
       vvns.push(entry.vesselName || 'UNKNOWN');
 
       // Cranes
-      const cranes = Array.isArray(entry.assignedCrane) ? entry.assignedCrane.map((c: any) => 
+      const cranes = Array.isArray(entry.assignedCrane) ? entry.assignedCrane.map((c: any) =>
         typeof c === 'string' ? c : (c.craneName || c.name || '')
       ).filter((n: string) => !!n) : [];
       assignedCranes.push(cranes);
 
       // Staff
-      const staff = Array.isArray(entry.assignedStaff) ? entry.assignedStaff.map((s: any) => 
+      const staff = Array.isArray(entry.assignedStaff) ? entry.assignedStaff.map((s: any) =>
         typeof s === 'string' ? s : (s.staffName || s.name || '')
       ).filter((n: string) => !!n) : [];
       staffs.push(staff);
@@ -478,7 +490,7 @@ export class Schedule implements OnInit, OnDestroy {
       // Times
       arrivalTimes.push(entry.arrivalTime ? new Date(entry.arrivalTime).toISOString() : new Date().toISOString());
       departureTimes.push(entry.departureTime ? new Date(entry.departureTime).toISOString() : new Date().toISOString());
-      
+
       // Target day (usar arrival time como referência)
       const targetDay = entry.arrivalTime ? new Date(entry.arrivalTime) : new Date();
       targetDay.setHours(0, 0, 0, 0);
@@ -509,7 +521,7 @@ export class Schedule implements OnInit, OnDestroy {
           // Extrair VVN codes dos operation plans criados
           const vvnCodes = response.map((plan: any) => plan.vvn).join(', ');
           const targetDay = targetDays[0] || 'Unknown';
-          
+
           this.generatedPlansMessage = `Operation plans for VVNs ${vvnCodes} on ${targetDay} were generated.`;
           this.showOperationPlansModal = true;
         },
@@ -521,7 +533,7 @@ export class Schedule implements OnInit, OnDestroy {
           console.error('Error.error:', err?.error);
           console.error('Error.originalError:', err?.originalError);
           console.error('Error.originalError.error:', err?.originalError?.error);
-          
+
           let msg = 'Error generating operation plans';
           try {
             // Tentar extrair a mensagem de erro de várias fontes possíveis
@@ -536,7 +548,7 @@ export class Schedule implements OnInit, OnDestroy {
               if (typeof be === 'string') msg = be;
               else if (be.message) msg = be.message;
             }
-            
+
             console.log('Final error message:', msg);
           } catch (e) {
             console.error('Error extracting error message', e);
@@ -544,7 +556,7 @@ export class Schedule implements OnInit, OnDestroy {
 
           // Mostrar erro dentro da modal do schedule
           this.scheduleErrorMessage = msg;
-          
+
           // Auto-hide depois de 5 segundos
           setTimeout(() => {
             this.scheduleErrorMessage = '';

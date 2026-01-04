@@ -76,6 +76,9 @@ export interface ElementInfo {
   vesselVisitWarning?: string;
   // Common
   lastModified?: string;
+  // Vessel operational status
+  operationalStatus?: string;
+  operationalStatusDescription?: string;
 }
 
 @Injectable({
@@ -113,7 +116,7 @@ export class ElementInfoService {
     const current = this.overlayVisible$.value;
     const newState = !current;
     this.overlayVisible$.next(newState);
-    
+
     // Reload element info when opening overlay to get fresh data
     if (newState && this.currentElement$.value) {
       this.loadElementInfo(this.currentElement$.value);
@@ -134,8 +137,8 @@ export class ElementInfoService {
     console.log('[loadElementInfo] Starting load #', currentLoadId, 'for', element.type, element.name);
 
     const userRole = this.permissionService.getRole();
-    const canSeeRestrictedInfo = 
-      userRole === 'PortAuthorityOfficer' || 
+    const canSeeRestrictedInfo =
+      userRole === 'PortAuthorityOfficer' ||
       userRole === 'LogisticOperator' ||
       userRole === 'Admin';
 
@@ -237,17 +240,17 @@ export class ElementInfoService {
     try {
       // Get all storage areas from backend
       const areas = await firstValueFrom(this.storageAreaService.getAllStorageAreas());
-      
+
       // Find by code (unique identifier)
       let area = null;
       const searchCode = element.userData?.storageAreaCode;
-      
+
       console.log('[StorageArea Debug] Search criteria', {
         searchCode,
         userData: element.userData,
         allAreas: areas.map((a: any) => ({ code: a.code, location: a.location }))
       });
-      
+
       if (searchCode) {
         area = areas.find((a: any) => a.code === searchCode);
       }
@@ -314,14 +317,14 @@ export class ElementInfoService {
         activeVVEs = (vves as any[]).filter(vve => {
           const arrival = vve.arrivalDate ? new Date(vve.arrivalDate) : null;
           const departure = vve.departureDate ? new Date(vve.departureDate) : null;
-          
+
           if (!arrival) return false;
-          
+
           // If no departure date, consider current time as max
           if (!departure) {
             return arrival.getTime() <= now.getTime();
           }
-          
+
           // Check if today is between arrival and departure
           return arrival.getTime() <= now.getTime() && now.getTime() <= departure.getTime();
         });
@@ -336,7 +339,7 @@ export class ElementInfoService {
       try {
         const vvns = await firstValueFrom(this.vesselVisitNotificationService.getAllVesselVisitNotifications());
         console.log('[loadVesselInfo] Fetched VVNs:', vvns.length);
-        
+
         // Filter only approved VVNs
         approvedVVNs = (vvns as any[]).filter(vvn => vvn.visitStatus === 'Approved');
         console.log('[loadVesselInfo] Approved VVNs:', approvedVVNs.length);
@@ -352,7 +355,7 @@ export class ElementInfoService {
             .filter((imo: string) => imo)
         );
         const vesselsWithActiveVVE = (vessels as any[]).filter(v => activeVesselIMOs.has(v.imoNumber));
-        
+
         if (vesselsWithActiveVVE.length > 0) {
           vesselsToShow = vesselsWithActiveVVE;
           console.log('[loadVesselInfo] Showing only vessels with active VVE:', vesselsWithActiveVVE.length);
@@ -373,12 +376,12 @@ export class ElementInfoService {
       console.log('[loadVesselInfo] Current vessel:', currentVessel);
 
       // Find active VVE for this vessel (check both name and vesselIMO fields)
-      const vesselVVE = activeVVEs.find((vve: any) => 
+      const vesselVVE = activeVVEs.find((vve: any) =>
         vve.name === currentVessel.imoNumber || vve.vesselIMO === currentVessel.imoNumber
       );
 
       // Find approved VVN for this vessel
-      const vesselVVN = approvedVVNs.find((vvn: any) => 
+      const vesselVVN = approvedVVNs.find((vvn: any) =>
         vvn.vessel?.imoNumber === currentVessel.imoNumber || vvn.vesselId === currentVessel.id
       );
 
@@ -411,8 +414,8 @@ export class ElementInfoService {
         info.maxRows = currentVessel.vesselType.maxRows;
         info.maxBays = currentVessel.vesselType.maxBays;
         info.maxTiers = currentVessel.vesselType.maxTiers;
-        info.vesselTypeLastModified = currentVessel.vesselType.lastModifiedAt 
-          ? new Date(currentVessel.vesselType.lastModifiedAt).toLocaleDateString() 
+        info.vesselTypeLastModified = currentVessel.vesselType.lastModifiedAt
+          ? new Date(currentVessel.vesselType.lastModifiedAt).toLocaleDateString()
           : undefined;
       }
 
@@ -423,6 +426,11 @@ export class ElementInfoService {
         info.arrivalDate = vesselVVE.arrivalDate ? new Date(vesselVVE.arrivalDate).toLocaleString() : undefined;
         info.departureDate = vesselVVE.departureDate ? new Date(vesselVVE.departureDate).toLocaleString() : 'In progress';
         info.vesselVisitWarning = undefined;
+
+        // Add operational status information
+        const status = vesselVVE.status;
+        info.operationalStatus = status;
+        info.operationalStatusDescription = this.getStatusDescription(status);
       } else {
         info.vesselVisitWarning = 'No vessel has arrived or there is no active visit currently in port.';
       }
@@ -432,7 +440,7 @@ export class ElementInfoService {
         info.expectedArrivalDate = vesselVVN.eta ? new Date(vesselVVN.eta).toLocaleString() : undefined;
         info.expectedDepartureDate = vesselVVN.etd ? new Date(vesselVVN.etd).toLocaleString() : undefined;
       }
-      
+
       console.log('[loadVesselInfo] Final info:', info);
       return info;
     } catch (error) {
@@ -448,7 +456,7 @@ export class ElementInfoService {
   private async loadCraneInfo(element: PickableObject, canSeeRestricted: boolean): Promise<ElementInfo> {
     try {
       console.log('[loadCraneInfo] Starting...', { element: element.name, userData: (element as any).userData });
-      
+
       // Fetch all STS cranes and docks from backend
       const stsCranes = await firstValueFrom(this.physicalResourcesService.getPhysicalResourcesByKind(PhysicalResourceKind.STSCrane));
       const docks = await firstValueFrom(this.docksService.getAllDocks());
@@ -456,7 +464,7 @@ export class ElementInfoService {
 
       // Determine which dock/element was selected to get dock name
       let dockName = null;
-      
+
       // If selected from a dock, get the dock name
       if (element.type === 'dock') {
         dockName = element.name;
@@ -473,8 +481,8 @@ export class ElementInfoService {
       const dockDescription = dockInfo?.location ? `Dock located at ${dockInfo.location}` : 'Port docking facility';
 
       // Filter cranes by assigned dock (try both assignedArea and assignedDockName fields)
-      const cranesForDock = dockName 
-        ? (stsCranes as any[]).filter(c => 
+      const cranesForDock = dockName
+        ? (stsCranes as any[]).filter(c =>
             (c.assignedArea === dockName || c.assignedArea?.includes(dockName)) ||
             (c.assignedDockName === dockName || c.assignedDockName?.includes(dockName))
           )
@@ -484,7 +492,7 @@ export class ElementInfoService {
 
       // Store crane list and get first crane
       const cranesToShow = cranesForDock.length > 0 ? cranesForDock : stsCranes;
-      
+
       let info: ElementInfo = {
         name: cranesToShow.length > 0 ? cranesToShow[0].name : 'STS Crane',
         type: 'Crane',
@@ -603,7 +611,7 @@ export class ElementInfoService {
 
     try {
       const vessel = current.vesselsList[index];
-      
+
       // Fetch active VVEs again for this vessel
       let activeVVEs: any[] = [];
       try {
@@ -612,7 +620,7 @@ export class ElementInfoService {
         activeVVEs = (vves as any[]).filter(vve => {
           const arrival = vve.arrivalDate ? new Date(vve.arrivalDate) : null;
           const departure = vve.departureDate ? new Date(vve.departureDate) : null;
-          
+
           if (!arrival) return false;
           if (!departure) return arrival.getTime() <= now.getTime();
           return arrival.getTime() <= now.getTime() && now.getTime() <= departure.getTime();
@@ -630,11 +638,11 @@ export class ElementInfoService {
         console.warn('[updateVesselIndex] Could not fetch VVNs:', error);
       }
 
-      const vesselVVE = activeVVEs.find((vve: any) => 
+      const vesselVVE = activeVVEs.find((vve: any) =>
         vve.name === vessel.imoNumber || vve.vesselIMO === vessel.imoNumber
       );
 
-      const vesselVVN = approvedVVNs.find((vvn: any) => 
+      const vesselVVN = approvedVVNs.find((vvn: any) =>
         vvn.vessel?.imoNumber === vessel.imoNumber || vvn.vesselId === vessel.id
       );
 
@@ -663,8 +671,8 @@ export class ElementInfoService {
         updated.maxRows = vessel.vesselType.maxRows;
         updated.maxBays = vessel.vesselType.maxBays;
         updated.maxTiers = vessel.vesselType.maxTiers;
-        updated.vesselTypeLastModified = vessel.vesselType.lastModifiedAt 
-          ? new Date(vessel.vesselType.lastModifiedAt).toLocaleDateString() 
+        updated.vesselTypeLastModified = vessel.vesselType.lastModifiedAt
+          ? new Date(vessel.vesselType.lastModifiedAt).toLocaleDateString()
           : undefined;
       }
 
@@ -699,5 +707,16 @@ export class ElementInfoService {
       'crane': 'Crane'
     };
     return labels[type] || type;
+  }
+
+  private getStatusDescription(status: string): string {
+    const descriptions: { [key: string]: string } = {
+      'Waiting': 'Vessel is waiting for dock assignment',
+      'Loading': 'Vessel is currently loading cargo',
+      'Unloading': 'Vessel is currently unloading cargo',
+      'InProgress': 'Operations are in progress',
+      'Completed': 'All operations have been completed'
+    };
+    return descriptions[status] || 'Status information unavailable';
   }
 }

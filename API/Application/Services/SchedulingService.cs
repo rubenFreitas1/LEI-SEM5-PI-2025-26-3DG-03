@@ -550,6 +550,12 @@ public class SchedulingService
                 DateTime startTime = targetDay.AddHours(startHours);
                 DateTime endTime = targetDay.AddHours(endHours);
                 string vesselName = GetVesselNameByIMO(vesselIMO).Result;
+                
+                // Find the VVN code for this vessel
+                var matchingNotification = notifications.FirstOrDefault(n => 
+                    string.Equals(n.Vessel.IMONumber, vesselIMO, StringComparison.OrdinalIgnoreCase));
+                string? vvnCode = matchingNotification?.Code;
+                
                 var assignedCranes = new List<string>();
                 if (enableMultiCrane)
                 {
@@ -569,7 +575,7 @@ public class SchedulingService
                 }
                 List<string> staffNames = await GetAvailableStaffNames();
 
-                var schedulingEntryDTO = new SchedulingEntryDTO(vesselName, startTime, endTime, assignedCranes, staffNames);
+                var schedulingEntryDTO = new SchedulingEntryDTO(vesselName, startTime, endTime, assignedCranes, staffNames, vvnCode);
                 entries.Add(schedulingEntryDTO);
             }
 
@@ -715,10 +721,65 @@ public class SchedulingService
                 DateTime startTime = targetDay.AddHours(startHours);
                 DateTime endTime = targetDay.AddHours(endHours);
                 string vesselName = GetVesselNameByIMO(vesselIMO).Result;
-                var assignedCranes = new List<string> { fastestCrane.Name };
+                
+                // Find the VVN code for this vessel
+                var matchingNotification = notifications.FirstOrDefault(n => 
+                    string.Equals(n.Vessel.IMONumber, vesselIMO, StringComparison.OrdinalIgnoreCase));
+                string? vvnCode = matchingNotification?.Code;
+                
+                // Extract crane assignments from Prolog response
+                var assignedCranes = new List<string>();
+                Console.WriteLine($"[SchedulingService] Processing vessel {vesselName} (IMO: {vesselIMO})");
+                
+                if (item.TryGetProperty("craneNames", out var craneNamesEl) && craneNamesEl.ValueKind == JsonValueKind.Array)
+                {
+                    // Use crane names directly from Prolog
+                    Console.WriteLine($"[SchedulingService] Found craneNames array with {craneNamesEl.GetArrayLength()} elements");
+                    foreach (var craneNameEl in craneNamesEl.EnumerateArray())
+                    {
+                        if (craneNameEl.ValueKind == JsonValueKind.String)
+                        {
+                            var craneName = craneNameEl.GetString();
+                            if (!string.IsNullOrEmpty(craneName))
+                            {
+                                assignedCranes.Add(craneName);
+                                Console.WriteLine($"[SchedulingService]   Added crane: {craneName}");
+                            }
+                        }
+                    }
+                }
+                else if (item.TryGetProperty("numCranes", out var numCranesEl) && numCranesEl.ValueKind == JsonValueKind.Number)
+                {
+                    // Use numCranes to assign the first N available cranes
+                    int numCranes = numCranesEl.GetInt32();
+                    Console.WriteLine($"[SchedulingService] Found numCranes={numCranes}, allocating from available cranes");
+                    var availableCranesList = (physicalResources ?? Enumerable.Empty<PhysicalResource>())
+                        .OrderByDescending(c => c.PhysicalResourceOperationalCapacity)
+                        .Take(numCranes)
+                        .ToList();
+                    foreach (var crane in availableCranesList)
+                    {
+                        assignedCranes.Add(crane.Name);
+                        Console.WriteLine($"[SchedulingService]   Assigned crane: {crane.Name}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"[SchedulingService] No craneNames or numCranes found in response");
+                }
+                
+                // Fallback: if no cranes assigned yet, use the fastest crane
+                if (assignedCranes.Count == 0 && fastestCrane != null)
+                {
+                    assignedCranes.Add(fastestCrane.Name);
+                    Console.WriteLine($"[SchedulingService] Fallback: using fastest crane {fastestCrane.Name}");
+                }
+                
+                Console.WriteLine($"[SchedulingService] Final assigned cranes for {vesselName}: {string.Join(", ", assignedCranes)}");
+                
                 List<string> staffNames = await GetAvailableStaffNames();
 
-                var schedulingEntryDTO = new SchedulingEntryDTO(vesselName, startTime, endTime, assignedCranes, staffNames);
+                var schedulingEntryDTO = new SchedulingEntryDTO(vesselName, startTime, endTime, assignedCranes, staffNames, vvnCode);
                 entries.Add(schedulingEntryDTO);
             }
             var schedulingDTO = new SchedulingDTO(entries, totalDelay, executionTime, messages);
